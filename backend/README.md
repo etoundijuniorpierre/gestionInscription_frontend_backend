@@ -71,7 +71,7 @@ SPRING_PROFILES_ACTIVE=prod ./mvnw spring-boot:run
 ### Default Values
 
 If environment variables are not set, the application will use the following default values:
-- Server port: 8091
+- Server port: 9090
 - Database URL: jdbc:postgresql://localhost:5432/inscription_db
 - Database username: postgres
 - Database password: root

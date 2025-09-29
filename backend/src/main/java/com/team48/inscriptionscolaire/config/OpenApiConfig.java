@@ -29,7 +29,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
         servers = {
                 @Server(
                         description = "LOCAL ENV",
-                        url = "http://localhost:8091/api/v1"
+                        url = "http://localhost:9090/api/v1"
                 ),
                 @Server(
                         description = "PRO ENV",

@@ -1,39 +1,101 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# Root level unnecessary files and directories
+node_modules/
+dist/
+*.log
+.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.Dockerfile.swp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Maven/Spring Boot backend
+/backend/target/
+/backend/.mvn/wrapper/maven-wrapper.jar
+!/backend/**/src/main/**/target/
+!/backend/**/src/test/**/target/
 
 ### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+/backend/.apt_generated
+/backend/.classpath
+/backend/.factorypath
+/backend/.project
+/backend/.settings
+/backend/.springBeans
+/backend/.sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+/backend/.idea
+/backend/*.iws
+/backend/*.iml
+/backend/*.ipr
 
 ### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+/backend/nbproject/private/
+/backend/nbbuild/
+/backend/dist/
+/backend/nbdist/
+/backend/.nb-gradle/
+/backend/build/
+!/backend/**/src/main/**/build/
+!/backend/**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+/backend/.vscode/
 
 # .gitignore
-*.env
-*.key
-*.pem
-credentials.json
+/backend/*.env
+/backend/*.key
+/backend/*.pem
+/backend/credentials.json
+
+# Frontend React
+/frontReact/node_modules/
+/frontReact/dist/
+/frontReact/dist-ssr/
+/frontReact/*.local
+
+# Logs
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+/frontReact/.vscode/*
+!/frontReact/.vscode/extensions.json
+/frontReact/.idea
+/frontReact/.DS_Store
+/frontReact/*.suo
+/frontReact/*.ntvs*
+/frontReact/*.njsproj
+/frontReact/*.sln
+/frontReact/*.sw?
+
+# Database dumps
+*.sql
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

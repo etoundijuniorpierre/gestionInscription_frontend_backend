@@ -33,6 +33,8 @@ public class ProgramMapper {
         dto.setRegistrationEndDate(program.getRegistrationEndDate());
         dto.setDuration(program.getDuration());
         dto.setPrice(program.getPrice());
+        // Set enrollment status
+        dto.setEnrollmentOpen(program.isEnrollmentOpen());
         
         // Map learn modules
         if (program.getLearnModules() != null) {

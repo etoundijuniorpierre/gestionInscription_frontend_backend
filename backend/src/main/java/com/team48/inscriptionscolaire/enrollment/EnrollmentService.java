@@ -9,6 +9,7 @@ import com.team48.inscriptionscolaire.document.DocumentService;
 import com.team48.inscriptionscolaire.document.FileUploadConfig;
 import com.team48.inscriptionscolaire.document.ValidationStatus;
 import com.team48.inscriptionscolaire.notification.NotificationService;
+import com.team48.inscriptionscolaire.program.Program;
 import com.team48.inscriptionscolaire.program.ProgramRepository;
 import com.team48.inscriptionscolaire.student.Student;
 import com.team48.inscriptionscolaire.user.UserRepository;
@@ -45,6 +46,11 @@ public class EnrollmentService {
                 .orElseThrow(() -> new EntityNotFoundException("Student not found"));
         var program = programRepository.findById(dto.getProgramId())
                 .orElseThrow(() -> new EntityNotFoundException("Program not found"));
+
+        // Check if enrollments are open for this program
+        if (!program.isEnrollmentOpen()) {
+            throw new IllegalStateException("Enrollments are not currently open for this program.");
+        }
 
         var enrollment = enrollmentRepository
                 .findByStudentIdAndProgramIdAndAcademicYear(student.getId(), program.getId(), dto.getAcademicYear())

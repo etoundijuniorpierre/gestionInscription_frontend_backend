@@ -38,3 +38,22 @@ build/
 *.pem
 credentials.json
 
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Logs
+logs
+*.log
+log/
+
+# Database
+*.sql
+*.dump
+
+# Temporary files
+tmp/
+temp/
+
+# IDE specific files
+*.recommenders

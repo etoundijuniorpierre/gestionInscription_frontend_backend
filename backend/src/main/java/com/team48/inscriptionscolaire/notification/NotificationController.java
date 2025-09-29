@@ -15,6 +15,4 @@ public class NotificationController {
     public Notification sendNotification(Notification notification) throws Exception {
         return new Notification("New notification: " + notification.getContent());
     }
-
-
 }

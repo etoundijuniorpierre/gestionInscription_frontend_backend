@@ -146,7 +146,7 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
         "moduleOrder": "integer"
       }
     ],
-    "enrollmentOpen": "boolean"
+  "enrollmentOpen": "boolean"
   }
 ]
 ```

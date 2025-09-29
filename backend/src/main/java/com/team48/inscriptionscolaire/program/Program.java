@@ -53,4 +53,11 @@ public class Program extends BaseEntity {
     @OneToMany(mappedBy = "program", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<LearnModule> learnModules;
 
+    public boolean isEnrollmentOpen() {
+        LocalDate today = LocalDate.now();
+        return registrationStartDate != null && 
+               registrationEndDate != null && 
+               !today.isBefore(registrationStartDate) && 
+               !today.isAfter(registrationEndDate);
+    }
 }

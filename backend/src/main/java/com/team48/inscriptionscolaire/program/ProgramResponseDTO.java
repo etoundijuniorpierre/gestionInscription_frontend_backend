@@ -22,6 +22,9 @@ public class ProgramResponseDTO {
     private int duration; // Duration in months
     private BigDecimal price; // Program price
     
+    // Enrollment status field
+    private boolean enrollmentOpen;
+    
     // New field for learn modules
     private List<LearnModuleDTO> learnModules;
     
