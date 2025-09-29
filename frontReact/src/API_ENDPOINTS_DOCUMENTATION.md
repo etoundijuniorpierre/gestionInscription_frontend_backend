@@ -1,9 +1,12 @@
 # API ENDPOINTS DOCUMENTATION
 
+## Base URL
+All endpoints are prefixed with: `http://localhost:9090/api/v1`
+
 ## Authentication Endpoints
 
 ### 1. User Registration
-**Endpoint:** POST /api/v1/auth/signup
+**Endpoint:** POST /auth/signup
 **Description:** Register a new user
 **Request Body:**
 ```json
@@ -16,15 +19,10 @@
 }
 ```
 **Response:**
-```json
-{
-  "token": "string (JWT token)",
-  "role": "string"
-}
-```
+- 202 ACCEPTED
 
 ### 2. User Login
-**Endpoint:** POST /api/v1/auth/login
+**Endpoint:** POST /auth/login
 **Description:** Authenticate a user
 **Request Body:**
 ```json
@@ -42,7 +40,7 @@
 ```
 
 ### 3. Activate Account
-**Endpoint:** GET /api/v1/auth/activate-account
+**Endpoint:** GET /auth/activate-account
 **Description:** Activate a user account via email token
 **Request Parameters:**
 - token: string (query parameter)
@@ -50,7 +48,7 @@
 - 200 OK with HTML response
 
 ### 4. Forgot Password
-**Endpoint:** POST /api/v1/auth/forgot-password
+**Endpoint:** POST /auth/forgot-password
 **Description:** Send password reset email
 **Request Body:**
 ```json
@@ -59,19 +57,19 @@
 }
 ```
 **Response:**
-- 200 OK with success message
+- 202 ACCEPTED
 
 ### 5. Logout
-**Endpoint:** POST /api/v1/auth/logout
+**Endpoint:** POST /auth/logout
 **Description:** Logout current user
 **Request Body:** None
 **Response:**
-- 200 OK with success message
+- 200 OK
 
 ## Program Endpoints
 
 ### 1. Create Program (Admin only)
-**Endpoint:** POST /api/v1/programs
+**Endpoint:** POST /programs
 **Description:** Create a new program
 **Request Body:**
 ```json
@@ -121,7 +119,7 @@
 ```
 
 ### 2. Get All Programs
-**Endpoint:** GET /api/v1/programs
+**Endpoint:** GET /programs
 **Description:** Retrieve all programs
 **Request Parameters:** None
 **Response:**
@@ -152,7 +150,7 @@
 ```
 
 ### 3. Get Program by ID
-**Endpoint:** GET /api/v1/programs/{id}
+**Endpoint:** GET /programs/{id}
 **Description:** Retrieve a specific program by ID
 **Request Parameters:**
 - id: integer (path parameter)
@@ -182,7 +180,7 @@
 ```
 
 ### 4. Get Program by Code
-**Endpoint:** GET /api/v1/programs/code/{programCode}
+**Endpoint:** GET /programs/code/{programCode}
 **Description:** Retrieve a specific program by code
 **Request Parameters:**
 - programCode: string (path parameter)
@@ -212,7 +210,7 @@
 ```
 
 ### 5. Update Program (Admin only)
-**Endpoint:** PUT /api/v1/programs/{id}
+**Endpoint:** PUT /programs/{id}
 **Description:** Update a specific program
 **Request Parameters:**
 - id: integer (path parameter)
@@ -264,7 +262,7 @@
 ```
 
 ### 6. Delete Program (Admin only)
-**Endpoint:** DELETE /api/v1/programs/{id}
+**Endpoint:** DELETE /programs/{id}
 **Description:** Delete a specific program
 **Request Parameters:**
 - id: integer (path parameter)
@@ -273,56 +271,13 @@
 
 ## Enrollment Endpoints
 
-### 1. Create Enrollment
-**Endpoint:** POST /api/v1/enrollments
-**Description:** Create a new enrollment
+### 1. Submit or Update Enrollment
+**Endpoint:** POST /enrollments
+**Description:** Submit or update enrollment form data and documents
 **Request Body:**
-```json
-{
-  "lastName": "string",
-  "firstName": "string",
-  "gender": "string",
-  "dateOfBirth": "string (date format)",
-  "nationality": "string",
-  "identityDocumentType": "string",
-  "identityDocumentNumber": "string",
-  "issueDate": "string (date format)",
-  "expirationDate": "string (date format)",
-  "placeOfIssue": "string",
-  "diploma1Name": "string",
-  "diploma1Status": "string",
-  "diploma2Name": "string",
-  "diploma2Status": "string",
-  "cniRectoName": "string",
-  "cniRectoStatus": "string",
-  "cniVersoName": "string",
-  "cniVersoStatus": "string",
-  "birthCertificateName": "string",
-  "birthCertificateStatus": "string",
-  "passportPhotoName": "string",
-  "passportPhotoStatus": "string",
-  "lastInstitution": "string",
-  "specialization": "string",
-  "availableForInternship": "boolean",
-  "startDate": "string (date format)",
-  "endDate": "string (date format)",
-  "email": "string (email format)",
-  "phoneNumber": "string",
-  "countryCode": "string",
-  "country": "string",
-  "region": "string",
-  "city": "string",
-  "address": "string",
-  "emergencyContacts": [
-    {
-      "name": "string",
-      "relationship": "string",
-      "phoneNumber": "string",
-      "countryCode": "string"
-    }
-  ]
-}
-```
+- multipart/form-data with:
+  - enrollmentDtoRequest: JSON string
+  - documents: List of files (optional)
 **Response:**
 ```json
 {
@@ -376,7 +331,7 @@
 ```
 
 ### 2. Get Enrollment by ID
-**Endpoint:** GET /api/v1/enrollments/{enrollmentId}
+**Endpoint:** GET /enrollments/{enrollmentId}
 **Description:** Retrieve a specific enrollment by ID
 **Request Parameters:**
 - enrollmentId: integer (path parameter)
@@ -433,7 +388,7 @@
 ```
 
 ### 3. Get My Enrollments
-**Endpoint:** GET /api/v1/enrollments/my-enrollments
+**Endpoint:** GET /enrollments/my-enrollments
 **Description:** Retrieve all enrollments for the current user
 **Request Parameters:** None
 **Response:**
@@ -490,8 +445,8 @@
 ]
 ```
 
-### 4. Get Enrollments by Program ID
-**Endpoint:** GET /api/v1/enrollments/program/{programId}
+### 4. Get Enrollments by Program ID (Admin only)
+**Endpoint:** GET /enrollments/program/{programId}
 **Description:** Retrieve all enrollments for a specific program
 **Request Parameters:**
 - programId: integer (path parameter)
@@ -549,8 +504,65 @@
 ]
 ```
 
-### 5. Get Enrollments by Academic Year
-**Endpoint:** GET /api/v1/enrollments/year/{academicYear}
+### 5. Approve Enrollment (Admin only)
+**Endpoint:** PATCH /enrollments/{enrollmentId}/approve
+**Description:** Approve a specific enrollment
+**Request Parameters:**
+- enrollmentId: integer (path parameter)
+**Response:**
+```json
+{
+  "id": "integer",
+  "academicYear": "string",
+  "submissionDate": "string (date-time format)",
+  "status": "string",
+  "validationDate": "string (date-time format)",
+  "rejectionReason": "string",
+  "student": {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string"
+  },
+  "program": {
+    "id": "integer",
+    "programName": "string",
+    "programCode": "string"
+  },
+  "personalInfo": {
+    "lastName": "string",
+    "firstName": "string",
+    "gender": "string",
+    "dateOfBirth": "string (date format)",
+    "nationality": "string",
+    "identityDocumentType": "string",
+    "identityDocumentNumber": "string",
+    "issueDate": "string (date format)",
+    "expirationDate": "string (date format)",
+    "placeOfIssue": "string"
+  },
+  "academicInfo": {
+    "lastInstitution": "string",
+    "specialization": "string",
+    "availableForInternship": "boolean",
+    "startDate": "string (date format)",
+    "endDate": "string (date format)"
+  },
+  "contactDetails": {
+    "email": "string",
+    "phoneNumber": "string",
+    "countryCode": "string",
+    "country": "string",
+    "region": "string",
+    "city": "string",
+    "address": "string"
+  },
+  "stepCompleted": "integer"
+}
+```
+
+### 6. Get Enrollments by Academic Year (Admin only)
+**Endpoint:** GET /enrollments/year/{academicYear}
 **Description:** Retrieve all enrollments for a specific academic year
 **Request Parameters:**
 - academicYear: string (path parameter)
@@ -608,8 +620,8 @@
 ]
 ```
 
-### 6. Get Enrollments by Program ID and Academic Year
-**Endpoint:** GET /api/v1/enrollments/program/{programId}/year/{academicYear}
+### 7. Get Enrollments by Program ID and Academic Year (Admin only)
+**Endpoint:** GET /enrollments/program/{programId}/year/{academicYear}
 **Description:** Retrieve all enrollments for a specific program and academic year
 **Request Parameters:**
 - programId: integer (path parameter)
@@ -668,8 +680,8 @@
 ]
 ```
 
-### 7. Get Available Academic Years
-**Endpoint:** GET /api/v1/enrollments/available-academic-years
+### 8. Get Available Academic Years
+**Endpoint:** GET /enrollments/available-academic-years
 **Description:** Retrieve all available academic years
 **Request Parameters:** None
 **Response:**
@@ -682,7 +694,7 @@
 ## Document Endpoints
 
 ### 1. Upload Document
-**Endpoint:** POST /api/v1/images/upload
+**Endpoint:** POST /images/upload
 **Description:** Upload a document
 **Request Body:**
 - multipart/form-data with file parameter
@@ -701,7 +713,7 @@
 ```
 
 ### 2. Get Document by Name
-**Endpoint:** GET /api/v1/images/{fileName}
+**Endpoint:** GET /images/{fileName}
 **Description:** Retrieve a document by filename
 **Request Parameters:**
 - fileName: string (path parameter)
@@ -710,8 +722,8 @@
 
 ## Module Endpoints
 
-### 1. Create Module
-**Endpoint:** POST /api/v1/modules
+### 1. Create Module (Admin only)
+**Endpoint:** POST /modules
 **Description:** Create a new module
 **Request Body:**
 ```json
@@ -734,7 +746,7 @@
 ```
 
 ### 2. Get Module by ID
-**Endpoint:** GET /api/v1/modules/{id}
+**Endpoint:** GET /modules/{id}
 **Description:** Retrieve a specific module by ID
 **Request Parameters:**
 - id: integer (path parameter)
@@ -750,7 +762,7 @@
 ```
 
 ### 3. Get Modules by Program ID
-**Endpoint:** GET /api/v1/modules/program/{programId}
+**Endpoint:** GET /modules/program/{programId}
 **Description:** Retrieve all modules for a specific program
 **Request Parameters:**
 - programId: integer (path parameter)
@@ -767,8 +779,8 @@
 ]
 ```
 
-### 4. Update Module
-**Endpoint:** PUT /api/v1/modules/{id}
+### 4. Update Module (Admin only)
+**Endpoint:** PUT /modules/{id}
 **Description:** Update a specific module
 **Request Parameters:**
 - id: integer (path parameter)
@@ -792,18 +804,42 @@
 }
 ```
 
-### 5. Delete Module
-**Endpoint:** DELETE /api/v1/modules/{id}
+### 5. Delete Module (Admin only)
+**Endpoint:** DELETE /modules/{id}
 **Description:** Delete a specific module
 **Request Parameters:**
 - id: integer (path parameter)
 **Response:**
 - 204 No Content
 
+### 6. Add Module to Program (Admin only)
+**Endpoint:** POST /modules/program/{programId}
+**Description:** Add a module to a specific program
+**Request Parameters:**
+- programId: integer (path parameter)
+**Request Body:**
+```json
+{
+  "moduleName": "string",
+  "moduleDescription": "string",
+  "moduleOrder": "integer"
+}
+```
+**Response:**
+```json
+{
+  "id": "integer",
+  "moduleName": "string",
+  "moduleDescription": "string",
+  "moduleOrder": "integer",
+  "programId": "integer"
+}
+```
+
 ## Payment Endpoints
 
 ### 1. Create Payment Session
-**Endpoint:** POST /api/v1/payments/create-session
+**Endpoint:** POST /payments/create-session
 **Description:** Create a Stripe payment session
 **Request Body:**
 ```json
@@ -820,7 +856,7 @@
 ```
 
 ### 2. Handle Stripe Webhook
-**Endpoint:** POST /api/v1/payments/webhook
+**Endpoint:** POST /payments/webhook
 **Description:** Handle Stripe webhook events
 **Request Body:**
 - Raw Stripe webhook payload
@@ -830,7 +866,7 @@
 ## Contact Endpoints
 
 ### 1. Submit Contact Form
-**Endpoint:** POST /api/v1/contact
+**Endpoint:** POST /contact
 **Description:** Submit a contact form
 **Request Body:**
 ```json
@@ -842,12 +878,12 @@
 }
 ```
 **Response:**
-- 200 OK with success message
+- 200 OK
 
 ## Statistics Endpoints
 
 ### 1. Get Statistics
-**Endpoint:** GET /api/v1/statistics
+**Endpoint:** GET /statistics
 **Description:** Retrieve all statistics
 **Request Parameters:** None
 **Response:**
@@ -881,5 +917,31 @@
     "studentName": "string",
     "enrollmentId": "integer"
   }
+}
+```
+
+## Student Endpoints
+
+### 1. Welcome Message
+**Endpoint:** GET /student/
+**Description:** Welcome message for students
+**Response:**
+- String: "Welcome to our Online Enrollment platform"
+
+## Notification Endpoints
+
+### 1. Send Notification (WebSocket)
+**Endpoint:** MESSAGE /notification/notify
+**Description:** Send a notification via WebSocket
+**Request Body:**
+```json
+{
+  "content": "string"
+}
+```
+**Response:**
+```json
+{
+  "content": "string"
 }
 ```

@@ -35,6 +35,10 @@ const ProgramManagement = () => {
         navigate(`/admin-dashboard/program-management/edit/${programId}`);
     };
 
+    const handleManageModules = (programId) => {
+        navigate(`/admin-dashboard/program-management/${programId}/modules`);
+    };
+
     const handleDeleteProgram = async (programId) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
             try {
@@ -132,6 +136,12 @@ const ProgramManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.maxCapacity}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.isOpen ? 'Oui' : 'Non'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                                    <button
+                                        onClick={() => handleManageModules(program.id)}
+                                        className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
+                                    >
+                                        Gérer les Modules
+                                    </button>
                                     <button
                                         onClick={() => handleModifyProgram(program.id)}
                                         className="py-1 px-3 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 transition-colors"

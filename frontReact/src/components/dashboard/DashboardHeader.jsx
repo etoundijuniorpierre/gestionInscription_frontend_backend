@@ -5,7 +5,7 @@ import { UserContext } from '../../contexts/UserContext';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
 
-const DashboardHeader = ({ variant = 'default' }) => {
+const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) => {
     const { user, setUser } = useContext(UserContext);
     const { isAuthenticated, userRole } = useAuth();
     const navigate = useNavigate();
@@ -79,7 +79,7 @@ const DashboardHeader = ({ variant = 'default' }) => {
         '/dashboard/help': 'Aide',
     };
     
-    const pageTitle = pageTitles[window.location.pathname] || 'Tableau de bord';
+    const pageTitle = customPageTitle || pageTitles[window.location.pathname] || 'Tableau de bord';
     
     const BackArrowIcon = '/assets/svg/back-arrow-icon.svg';
     const BellIcon = '/assets/svg/bell-icon.svg';
@@ -143,7 +143,7 @@ const DashboardHeader = ({ variant = 'default' }) => {
                             background: '#101957',
                         }}
                     >
-                        {user.initials}
+                        {user?.initials || ''}
                     </div>
                     <div>
                         <p
@@ -156,7 +156,7 @@ const DashboardHeader = ({ variant = 'default' }) => {
                                 color: '#333333',
                             }}
                         >
-                            {user.fullName}
+                            {user?.fullName || 'Utilisateur'}
                         </p>
                     </div>
                 </div>

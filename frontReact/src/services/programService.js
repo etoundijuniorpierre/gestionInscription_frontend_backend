@@ -12,7 +12,16 @@ export const getAllPrograms = async () => {
     return response;
   } catch (error) {
     console.error('Error in getAllPrograms:', error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Impossible de récupérer la liste des formations'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la récupération des formations.');
+    }
   }
 };
 
@@ -27,7 +36,16 @@ export const getProgramById = async (id) => {
     return response;
   } catch (error) {
     console.error(`Error in getProgramById with id ${id}:`, error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Impossible de récupérer les détails de la formation'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la récupération des détails de la formation.');
+    }
   }
 };
 
@@ -42,7 +60,16 @@ export const getProgramByCode = async (programCode) => {
     return response;
   } catch (error) {
     console.error(`Error in getProgramByCode with code ${programCode}:`, error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Impossible de récupérer les détails de la formation'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la récupération des détails de la formation.');
+    }
   }
 };
 
@@ -57,7 +84,16 @@ export const createProgram = async (programData) => {
     return response.data;
   } catch (error) {
     console.error('Error in createProgram:', error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Échec de la création de la formation'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la création de la formation.');
+    }
   }
 };
 
@@ -73,7 +109,16 @@ export const updateProgram = async (id, programData) => {
     return response.data;
   } catch (error) {
     console.error(`Error in updateProgram with id ${id}:`, error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Échec de la mise à jour de la formation'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la mise à jour de la formation.');
+    }
   }
 };
 
@@ -88,6 +133,15 @@ export const deleteProgram = async (id) => {
     return response.data;
   } catch (error) {
     console.error(`Error in deleteProgram with id ${id}:`, error);
-    throw error;
+    if (error.response) {
+      // Server responded with error status
+      throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Échec de la suppression de la formation'}`);
+    } else if (error.request) {
+      // Request was made but no response received
+      throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
+    } else {
+      // Something else happened
+      throw new Error('Une erreur inattendue s\'est produite lors de la suppression de la formation.');
+    }
   }
 };
