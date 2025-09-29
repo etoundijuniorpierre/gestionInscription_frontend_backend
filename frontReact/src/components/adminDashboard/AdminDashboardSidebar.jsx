@@ -26,10 +26,10 @@ const AdminDashboardSidebar = () => {
     };
 
     return (
-        <div className="flex flex-col p-4 shadow-lg w-[15rem]" style={{ backgroundColor: '#101957' }}>
+        <div className="flex flex-col p-4 shadow-lg w-[20rem]" style={{ backgroundColor: '#101957' }}>
             <div className="flex items-center justify-center pt-0 pb-6 pl-2">
                 <img src={igniteAcademyLogo} alt="Ignite Academy Logo" style={{ height: '3.88rem' }} className="mr-3" />
-                <span className="text-2xl font-bold text-white">Ignite Academy</span>
+                <span className="text-2xl font-bold text-white">Ignite Academy - CHANGED!</span>
             </div>
 
             <nav className="flex-1 mt-2">
@@ -39,7 +39,7 @@ const AdminDashboardSidebar = () => {
                             <NavLink
                                 to={item.path}
                                 className={({ isActive }) =>
-                                    `flex items-center transition-colors duration-200 font-normal align-middle ` +
+                                    `flex items-center transition-colors duration-200 font-normal ` +
                                     `${
                                         isActive
                                             ? 'bg-[#F96567] text-white'
@@ -47,19 +47,19 @@ const AdminDashboardSidebar = () => {
                                     }`
                                 }
                                 style={{
-                                    width: '12.5rem',
-                                    height: '1.88rem',
+                                    width: '100%',
+                                    height: '3rem',
                                     borderRadius: '0.38rem',
-                                    gap: '0.5rem',
-                                    paddingRight: '0.25rem',
-                                    paddingLeft: '0.25rem',
+                                    gap: '0.75rem',
+                                    paddingLeft: '1rem',
+                                    paddingRight: '1rem',
                                     fontSize: '1rem',
                                     lineHeight: '1.5rem',
                                     letterSpacing: 'normal',
                                 }}
                                 end={item.path === '/admin-dashboard'}
                             >
-                                <img src={item.icon} alt={`${item.name} icon`} className="mr-3 w-5 h-5" />
+                                <img src={item.icon} alt={`${item.name} icon`} className="w-5 h-5" />
                                 <span>{item.name}</span>
                             </NavLink>
                         </li>
@@ -126,17 +126,18 @@ const AdminDashboardSidebar = () => {
             <div className="px-2 pb-4">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center justify-center w-full rounded-[0.5rem] hover:bg-[#3A506B] transition-colors duration-200 text-white"
+                    className="flex items-center transition-colors duration-200 text-white w-full rounded-[0.38rem] hover:bg-[#3A506B]"
                     style={{
-                        width: '12.5rem',
-                        height: '1.88rem',
-                        gap: '0.5rem',
-                        paddingRight: '0.25rem',
-                        paddingLeft: '0.25rem',
+                        height: '3rem',
+                        gap: '0.75rem',
+                        paddingLeft: '1rem',
+                        paddingRight: '1rem',
                         background: '#FFFFFF1A',
+                        fontSize: '1rem',
+                        lineHeight: '1.5rem',
                     }}
                 >
-                    <img src={logoutIcon} alt="Déconnexion icon" className="mr-3 w-5 h-5" />
+                    <img src={logoutIcon} alt="Déconnexion icon" className="w-5 h-5" />
                     <span>Déconnexion</span>
                 </button>
             </div>

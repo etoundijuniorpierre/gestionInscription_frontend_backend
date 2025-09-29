@@ -23,7 +23,7 @@ const StudentDashboardSidebar = () => {
     };
 
     return (
-        <div className="flex flex-col p-4 shadow-lg w-[15rem]" style={{ backgroundColor: '#101957' }}>
+        <div className="flex flex-col p-4 shadow-lg w-[25rem]" style={{ backgroundColor: '#101957' }}>
             <div className="flex items-center justify-center pt-0 pb-6 pl-2">
                 <img src={igniteAcademyLogo} alt="Ignite Academy Logo" style={{ height: '3.88rem' }} className="mr-3" />
                 <span className="text-2xl font-bold text-white">Ignite Academy</span>
