@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Console Test</title>
+</head>
+<body>
+    <h1>Console Test Page</h1>
+    <button onclick="testConsole()">Test Console</button>
+    <div id="output"></div>
+
+    <script>
+        function testConsole() {
+            console.log("=== CONSOLE TEST ===");
+            console.log("This is a test log message");
+            console.error("This is a test error message");
+            
+            // Also display on page
+            document.getElementById('output').innerHTML = 
+                "<p>Test messages sent to console. Check browser console (F12).</p>" +
+                "<p>Time: " + new Date().toISOString() + "</p>";
+            
+            alert("Test messages sent to console. Check browser console (F12).");
+        }
+        
+        // Log on page load
+        console.log("=== PAGE LOADED ===");
+        console.log("Test page loaded at", new Date().toISOString());
+    </script>
+</body>
+</html>

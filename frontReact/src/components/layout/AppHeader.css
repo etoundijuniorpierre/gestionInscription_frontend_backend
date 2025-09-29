@@ -1,0 +1,23 @@
+.underline-from-center {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.underline-from-center::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: #2A3B7C;
+    transition: width 0.3s ease-out, left 0.3s ease-out;
+    transform: translateX(-50%);
+}
+
+.underline-from-center:hover::before {
+    width: 100%;
+    left: 0;
+    transform: translateX(0);
+}

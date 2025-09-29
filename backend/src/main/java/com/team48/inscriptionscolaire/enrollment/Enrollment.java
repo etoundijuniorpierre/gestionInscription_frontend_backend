@@ -1,0 +1,49 @@
+package com.team48.inscriptionscolaire.enrollment;
+
+import com.team48.inscriptionscolaire.common.BaseEntity;
+import com.team48.inscriptionscolaire.document.Document;
+import com.team48.inscriptionscolaire.program.Program;
+import com.team48.inscriptionscolaire.student.Student;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Entity
+@Getter @Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Enrollment extends BaseEntity {
+
+    private String academicYear;
+    private LocalDateTime submissionDate;
+
+    @Enumerated(EnumType.STRING)
+    private StatusSubmission status;
+
+    private LocalDateTime validationDate;
+    private String rejectionReason; // New field to store the reason for rejection
+
+    @ManyToOne
+    private Student student;
+
+    @OneToMany(mappedBy = "enrollment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Document> documents;
+
+    @ManyToOne
+    private Program program;
+
+    @Embedded
+    private PersonalInfo personalInfo;
+
+    @Embedded
+    private AcademicInfo academicInfo;
+
+    @Embedded
+    private ContactDetails contactDetails;
+
+    private int stepCompleted;
+}
