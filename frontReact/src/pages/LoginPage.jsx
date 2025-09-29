@@ -35,15 +35,6 @@ const LoginPage = () => {
       email: email,
       password: password,
     };
-    
-    // Show login data in an alert
-    let summary = "Données de connexion envoyées:\n\n";
-    summary += `- Email: ${loginData.email}\n`;
-    summary += `- Mot de passe: ${loginData.password ? '******' : 'Non renseigné'}\n\n`;
-    summary += "⚠️ Note: Le mot de passe est masqué pour des raisons de sécurité.\n\n";
-    summary += "Appuyez sur OK pour continuer la connexion.";
-    
-    alert(summary);
 
     try {
       const response = await api.post('/auth/login', {
@@ -77,15 +68,6 @@ const LoginPage = () => {
 
       // 3. Mettre à jour le contexte avec le rôle
       setUser({ name: userName, email: userEmail, role: userRole });
-
-      // Show success information with the actual response data
-      let successSummary = `Connexion réussie!\n\n`;
-      successSummary += `Token: ${token.substring(0, 30)}...\n`;
-      successSummary += `Rôle: ${userRole}\n`;
-      if (userName) successSummary += `Nom: ${userName}\n`;
-      if (userEmail) successSummary += `Email: ${userEmail}\n`;
-      
-      alert(successSummary);
 
       // 4. 🧭 Remplacer l'ancienne redirection par une logique conditionnelle
       if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {

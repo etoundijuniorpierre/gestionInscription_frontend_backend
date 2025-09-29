@@ -17,10 +17,7 @@ const ProgramForm = () => {
         registrationEndDate: '',
         image: '',
         duration: '',
-        price: '',
-        learnModules: [
-            { moduleName: '', moduleDescription: '', moduleOrder: 1 }
-        ]
+        price: ''
     });
 
     useEffect(() => {
@@ -43,10 +40,7 @@ const ProgramForm = () => {
                 registrationEndDate: response.data.registrationEndDate || '',
                 image: response.data.image || '',
                 duration: response.data.duration || '',
-                price: response.data.price || '',
-                learnModules: response.data.learnModules || [
-                    { moduleName: '', moduleDescription: '', moduleOrder: 1 }
-                ]
+                price: response.data.price || ''
             });
         } catch (err) {
             console.error('Error fetching program data:', err);
@@ -58,34 +52,6 @@ const ProgramForm = () => {
         setFormData(prev => ({
             ...prev,
             [name]: value
-        }));
-    };
-
-    const handleModuleChange = (index, field, value) => {
-        const updatedModules = [...formData.learnModules];
-        updatedModules[index][field] = value;
-        setFormData(prev => ({
-            ...prev,
-            learnModules: updatedModules
-        }));
-    };
-
-    const addModule = () => {
-        setFormData(prev => ({
-            ...prev,
-            learnModules: [
-                ...prev.learnModules,
-                { moduleName: '', moduleDescription: '', moduleOrder: prev.learnModules.length + 1 }
-            ]
-        }));
-    };
-
-    const removeModule = (index) => {
-        const updatedModules = [...formData.learnModules];
-        updatedModules.splice(index, 1);
-        setFormData(prev => ({
-            ...prev,
-            learnModules: updatedModules
         }));
     };
 
@@ -255,69 +221,6 @@ const ProgramForm = () => {
                             className="w-full h-12 px-4 rounded-md border border-gray-300 text-lg"
                         />
                     </div>
-                </div>
-
-                {/* Modules Section */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-xl font-semibold text-[#101957]">Modules d'Apprentissage</h3>
-                        <button
-                            type="button"
-                            onClick={addModule}
-                            className="py-2 px-4 bg-[#101957] text-white rounded-md hover:bg-opacity-90 transition-colors"
-                        >
-                            Ajouter un Module
-                        </button>
-                    </div>
-                    
-                    {formData.learnModules.map((module, index) => (
-                        <div key={index} className="mb-6 p-4 border border-gray-200 rounded-md">
-                            <div className="flex justify-between items-center mb-4">
-                                <h4 className="text-lg font-medium text-[#333333]">Module {index + 1}</h4>
-                                {formData.learnModules.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeModule(index)}
-                                        className="py-1 px-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                                    >
-                                        Supprimer
-                                    </button>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-[#333333] text-lg font-normal mb-2">Nom du Module</label>
-                                    <input
-                                        type="text"
-                                        value={module.moduleName}
-                                        onChange={(e) => handleModuleChange(index, 'moduleName', e.target.value)}
-                                        className="w-full h-12 px-4 rounded-md border border-gray-300 text-lg"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[#333333] text-lg font-normal mb-2">Ordre</label>
-                                    <input
-                                        type="number"
-                                        value={module.moduleOrder}
-                                        onChange={(e) => handleModuleChange(index, 'moduleOrder', parseInt(e.target.value))}
-                                        className="w-full h-12 px-4 rounded-md border border-gray-300 text-lg"
-                                        required
-                                    />
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-[#333333] text-lg font-normal mb-2">Description</label>
-                                    <textarea
-                                        value={module.moduleDescription}
-                                        onChange={(e) => handleModuleChange(index, 'moduleDescription', e.target.value)}
-                                        rows="3"
-                                        className="w-full px-4 py-2 rounded-md border border-gray-300 text-lg"
-                                        required
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
                 </div>
 
                 {/* Form Actions */}
