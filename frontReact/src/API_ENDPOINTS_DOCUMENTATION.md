@@ -334,7 +334,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
     "specialization": "string",
     "availableForInternship": "boolean",
     "startDate": "string (date format)",
-    "endDate": "string (date format)"
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
   },
   "contactDetails": {
     "email": "string",
@@ -391,7 +392,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
     "specialization": "string",
     "availableForInternship": "boolean",
     "startDate": "string (date format)",
-    "endDate": "string (date format)"
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
   },
   "contactDetails": {
     "email": "string",
@@ -448,7 +450,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
       "specialization": "string",
       "availableForInternship": "boolean",
       "startDate": "string (date format)",
-      "endDate": "string (date format)"
+      "endDate": "string (date format)",
+      "diplomaObtained": "boolean"
     },
     "contactDetails": {
       "email": "string",
@@ -507,7 +510,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
       "specialization": "string",
       "availableForInternship": "boolean",
       "startDate": "string (date format)",
-      "endDate": "string (date format)"
+      "endDate": "string (date format)",
+      "diplomaObtained": "boolean"
     },
     "contactDetails": {
       "email": "string",

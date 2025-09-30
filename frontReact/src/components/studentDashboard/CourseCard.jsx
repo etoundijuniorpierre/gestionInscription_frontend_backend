@@ -1,7 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const CourseCard = ({ course, onEnrollClick }) => {
+// Define program images mapping for consistent imagery across the application
+const programImages = {
+  // Formation image mappings based on program names
+  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain .webp',
+  'Cloud Computing et Architecture des Systèmes Distribués': '/assets/formationsImg/cloud.webp',
+  'Communication Digitale et Stratégies de Contenu': '/assets/formationsImg/comDigital.webp',
+  'Cybersécurité et Protection des Systèmes d\'Information': '/assets/formationsImg/cyberSecurity.webp',
+  'Développement Web et Applications Interactives': '/assets/formationsImg/dev.webp',
+  'Design Graphique et Création Visuelle': '/assets/formationsImg/design.jpg',
+  'Génie Logiciel et Développement d\'Applications': '/assets/formationsImg/geniLogidevApp.webp',
+  'Gestion de Projet et Leadership d\'Équipe': '/assets/formationsImg/projet.png',
+  'Intelligence Artificielle et Machine Learning': '/assets/formationsImg/ia.webp',
+  'Marketing Digital et Stratégies de Communication en Ligne': '/assets/formationsImg/marketing.jpg',
+  'Science des Données et Analyse Prédictive': '/assets/formationsImg/analyse.webp',
+  'Systèmes Embarqués et Internet des Objets': '/assets/formationsImg/embarqué.png',
+};
+
+const CourseCard = ({ course, onEnrollClick, onViewDetails }) => {
     const navigate = useNavigate();
     const { id, title, description, imageUrl, programCode } = course;
 
@@ -16,39 +33,45 @@ const CourseCard = ({ course, onEnrollClick }) => {
     };
 
     const handleViewDetails = () => {
-        // Navigate to the course detail page using the program code
-        if (programCode) {
-            navigate(`/courses/${programCode}`);
+        // Use the provided handler if available, otherwise navigate directly
+        if (onViewDetails) {
+            onViewDetails(course);
         } else {
-            // Fallback to using the ID if programCode is not available
-            navigate(`/courses/${id}`);
+            // Navigate to the course detail page using the program code
+            if (programCode) {
+                navigate(`/courses/${programCode}`);
+            } else {
+                // Fallback to using the ID if programCode is not available
+                navigate(`/courses/${id}`);
+            }
         }
     };
 
+    // Use program-specific image if available, otherwise fallback to imageUrl or default
+    const backgroundImage = programImages[title] || imageUrl || '/assets/images/default-course.jpg';
+
     return (
         <div
-            className="relative rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 flex flex-col bg-white border border-gray-200"
+            className="relative rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl flex flex-col bg-white border border-gray-200 group"
             style={{
                 height: '22rem',
-                borderRadius: '0.75rem',
             }}
         >
-            {/* Background image */}
-            <div
-                className="h-32 w-full bg-cover bg-center"
-                style={{ 
-                    backgroundImage: `url(${imageUrl || '/assets/images/default-course.jpg'})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-                role="img"
-                aria-label={`Image de fond pour le cours ${title}`}
-            />
+            {/* Background image with overlay */}
+            <div className="relative h-32 w-full">
+                <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ 
+                        backgroundImage: `url(${backgroundImage})`,
+                    }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+            </div>
             
             {/* Content area */}
             <div className="flex-1 p-4 flex flex-col">
                 <h3 
-                    className="font-bold text-lg text-gray-800 mb-2"
+                    className="font-bold text-lg text-gray-800 mb-2 group-hover:text-blue-600 transition-colors"
                     style={{
                         fontFamily: 'Roboto, sans-serif',
                         fontWeight: '700',
@@ -82,7 +105,7 @@ const CourseCard = ({ course, onEnrollClick }) => {
                 <div className="flex space-x-2 mt-auto">
                     <button
                         onClick={handleViewDetails}
-                        className="flex-1 py-2 px-3 rounded-md border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors duration-200"
+                        className="flex-1 py-2 px-3 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors duration-200"
                         style={{
                             fontFamily: 'Roboto, sans-serif',
                             fontWeight: '500',
@@ -93,7 +116,7 @@ const CourseCard = ({ course, onEnrollClick }) => {
                     
                     <button
                         onClick={handleEnrollment}
-                        className="flex-1 py-2 px-3 rounded-md bg-[#101957] text-white text-sm font-medium hover:bg-[#1a2685] transition-colors duration-200"
+                        className="flex-1 py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-sm font-medium hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-sm"
                         style={{
                             fontFamily: 'Roboto, sans-serif',
                             fontWeight: '500',

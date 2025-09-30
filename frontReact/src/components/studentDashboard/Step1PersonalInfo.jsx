@@ -107,17 +107,6 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
                             />
                             <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Masculin</span>
                         </label>
-                        <label className="inline-flex items-center">
-                            <input
-                                type="radio"
-                                className="form-radio text-[#6B4F8B]"
-                                name="gender"
-                                value="NON_BINARY"
-                                checked={gender === 'NON_BINARY'}
-                                onChange={(e) => setGender(e.target.value)}
-                            />
-                            <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Non-binaire</span>
-                        </label>
                     </div>
                 </div>
 

@@ -1,46 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProgramByCode } from '../services/programService';
-import { useAuth } from '../hooks/useAuth';
+import { getProgramByCode } from '../../services/programService';
+import { useAuth } from '../../hooks/useAuth';
 
 // Define program images mapping for consistent imagery across the application
 const programImages = {
-  // Existing program code mappings
-  'HIS_101': '/assets/images/histoire.png',
-  'MAT_201': '/assets/images/mathematique.png',
-  'CHI_102': '/assets/images/chimie.png',
-  'INF_302': '/assets/images/informatique.png',
-  'PHYS_201': '/assets/images/physique.png',
-  'ENG_202': '/assets/images/anglais.png',
-  
-  // New formation image mappings based on program names/keywords
-  'Computer Science': '/assets/formationsImg/dev.webp',
-  'Mathematics': '/assets/images/mathematique.png',
-  'Informatique': '/assets/formationsImg/dev.webp',
-  'Mathématiques': '/assets/images/mathematique.png',
-  'Histoire': '/assets/images/histoire.png',
-  'Chimie': '/assets/images/chimie.png',
-  'Physique': '/assets/images/physique.png',
-  'Anglais': '/assets/images/anglais.png',
-  'Développement': '/assets/formationsImg/dev.webp',
-  'Programmation': '/assets/formationsImg/dev.webp',
-  'Cybersécurité': '/assets/formationsImg/cyberSecurity.webp',
-  'Sécurité': '/assets/formationsImg/cyberSecurity.webp',
-  'Marketing': '/assets/formationsImg/marketing.jpg',
-  'Communication': '/assets/formationsImg/comDigital.webp',
-  'Digital': '/assets/formationsImg/comDigital.webp',
-  'Cloud': '/assets/formationsImg/cloud.webp',
-  'Intelligence Artificielle': '/assets/formationsImg/ia.webp',
-  'IA': '/assets/formationsImg/ia.webp',
-  'Blockchain': '/assets/formationsImg/blockChain .webp',
-  'Design': '/assets/formationsImg/design.jpg',
-  'Projet': '/assets/formationsImg/projet.png',
-  'Embarqué': '/assets/formationsImg/embarqué.png',
-  'Logistique': '/assets/formationsImg/geniLogidevApp.webp',
-  'Analyse': '/assets/formationsImg/analyse.webp',
+  // Formation image mappings based on program names
+  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain .webp',
+  'Cloud Computing et Architecture des Systèmes Distribués': '/assets/formationsImg/cloud.webp',
+  'Communication Digitale et Stratégies de Contenu': '/assets/formationsImg/comDigital.webp',
+  'Cybersécurité et Protection des Systèmes d\'Information': '/assets/formationsImg/cyberSecurity.webp',
+  'Développement Web et Applications Interactives': '/assets/formationsImg/dev.webp',
+  'Design Graphique et Création Visuelle': '/assets/formationsImg/design.jpg',
+  'Génie Logiciel et Développement d\'Applications': '/assets/formationsImg/geniLogidevApp.webp',
+  'Gestion de Projet et Leadership d\'Équipe': '/assets/formationsImg/projet.png',
+  'Intelligence Artificielle et Machine Learning': '/assets/formationsImg/ia.webp',
+  'Marketing Digital et Stratégies de Communication en Ligne': '/assets/formationsImg/marketing.jpg',
+  'Science des Données et Analyse Prédictive': '/assets/formationsImg/analyse.webp',
+  'Systèmes Embarqués et Internet des Objets': '/assets/formationsImg/embarqué.png',
 };
 
-const CourseDetail = () => {
+const StudentCourseDetail = () => {
   const { courseName } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -49,12 +29,6 @@ const CourseDetail = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // If user is not authenticated, redirect to login
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
     const fetchCourse = async () => {
       try {
         const response = await getProgramByCode(courseName);
@@ -67,24 +41,28 @@ const CourseDetail = () => {
     };
 
     fetchCourse();
-  }, [courseName, isAuthenticated, navigate]);
+  }, [courseName]);
 
   const handleEnroll = () => {
-    // Redirect to student dashboard for enrollment
-    navigate('/dashboard');
+    if (isAuthenticated && course) {
+      // Navigate to the student dashboard with the course data for enrollment
+      navigate('/dashboard', { state: { courseForEnrollment: course } });
+    } else {
+      navigate('/login');
+    }
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate('/dashboard');
   };
 
   if (loading) {
-    return <div className="text-center py-20">Chargement...</div>;
+    return <div className="p-8 text-center">Chargement...</div>;
   }
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="p-8">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Erreur : </strong>
           <span className="block sm:inline">Impossible de récupérer les données du cours.</span>
@@ -94,7 +72,7 @@ const CourseDetail = () => {
             onClick={handleBack}
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
-            Retour à l'accueil
+            Retour au tableau de bord
           </button>
         </div>
       </div>
@@ -103,7 +81,7 @@ const CourseDetail = () => {
 
   if (!course) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="p-8">
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">404 : </strong>
           <span className="block sm:inline">Cours non trouvé</span>
@@ -113,7 +91,7 @@ const CourseDetail = () => {
             onClick={handleBack}
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
           >
-            Retour à l'accueil
+            Retour au tableau de bord
           </button>
         </div>
       </div>
@@ -136,26 +114,7 @@ const CourseDetail = () => {
   const careerProspectsList = formatCareerProspects(course.careerProspects);
 
   // Determine the background image for the course
-  let backgroundImage = programImages[course.programCode];
-  
-  if (!backgroundImage) {
-    // Check if any keyword in the title matches our mapping
-    const titleWords = course.programName.toLowerCase().split(' ');
-    for (const word of titleWords) {
-      const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1);
-      if (programImages[capitalizedWord]) {
-        backgroundImage = programImages[capitalizedWord];
-        break;
-      }
-      if (programImages[word]) {
-        backgroundImage = programImages[word];
-        break;
-      }
-    }
-  }
-  
-  // Fallback to default image
-  backgroundImage = backgroundImage || course.image || '/assets/images/default-course.jpg';
+  const backgroundImage = programImages[course.programName] || course.image || '/assets/images/default-course.jpg';
 
   return (
     <div className="px-4 py-8 w-full">
@@ -244,42 +203,54 @@ const CourseDetail = () => {
                   </div>
                   
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Prix:</span>
+                    <span className="font-medium text-gray-700">Frais de scolarité:</span>
                     <span className="text-gray-900 font-semibold">{course.price} FCFA</span>
                   </div>
                   
+                  {/* Registration dates */}
+                  {(course.registrationStartDate || course.registrationEndDate) && (
+                    <div className="pb-2 border-b border-gray-200">
+                      <span className="font-medium text-gray-700 block mb-2">Dates d'inscription:</span>
+                      <div className="text-gray-900">
+                        {course.registrationStartDate && (
+                          <div className="flex justify-between">
+                            <span>Début:</span>
+                            <span>{new Date(course.registrationStartDate).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        )}
+                        {course.registrationEndDate && (
+                          <div className="flex justify-between">
+                            <span>Fin:</span>
+                            <span>{new Date(course.registrationEndDate).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Capacité maximale:</span>
-                    <span className="text-gray-900">{course.maxCapacity} étudiants</span>
+                    <span className="font-medium text-gray-700">Statut:</span>
+                    <span className={`px-2 py-1 rounded text-sm font-medium ${
+                      course.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {course.status}
+                    </span>
                   </div>
                 </div>
                 
                 <div className="mt-8">
-                  <h3 className="text-lg font-bold text-gray-800 mb-4">Dates importantes</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                      <span className="font-medium text-gray-700">Début des inscriptions:</span>
-                      <span className="text-gray-900">{new Date(course.registrationStartDate).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                      <span className="font-medium text-gray-700">Fin des inscriptions:</span>
-                      <span className="text-gray-900">{new Date(course.registrationEndDate).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-8 flex flex-col space-y-3">
-                  <button
-                    onClick={handleBack}
-                    className="py-3 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    Retour à l'accueil
-                  </button>
                   <button
                     onClick={handleEnroll}
-                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-medium hover:from-blue-700 hover:to-indigo-800 transition-all duration-200 shadow-md hover:shadow-lg"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300"
                   >
-                    S'inscrire maintenant
+                    S'inscrire à cette formation
+                  </button>
+                  
+                  <button
+                    onClick={handleBack}
+                    className="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-300"
+                  >
+                    Retour au tableau de bord
                   </button>
                 </div>
               </div>
@@ -291,4 +262,4 @@ const CourseDetail = () => {
   );
 };
 
-export default CourseDetail;
+export default StudentCourseDetail;

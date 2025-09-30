@@ -165,10 +165,6 @@ const UserForm = () => {
                                     <input type="radio" name="gender" value="F" checked={formData.gender === 'F'} onChange={handleChange} className="form-radio" />
                                     <span className="ml-2 text-gray-700">F</span>
                                 </label>
-                                <label className="inline-flex items-center">
-                                    <input type="radio" name="gender" value="Non-binaire" checked={formData.gender === 'Non-binaire'} onChange={handleChange} className="form-radio" />
-                                    <span className="ml-2 text-gray-700">Non-binaire</span>
-                                </label>
                             </div>
                         </div>
                         <div>

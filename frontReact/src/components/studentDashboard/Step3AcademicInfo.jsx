@@ -5,8 +5,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
     // Map initialData from DTO names to state names
     const [lastInstitution, setLastInstitution] = useState(initialData.lastInstitution || '');
     const [specialization, setSpecialization] = useState(initialData.specialization || 'Oncogénétique');
-    // Using a boolean for the internship availability
-    const [availableForInternship, setAvailableForInternship] = useState(initialData.availableForInternship || null);
+    const [otherSpecialization, setOtherSpecialization] = useState(initialData.otherSpecialization || '');
     const [startDate, setStartDate] = useState(initialData.startDate || '');
     const [endDate, setEndDate] = useState(initialData.endDate || '');
 
@@ -14,8 +13,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
         if (initialData) {
             setLastInstitution(initialData.lastInstitution || '');
             setSpecialization(initialData.specialization || 'Oncogénétique');
-            // Ensure the initial data is correctly converted back to a boolean if it's a string
-            setAvailableForInternship(typeof initialData.availableForInternship === 'boolean' ? initialData.availableForInternship : null);
+            setOtherSpecialization(initialData.otherSpecialization || '');
             setStartDate(initialData.startDate || '');
             setEndDate(initialData.endDate || '');
         }
@@ -38,7 +36,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
         return {
             lastInstitution,
             specialization,
-            availableForInternship, // This will be a boolean
+            otherSpecialization: specialization === 'Autre' ? otherSpecialization : '',
             startDate,
             endDate,
         };
@@ -90,33 +88,20 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
                     </select>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <label className="text-[#333333] text-[1.5rem] font-normal">Seriez-vous disponible pour un programme de stage dans votre région ?</label>
-                    <div className="flex space-x-[1.28rem] items-center">
-                        <label className="inline-flex items-center">
-                            <input
-                                type="radio"
-                                className="form-radio text-[#6B4F8B]"
-                                name="availableForInternship"
-                                value="true" // HTML value is a string
-                                checked={availableForInternship === true} // Compare against the boolean state
-                                onChange={() => setAvailableForInternship(true)} // Set the state as a boolean
-                            />
-                            <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Oui</span>
-                        </label>
-                        <label className="inline-flex items-center">
-                            <input
-                                type="radio"
-                                className="form-radio text-[#6B4F8B]"
-                                name="availableForInternship"
-                                value="false" // HTML value is a string
-                                checked={availableForInternship === false} // Compare against the boolean state
-                                onChange={() => setAvailableForInternship(false)} // Set the state as a boolean
-                            />
-                            <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Non</span>
-                        </label>
+                {specialization === 'Autre' && (
+                    <div>
+                        <label htmlFor="otherSpecialization" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Veuillez préciser votre spécialisation</label>
+                        <input
+                            type="text"
+                            id="otherSpecialization"
+                            className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333]"
+                            style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
+                            placeholder="Entrez votre spécialisation"
+                            value={otherSpecialization}
+                            onChange={(e) => setOtherSpecialization(e.target.value)}
+                        />
                     </div>
-                </div>
+                )}
 
                 <div>
                     <label htmlFor="startDate" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Début de formation</label>

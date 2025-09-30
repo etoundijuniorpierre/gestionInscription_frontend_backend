@@ -5,6 +5,7 @@ import CourseCard from './CourseCard.jsx';
 import EnrollmentForm from './EnrollmentForm.jsx';
 import StudentDashboardStatus from './StudentDashboardStatus.jsx';
 import { getAllPrograms } from '../../services/programService';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SearchIcon = '/assets/svg/search-icon.svg';
 
@@ -18,6 +19,8 @@ const StudentDashboardContent = () => {
     const [coursesLoading, setCoursesLoading] = useState(true);
     const [error, setError] = useState(null);
     const { isAuthenticated, userRole } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const fetchLatestEnrollment = async () => {
@@ -49,7 +52,8 @@ const StudentDashboardContent = () => {
                     title: program.programName,
                     description: program.description,
                     imageUrl: program.image || '/assets/images/default-course.jpg',
-                    programCode: program.programCode // Add programCode for navigation
+                    programCode: program.programCode, // Add programCode for navigation
+                    registrationFee: program.registrationFee // Add registrationFee for enrollment form
                 }));
                 setCourses(transformedCourses);
             } catch (err) {
@@ -63,6 +67,16 @@ const StudentDashboardContent = () => {
         fetchCourses();
     }, []);
 
+    // Check if we should start the enrollment flow based on location state
+    useEffect(() => {
+        if (location.state && location.state.courseForEnrollment) {
+            setSelectedCourse(location.state.courseForEnrollment);
+            setDisplayMode('enrollment');
+            // Clear the state so it doesn't trigger again on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
     const filteredCourses = courses.filter(course =>
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -71,6 +85,15 @@ const StudentDashboardContent = () => {
     const handleEnrollClick = (course) => {
         setSelectedCourse(course);
         setDisplayMode('enrollment');
+    };
+
+    const handleViewCourseDetail = (course) => {
+        // Navigate to the course detail page within the student dashboard
+        if (course.programCode) {
+            navigate(`/dashboard/courses/${course.programCode}`);
+        } else {
+            navigate(`/dashboard/courses/${course.id}`);
+        }
     };
 
     const handleGoBackToCourses = () => {
@@ -116,7 +139,8 @@ const StudentDashboardContent = () => {
                             <CourseCard 
                                 key={course.id}
                                 course={course}
-                                onEnroll={() => handleEnrollClick(course)}
+                                onEnrollClick={handleEnrollClick}
+                                onViewDetails={() => handleViewCourseDetail(course)}
                             />
                         ))}
                     </div>
@@ -129,8 +153,8 @@ const StudentDashboardContent = () => {
                 </>
             ) : (
                 <EnrollmentForm 
-                    selectedCourse={selectedCourse} 
-                    onGoBack={handleGoBackToCourses} 
+                    course={selectedCourse} 
+                    onFormSubmitted={handleGoBackToCourses} 
                 />
             )}
         </div>

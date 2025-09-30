@@ -65,15 +65,31 @@ const DocumentSummaryField = ({ label, fileState }) => {
     );
 };
 
-const Step5Summary = ({ formData, onPrevious, onFinish }) => {
+const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [availableForInternship, setAvailableForInternship] = useState(null);
 
     const handleFinishClick = () => {
         if (isConfirmed) {
-            onFinish();
+            onFinish({ ...formData, availableForInternship });
         } else {
             alert("Veuillez cocher la case pour confirmer que les informations sont exactes.");
         }
+    };
+
+    // Determine the specialization value to display
+    const getSpecializationDisplay = () => {
+        if (formData.specialization === 'Autre' && formData.otherSpecialization) {
+            return formData.otherSpecialization;
+        }
+        return formData.specialization || 'Non spécifié';
+    };
+
+    // Format the internship availability value for display
+    const getInternshipAvailabilityDisplay = () => {
+        if (availableForInternship === true) return 'Oui';
+        if (availableForInternship === false) return 'Non';
+        return 'Non spécifié';
     };
 
     return (
@@ -131,8 +147,7 @@ const Step5Summary = ({ formData, onPrevious, onFinish }) => {
                 </h3>
                 <div className="grid grid-cols-2 gap-x-[1.28rem] gap-y-[1.28rem]">
                     <SummaryField label="Dernier établissement fréquenté" value={formData.lastInstitution} />
-                    <SummaryField label="Spécialisation" value={formData.specialization} />
-                    <SummaryField label="Disponible pour un stage ?" value={formData.availableForInternship} />
+                    <SummaryField label="Spécialisation" value={getSpecializationDisplay()} />
                     <SummaryField label="Début de formation" value={formData.startDate} />
                     <SummaryField label="Fin de formation" value={formData.endDate} />
                 </div>
@@ -166,21 +181,59 @@ const Step5Summary = ({ formData, onPrevious, onFinish }) => {
                             Montant des frais d'inscription :
                         </span>
                         <span className="text-[#101957] font-semibold" style={{ fontFamily: 'Roboto, sans-serif', fontSize: '1.5rem' }}>
-                            50000fcfa
+                            {course?.registrationFee || 'N/A'} FCFA
                         </span>
                     </div>
                 </div>
-                <label className="flex items-center space-x-2 mb-8">
-                    <input
-                        type="checkbox"
-                        checked={isConfirmed}
-                        onChange={(e) => setIsConfirmed(e.target.checked)}
-                        className="form-checkbox h-6 w-6 text-[#6B4F8B] rounded border-[#79747E]"
-                    />
-                    <span className="text-[#333333] text-[1.3rem] font-normal" style={{ fontFamily: 'Roboto, sans-serif' }}>
-                        J’atteste l’exactitude des informations fournies
-                    </span>
-                </label>
+                
+                {/* Align both questions on the same line */}
+                <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
+                    <div className="flex-1">
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={isConfirmed}
+                                onChange={(e) => setIsConfirmed(e.target.checked)}
+                                className="form-checkbox h-6 w-6 text-[#6B4F8B] rounded border-[#79747E]"
+                            />
+                            <span className="text-[#333333] text-[1.3rem] font-normal" style={{ fontFamily: 'Roboto, sans-serif' }}>
+                                J’atteste l’exactitude des informations fournies
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div className="flex-1">
+                        <div className="flex items-center space-x-4">
+                            <span className="text-[#333333] text-[1.3rem] font-normal whitespace-nowrap" style={{ fontFamily: 'Roboto, sans-serif' }}>
+                                Seriez-vous disponible pour un stage ?
+                            </span>
+                            <div className="flex space-x-4">
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        className="form-radio text-[#6B4F8B]"
+                                        name="availableForInternship"
+                                        value="true"
+                                        checked={availableForInternship === true}
+                                        onChange={() => setAvailableForInternship(true)}
+                                    />
+                                    <span className="ml-2 text-[#333333] text-[1.3rem] font-normal" style={{ fontFamily: 'Roboto, sans-serif' }}>Oui</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        className="form-radio text-[#6B4F8B]"
+                                        name="availableForInternship"
+                                        value="false"
+                                        checked={availableForInternship === false}
+                                        onChange={() => setAvailableForInternship(false)}
+                                    />
+                                    <span className="ml-2 text-[#333333] text-[1.3rem] font-normal" style={{ fontFamily: 'Roboto, sans-serif' }}>Non</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="flex justify-between gap-4 mt-8">

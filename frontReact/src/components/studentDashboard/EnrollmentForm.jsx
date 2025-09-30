@@ -78,8 +78,9 @@ const EnrollmentForm = ({ course, onFormSubmitted }) => {
                 return (
                     <Step5Summary
                         formData={combinedFormData}
+                        course={course}
                         onPrevious={handlePrevious}
-                        onFinish={() => onFormSubmitted(combinedFormData)}
+                        onFinish={(dataWithInternship) => onFormSubmitted(dataWithInternship)}
                     />
                 );
             default:

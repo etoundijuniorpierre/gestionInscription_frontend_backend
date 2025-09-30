@@ -34,6 +34,7 @@ import AdminDashboardLayout from './components/adminDashboard/AdminDashboardLayo
 import AdminFAQ from './components/adminDashboard/AdminFAQ';
 import AdminHelp from './components/adminDashboard/AdminHelp';
 import ProtectedRoute from './components/ProtectedRoute';
+import StudentCourseDetail from './components/studentDashboard/StudentCourseDetail';
 import './App.css';
 
 // This layout component will render the header and a larger footer
@@ -90,6 +91,7 @@ function App() {
                 {/* Student Dashboard Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['STUDENT', 'USER']}><StudentDashboardLayout /></ProtectedRoute>}>
                     <Route index element={<StudentDashboardContent />} />
+                    <Route path="courses/:courseName" element={<StudentCourseDetail />} />
                     <Route path="step1" element={<Step1PersonalInfo />} />
                     <Route path="step2" element={<Step2Documents />} />
                     <Route path="step3" element={<Step3AcademicInfo />} />
