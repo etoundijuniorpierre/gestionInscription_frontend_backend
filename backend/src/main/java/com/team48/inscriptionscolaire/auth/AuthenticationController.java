@@ -1,5 +1,7 @@
 package com.team48.inscriptionscolaire.auth;
 
+import com.team48.inscriptionscolaire.user.PasswordUpdateRequest;
+import com.team48.inscriptionscolaire.user.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication")
 public class AuthenticationController {
     private final AuthenticationService service;
+    private final UserService userService;
 
     @PostMapping( "/signup")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -51,6 +55,13 @@ public class AuthenticationController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         service.logout(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/update-password")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<Void> updatePassword(@RequestBody @Valid PasswordUpdateRequest request) {
+        userService.updatePassword(request);
         return ResponseEntity.ok().build();
     }
 }

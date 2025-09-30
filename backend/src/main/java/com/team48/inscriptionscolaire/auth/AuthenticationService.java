@@ -1,11 +1,10 @@
 package com.team48.inscriptionscolaire.auth;
 
-import com.team48.inscriptionscolaire.admin.Admin;
 import com.team48.inscriptionscolaire.email.EmailService;
 import com.team48.inscriptionscolaire.email.EmailTemplateName;
+import com.team48.inscriptionscolaire.role.Role;
 import com.team48.inscriptionscolaire.role.RoleRepository;
 import com.team48.inscriptionscolaire.security.JwtService;
-import com.team48.inscriptionscolaire.student.Gender;
 import com.team48.inscriptionscolaire.student.MaritalStatus;
 import com.team48.inscriptionscolaire.student.Student;
 import com.team48.inscriptionscolaire.user.Token;
@@ -26,66 +25,46 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
+    private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
+    private final JwtService jwtService;
     private final TokenRepository tokenRepository;
     private final EmailService emailService;
-
     private final AuthenticationManager authenticationManager;
+
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
-    private final JwtService jwtService;
 
     public void register(RegistrationRequest request) throws MessagingException {
-        if (!List.of("STUDENT", "ADMIN").contains(request.getRoleName())) {
-            throw new IllegalArgumentException("Invalid role specified");
-        }
-
-        var userRole = roleRepository.findByName(request.getRoleName())
-                .orElseThrow(() -> new IllegalStateException("ROLE " + request.getRoleName() + " was not initialized"));
+        // Get the STUDENT role from the database
+        Role userRole = roleRepository.findByName("STUDENT")
+                .orElseThrow(() -> new RuntimeException("Role STUDENT not found"));
 
         User user;
-
-        if ("STUDENT".equals(request.getRoleName())) {
-            user = Student.builder()
-                    .firstname(request.getFirstname())
-                    .lastname(request.getLastname())
-                    .email(request.getEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .accountLocked(false)
-                    .enabled(false)
-                    .role(userRole)
-                    .dateOfBirth(LocalDate.now()) // Valeur par défaut, à mettre à jour plus tard
-                    .address("Tradex Emana") // Valeur par défaut
-                    .phoneNumber("+237 69910023") // Valeur par défaut
-                    .gender(Gender.FEMININ) // Valeur par défaut
-                    .nationality("Cameroonian") // Valeur par défaut
-                    .maritalStatus(MaritalStatus.SINGLE) // Valeur par défaut
-                    .desiredAcademicYear(LocalDate.now().getYear()) // Valeur par défaut
-                    .intendedFieldOfStudy("Computer Science") // Valeur par défaut
-                    .build();
-        } else { // ADMIN
-            user = Admin.builder()
-                    .firstname(request.getFirstname())
-                    .lastname(request.getLastname())
-                    .email(request.getEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .accountLocked(false)
-                    .enabled(false)
-                    .role(userRole)
-                    .internalCode(generateInternalCode())
-                    .departement("administration")
-                    .build();
-        }
+        user = Student.builder()
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .accountLocked(false)
+                .enabled(false)
+                .role(userRole)
+                .dateOfBirth(LocalDate.now()) // Valeur par défaut, à mettre à jour plus tard
+                .address("Tradex Emana") // Valeur par défaut
+                .phoneNumber("+237 69910023") // Valeur par défaut
+                .gender("FEMININ") // Valeur par défaut
+                .nationality("Cameroonian") // Valeur par défaut
+                .maritalStatus(MaritalStatus.SINGLE) // Valeur par défaut
+                .desiredAcademicYear(LocalDate.now().getYear()) // Valeur par défaut
+                .intendedFieldOfStudy("Computer Science") // Valeur par défaut
+                .build();
 
         userRepository.save(user);
         sendValidationEmail(user);

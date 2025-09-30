@@ -11,6 +11,8 @@ public class ProgramRequestDTO {
     private String programName;
     private String programCode;
     private String description;
+    private String certificateName;
+    private String careerProspects;
     private BigDecimal registrationFee;
     private int maxCapacity;
     private LocalDate registrationStartDate;

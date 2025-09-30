@@ -50,4 +50,17 @@ class ProgramTest {
         
         assertFalse(program.isEnrollmentOpen());
     }
+    
+    @Test
+    void testCertificateNameAndCareerProspects() {
+        Program program = new Program();
+        String certificateName = "Certificat de Spécialisation en Blockchain";
+        String careerProspects = "Développeur Blockchain, Architecte de Solutions Décentralisées";
+        
+        program.setCertificateName(certificateName);
+        program.setCareerProspects(careerProspects);
+        
+        assertEquals(certificateName, program.getCertificateName());
+        assertEquals(careerProspects, program.getCareerProspects());
+    }
 }

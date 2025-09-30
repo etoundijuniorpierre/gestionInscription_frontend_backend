@@ -66,6 +66,19 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 **Response:**
 - 200 OK
 
+### 6. Update Password (Student)
+**Endpoint:** PATCH /auth/update-password
+**Description:** Update the authenticated user's password with verification of current password
+**Request Body:**
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
+
 ## Program Endpoints
 
 ### 1. Create Program (Admin only)
@@ -77,6 +90,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -100,6 +115,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -131,6 +148,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
     "programName": "string",
     "programCode": "string",
     "description": "string",
+    "certificateName": "string",
+    "careerProspects": "string",
     "registrationFee": "number (BigDecimal)",
     "maxCapacity": "integer",
     "registrationStartDate": "string (date format)",
@@ -163,6 +182,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -194,6 +215,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -224,6 +247,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -247,6 +272,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   "programName": "string",
   "programCode": "string",
   "description": "string",
+  "certificateName": "string",
+  "careerProspects": "string",
   "registrationFee": "number (BigDecimal)",
   "maxCapacity": "integer",
   "registrationStartDate": "string (date format)",
@@ -320,7 +347,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
     "specialization": "string",
     "availableForInternship": "boolean",
     "startDate": "string (date format)",
-    "endDate": "string (date format)"
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
   },
   "contactDetails": {
     "email": "string",
@@ -377,7 +405,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
     "specialization": "string",
     "availableForInternship": "boolean",
     "startDate": "string (date format)",
-    "endDate": "string (date format)"
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
   },
   "contactDetails": {
     "email": "string",
@@ -434,7 +463,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
       "specialization": "string",
       "availableForInternship": "boolean",
       "startDate": "string (date format)",
-      "endDate": "string (date format)"
+      "endDate": "string (date format)",
+      "diplomaObtained": "boolean"
     },
     "contactDetails": {
       "email": "string",
@@ -493,7 +523,8 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
       "specialization": "string",
       "availableForInternship": "boolean",
       "startDate": "string (date format)",
-      "endDate": "string (date format)"
+      "endDate": "string (date format)",
+      "diplomaObtained": "boolean"
     },
     "contactDetails": {
       "email": "string",
@@ -694,6 +725,194 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 [
   "string"
 ]
+```
+
+### 9. Get My Latest Enrollment
+**Endpoint:** GET /enrollments/my-latest
+**Description:** Retrieve the most recent enrollment for the current user
+**Request Parameters:** None
+**Response:**
+```json
+{
+  "id": "integer",
+  "academicYear": "string",
+  "submissionDate": "string (date-time format)",
+  "status": "string",
+  "validationDate": "string (date-time format)",
+  "rejectionReason": "string",
+  "student": {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string"
+  },
+  "program": {
+    "id": "integer",
+    "programName": "string",
+    "programCode": "string"
+  },
+  "personalInfo": {
+    "lastName": "string",
+    "firstName": "string",
+    "gender": "string",
+    "dateOfBirth": "string (date format)",
+    "nationality": "string",
+    "identityDocumentType": "string",
+    "identityDocumentNumber": "string",
+    "issueDate": "string (date format)",
+    "expirationDate": "string (date format)",
+    "placeOfIssue": "string"
+  },
+  "academicInfo": {
+    "lastInstitution": "string",
+    "specialization": "string",
+    "availableForInternship": "boolean",
+    "startDate": "string (date format)",
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
+  },
+  "contactDetails": {
+    "email": "string",
+    "phoneNumber": "string",
+    "countryCode": "string",
+    "country": "string",
+    "region": "string",
+    "city": "string",
+    "address": "string"
+  },
+  "stepCompleted": "integer"
+}
+```
+
+### 10. Request Corrections for Enrollment (Admin only)
+**Endpoint:** PATCH /enrollments/{enrollmentId}/request-corrections
+**Description:** Request corrections for a specific enrollment
+**Request Parameters:**
+- enrollmentId: integer (path parameter)
+**Request Body:**
+```json
+[
+  {
+    "documentId": "integer",
+    "reason": "string"
+  }
+]
+```
+**Response:**
+```json
+{
+  "id": "integer",
+  "academicYear": "string",
+  "submissionDate": "string (date-time format)",
+  "status": "string",
+  "validationDate": "string (date-time format)",
+  "rejectionReason": "string",
+  "student": {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string"
+  },
+  "program": {
+    "id": "integer",
+    "programName": "string",
+    "programCode": "string"
+  },
+  "personalInfo": {
+    "lastName": "string",
+    "firstName": "string",
+    "gender": "string",
+    "dateOfBirth": "string (date format)",
+    "nationality": "string",
+    "identityDocumentType": "string",
+    "identityDocumentNumber": "string",
+    "issueDate": "string (date format)",
+    "expirationDate": "string (date format)",
+    "placeOfIssue": "string"
+  },
+  "academicInfo": {
+    "lastInstitution": "string",
+    "specialization": "string",
+    "availableForInternship": "boolean",
+    "startDate": "string (date format)",
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
+  },
+  "contactDetails": {
+    "email": "string",
+    "phoneNumber": "string",
+    "countryCode": "string",
+    "country": "string",
+    "region": "string",
+    "city": "string",
+    "address": "string"
+  },
+  "stepCompleted": "integer"
+}
+```
+
+### 11. Reject Enrollment (Admin only)
+**Endpoint:** PATCH /enrollments/{enrollmentId}/reject
+**Description:** Reject a specific enrollment
+**Request Parameters:**
+- enrollmentId: integer (path parameter)
+**Request Body:**
+```json
+{
+  "rejectionReason": "string"
+}
+```
+**Response:**
+```json
+{
+  "id": "integer",
+  "academicYear": "string",
+  "submissionDate": "string (date-time format)",
+  "status": "string",
+  "validationDate": "string (date-time format)",
+  "rejectionReason": "string",
+  "student": {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string"
+  },
+  "program": {
+    "id": "integer",
+    "programName": "string",
+    "programCode": "string"
+  },
+  "personalInfo": {
+    "lastName": "string",
+    "firstName": "string",
+    "gender": "string",
+    "dateOfBirth": "string (date format)",
+    "nationality": "string",
+    "identityDocumentType": "string",
+    "identityDocumentNumber": "string",
+    "issueDate": "string (date format)",
+    "expirationDate": "string (date format)",
+    "placeOfIssue": "string"
+  },
+  "academicInfo": {
+    "lastInstitution": "string",
+    "specialization": "string",
+    "availableForInternship": "boolean",
+    "startDate": "string (date format)",
+    "endDate": "string (date format)",
+    "diplomaObtained": "boolean"
+  },
+  "contactDetails": {
+    "email": "string",
+    "phoneNumber": "string",
+    "countryCode": "string",
+    "country": "string",
+    "region": "string",
+    "city": "string",
+    "address": "string"
+  },
+  "stepCompleted": "integer"
+}
 ```
 
 ## Document Endpoints
@@ -924,6 +1143,134 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   }
 }
 ```
+
+## User Management Endpoints
+
+### 1. Get All Users (Admin only)
+**Endpoint:** GET /users
+**Description:** Retrieve a list of all users with complete information including student-specific fields for student users
+**Request Parameters:** None
+**Response:**
+```json
+[
+  {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string",
+    "accountLocked": "boolean",
+    "enabled": "boolean",
+    "roleName": "string",
+    "dateOfBirth": "string (date format, optional)",
+    "address": "string (optional)",
+    "phoneNumber": "string (optional)",
+    "gender": "string (optional)",
+    "nationality": "string (optional)",
+    "maritalStatus": "string (optional)",
+    "desiredAcademicYear": "integer (optional)",
+    "intendedFieldOfStudy": "string (optional)",
+    "enrollmentIds": "array of integers (optional)"
+  }
+]
+```
+
+### 2. Get User by ID (Admin or User themselves)
+**Endpoint:** GET /users/{id}
+**Description:** Retrieve a specific user by ID with complete information including student-specific fields for student users
+**Request Parameters:**
+- id: integer (path parameter)
+**Response:**
+```json
+{
+  "id": "integer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean",
+  "roleName": "string",
+  "dateOfBirth": "string (date format, optional)",
+  "address": "string (optional)",
+  "phoneNumber": "string (optional)",
+  "gender": "string (optional)",
+  "nationality": "string (optional)",
+  "maritalStatus": "string (optional)",
+  "desiredAcademicYear": "integer (optional)",
+  "intendedFieldOfStudy": "string (optional)",
+  "enrollmentIds": "array of integers (optional)"
+}
+```
+
+### 3. Update User (Admin only)
+**Endpoint:** PUT /users/{id}
+**Description:** Update user information
+**Request Parameters:**
+- id: integer (path parameter)
+**Request Body:**
+```json
+{
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean"
+}
+```
+**Response:**
+```json
+{
+  "id": "integer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean",
+  "roleName": "string",
+  "dateOfBirth": "string (date format, optional)",
+  "address": "string (optional)",
+  "phoneNumber": "string (optional)",
+  "gender": "string (optional)",
+  "nationality": "string (optional)",
+  "maritalStatus": "string (optional)",
+  "desiredAcademicYear": "integer (optional)",
+  "intendedFieldOfStudy": "string (optional)",
+  "enrollmentIds": "array of integers (optional)"
+}
+```
+
+### 4. Delete User (Admin only)
+**Endpoint:** DELETE /users/{id}
+**Description:** Delete a user
+**Request Parameters:**
+- id: integer (path parameter)
+**Response:**
+- 204 No Content
+
+### 5. Change User Password (Admin only)
+**Endpoint:** PATCH /users/change-password
+**Description:** Change a user's password without knowing the old password
+**Request Body:**
+```json
+{
+  "userId": "integer",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
+
+### 6. Update Own Password (Student)
+**Endpoint:** PATCH /users/update-password
+**Description:** Update the authenticated user's password with verification of current password
+**Request Body:**
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
 
 ## Student Endpoints
 

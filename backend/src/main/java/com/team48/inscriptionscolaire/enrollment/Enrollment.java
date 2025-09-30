@@ -25,7 +25,7 @@ public class Enrollment extends BaseEntity {
     private StatusSubmission status;
 
     private LocalDateTime validationDate;
-    private String rejectionReason; // New field to store the reason for rejection
+    private String rejectionReason; 
 
     @ManyToOne
     private Student student;

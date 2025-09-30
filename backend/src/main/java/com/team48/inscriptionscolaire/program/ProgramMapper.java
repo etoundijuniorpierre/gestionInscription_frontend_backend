@@ -12,6 +12,8 @@ public class ProgramMapper {
                 .programName(dto.getProgramName())
                 .programCode(dto.getProgramCode())
                 .description(dto.getDescription())
+                .certificateName(dto.getCertificateName())
+                .careerProspects(dto.getCareerProspects())
                 .registrationFee(dto.getRegistrationFee())
                 .maxCapacity(dto.getMaxCapacity())
                 .registrationStartDate(dto.getRegistrationStartDate())
@@ -27,6 +29,8 @@ public class ProgramMapper {
         dto.setProgramName(program.getProgramName());
         dto.setProgramCode(program.getProgramCode());
         dto.setDescription(program.getDescription());
+        dto.setCertificateName(program.getCertificateName());
+        dto.setCareerProspects(program.getCareerProspects());
         dto.setRegistrationFee(program.getRegistrationFee());
         dto.setMaxCapacity(program.getMaxCapacity());
         dto.setRegistrationStartDate(program.getRegistrationStartDate());

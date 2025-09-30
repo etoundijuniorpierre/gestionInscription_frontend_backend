@@ -31,6 +31,12 @@ public class Program extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @Column(length = 500)
+    private String certificateName;
+    
+    @Column(columnDefinition = "TEXT")
+    private String careerProspects;
+    
     @Column(precision = 10, scale = 2)
     private BigDecimal registrationFee;
 

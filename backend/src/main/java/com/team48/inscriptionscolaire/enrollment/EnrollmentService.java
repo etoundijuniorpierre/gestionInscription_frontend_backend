@@ -144,6 +144,7 @@ public class EnrollmentService {
         academicInfo.setAvailableForInternship(academicInfoDto.getAvailableForInternship());
         academicInfo.setStartDate(academicInfoDto.getStartDate());
         academicInfo.setEndDate(academicInfoDto.getEndDate());
+        academicInfo.setDiplomaObtained(academicInfoDto.getDiplomaObtained());
         enrollment.setAcademicInfo(academicInfo);
     }
 
@@ -401,6 +402,7 @@ public class EnrollmentService {
         dto.setAvailableForInternship(academicInfo.getAvailableForInternship());
         dto.setStartDate(academicInfo.getStartDate());
         dto.setEndDate(academicInfo.getEndDate());
+        dto.setDiplomaObtained(academicInfo.getDiplomaObtained());
         return dto;
     }
 

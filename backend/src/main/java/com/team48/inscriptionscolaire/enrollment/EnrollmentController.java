@@ -2,6 +2,7 @@ package com.team48.inscriptionscolaire.enrollment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+import com.team48.inscriptionscolaire.enrollment.RejectionReasonDto;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -57,6 +58,12 @@ public class EnrollmentController {
         return enrollmentService.getMyEnrollments();
     }
 
+    @GetMapping("/my-latest")
+    @PreAuthorize("hasRole('STUDENT')")
+    public EnrollmentDtoResponse getMyLatestEnrollment() {
+        return enrollmentService.getMyLatestEnrollment();
+    }
+
     // Admin endpoints (kept as is)
     @GetMapping("/program/{programId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,6 +76,36 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ADMIN')")
     public EnrollmentDtoResponse approveEnrollment(@PathVariable Integer enrollmentId) {
         return enrollmentService.approveEnrollment(enrollmentId);
+    }
+
+    @PatchMapping("/{enrollmentId}/request-corrections")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Request corrections for an enrollment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Corrections requested successfully",
+                    content = @Content(schema = @Schema(implementation = EnrollmentDtoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Enrollment not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public EnrollmentDtoResponse requestCorrections(
+            @PathVariable Integer enrollmentId,
+            @RequestBody List<EnrollmentService.DocumentCorrectionDto> corrections) {
+        return enrollmentService.requestCorrections(enrollmentId, corrections);
+    }
+
+    @PatchMapping("/{enrollmentId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Reject an enrollment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Enrollment rejected successfully",
+                    content = @Content(schema = @Schema(implementation = EnrollmentDtoResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Enrollment not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public EnrollmentDtoResponse rejectEnrollment(
+            @PathVariable Integer enrollmentId,
+            @RequestBody RejectionReasonDto rejectionReasonDto) {
+        return enrollmentService.rejectEnrollment(enrollmentId, rejectionReasonDto.getRejectionReason());
     }
 
     @GetMapping("/year/{academicYear}")

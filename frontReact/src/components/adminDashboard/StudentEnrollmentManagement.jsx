@@ -20,21 +20,79 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalData, setModalData] = useState({});
 
+    // Add the missing state for filtered enrollments
+    const [filteredEnrollments, setFilteredEnrollments] = useState([]);
+
     useEffect(() => {
         fetchEnrollments();
         fetchAcademicYears();
     }, []);
 
+    useEffect(() => {
+        // Apply filters
+        let result = enrollmentData;
+        
+        if (selectedStatus) {
+            result = result.filter(enrollment => enrollment.status === selectedStatus);
+        }
+        
+        if (selectedMajor) {
+            result = result.filter(enrollment => 
+                enrollment.program && enrollment.program.programName === selectedMajor
+            );
+        }
+        
+        if (selectedAcademicYear) {
+            result = result.filter(enrollment => enrollment.academicYear === selectedAcademicYear);
+        }
+        
+        setFilteredEnrollments(result);
+        setTotalPages(Math.ceil(result.length / 10)); // Update total pages based on filtered results
+        setCurrentPage(1); // Reset to first page when filters change
+    }, [enrollmentData, selectedStatus, selectedMajor, selectedAcademicYear]);
+
+    // Calculate current enrollments for pagination
+    const currentEnrollments = filteredEnrollments.slice(
+        (currentPage - 1) * 10,
+        currentPage * 10
+    );
+
     const fetchEnrollments = async () => {
         try {
             setLoading(true);
             const response = await getAllEnrollments();
+            console.log('Enrollments data received:', response); // Debug log
             setEnrollmentData(response);
+            setFilteredEnrollments(response); // Initialize filtered enrollments
             setTotalPages(Math.ceil(response.length / 10)); // Assuming 10 items per page
             setError(null);
         } catch (err) {
             console.error('Error fetching enrollments:', err);
-            setError('Failed to load enrollments: ' + err.message);
+            
+            // Provide more specific error information
+            let errorMessage = 'Failed to load enrollments: ';
+            
+            if (err.response) {
+                // Server responded with error status
+                if (err.response.status === 500) {
+                    errorMessage += 'Internal server error. This is a backend issue that requires administrator attention.';
+                    if (err.response.data && err.response.data.message) {
+                        errorMessage += ' Details: ' + err.response.data.message;
+                    }
+                } else if (err.response.data && err.response.data.message) {
+                    errorMessage += err.response.data.message;
+                } else {
+                    errorMessage += `Server error ${err.response.status}: ${err.response.statusText}`;
+                }
+            } else if (err.request) {
+                // Request was made but no response received
+                errorMessage += 'Unable to contact server. Please check your internet connection.';
+            } else {
+                // Something else happened
+                errorMessage += err.message;
+            }
+            
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -59,14 +117,14 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            const allIds = enrollmentData.map(enrollment => enrollment.id);
+            const allIds = currentEnrollments.map(enrollment => enrollment.id);
             setSelectedEnrollments(allIds);
         } else {
             setSelectedEnrollments([]);
         }
     };
 
-    const isAllSelected = selectedEnrollments.length === enrollmentData.length && enrollmentData.length > 0;
+    const isAllSelected = selectedEnrollments.length === currentEnrollments.length && currentEnrollments.length > 0;
 
     const actionButtonStyle = "py-2 px-4 rounded-md border transition-colors duration-200"
 
@@ -80,6 +138,18 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         if (currentPage < totalPages) {
             setCurrentPage(currentPage + 1);
         }
+    };
+
+    const closeConfirmModal = () => {
+        setShowConfirmModal(false);
+        setModalData({});
+    };
+
+    const handleConfirm = () => {
+        if (modalData.onConfirm) {
+            modalData.onConfirm();
+        }
+        closeConfirmModal();
     };
 
     const isFirstPage = currentPage === 1;

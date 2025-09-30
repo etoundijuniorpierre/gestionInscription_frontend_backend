@@ -63,7 +63,6 @@ public class User implements UserDetails, Principal {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.getName()));
     }
 
-
     @Override
     public String getPassword() {
         return password;

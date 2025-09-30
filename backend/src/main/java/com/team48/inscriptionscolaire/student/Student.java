@@ -23,8 +23,7 @@ public class Student extends User {
     private String address;
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
+    private String gender;
 
     private String nationality;
 
@@ -36,9 +35,4 @@ public class Student extends User {
 
     @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollmentList;
-
-
-
-
-
 }

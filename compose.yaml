@@ -26,7 +26,7 @@ volumes:
 #    build:
 #      context: .
 #    ports:
-#      - 8091:8091
+#      - 9090:9090
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
