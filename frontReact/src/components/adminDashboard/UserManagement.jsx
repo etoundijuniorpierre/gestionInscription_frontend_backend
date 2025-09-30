@@ -1,25 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllUsers } from '../../services/userService';
+import { getAllUsers, deleteUser } from '../../services/userService';
 
 const UserManagement = () => {
     const navigate = useNavigate();
+    const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('Tous');
     const [statusFilter, setStatusFilter] = useState('Tous');
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalData, setModalData] = useState({
+        message: '',
+        onConfirm: null
+    });
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        applyFilters();
+    }, [users, searchTerm, roleFilter, statusFilter]);
+
     const fetchUsers = async () => {
         try {
             setLoading(true);
             const response = await getAllUsers();
-            setUsers(response);
+            setUsers(response.data);
             setError(null);
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -29,12 +40,56 @@ const UserManagement = () => {
         }
     };
 
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = `${user.firstName} ${user.lastName} ${user.email}`.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = roleFilter === 'Tous' || user.role === roleFilter;
-        const matchesStatus = statusFilter === 'Tous' || user.status === statusFilter;
-        return matchesSearch && matchesRole && matchesStatus;
-    });
+    const applyFilters = () => {
+        let result = users;
+        
+        // Apply search filter
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(user => 
+                user.firstName.toLowerCase().includes(term) || 
+                user.lastName.toLowerCase().includes(term) || 
+                user.email.toLowerCase().includes(term)
+            );
+        }
+        
+        // Apply role filter
+        if (roleFilter !== 'Tous') {
+            result = result.filter(user => user.role === roleFilter);
+        }
+        
+        // Apply status filter
+        if (statusFilter !== 'Tous') {
+            result = result.filter(user => user.status === statusFilter);
+        }
+        
+        setFilteredUsers(result);
+    };
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            setNotification(null);
+        }, 5000);
+    };
+
+    const openConfirmModal = (message, onConfirm) => {
+        setModalData({ message, onConfirm });
+        setShowConfirmModal(true);
+    };
+
+    const closeConfirmModal = () => {
+        setShowConfirmModal(false);
+        setModalData({ message: '', onConfirm: null });
+    };
+
+    const handleConfirm = () => {
+        if (modalData.onConfirm) {
+            modalData.onConfirm();
+        }
+        closeConfirmModal();
+    };
 
     const handleAddUser = () => {
         navigate('/admin-dashboard/user-management/add');
@@ -45,8 +100,19 @@ const UserManagement = () => {
     };
 
     const handleDeleteUser = (userId) => {
-        // Implement delete logic here
-        console.log(`Deleting user with ID: ${userId}`);
+        openConfirmModal('Êtes-vous sûr de vouloir supprimer cet utilisateur ?', () => proceedWithUserDeletion(userId));
+    };
+
+    const proceedWithUserDeletion = async (userId) => {
+        try {
+            await deleteUser(userId);
+            // Refresh the users list
+            fetchUsers();
+            console.log(`User with ID ${userId} deleted successfully`);
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            showNotification('Error deleting user: ' + err.message);
+        }
     };
 
     const handleViewProfile = (userId) => {
@@ -81,6 +147,39 @@ const UserManagement = () => {
 
     return (
         <div className="p-8">
+            {/* Notification display */}
+            {notification && (
+                <div className={`fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                    notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                }`}>
+                    {notification.message}
+                </div>
+            )}
+            
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirmation</h3>
+                        <p className="mb-6 text-gray-600">{modalData.message}</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={closeConfirmModal}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <h2 className="text-[#333333] text-[2.5rem] font-bold mb-4">Gestion des Utilisateurs</h2>
 
             <div className="w-full h-1 bg-[#101957] my-8"></div>

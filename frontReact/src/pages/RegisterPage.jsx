@@ -50,18 +50,6 @@ const RegisterPage = () => {
       password: password,
       roleName: 'STUDENT',
     };
-    
-    // Show registration data in an alert
-    let summary = "Données d'inscription envoyées:\n\n";
-    summary += `- Prénom: ${registrationData.firstname}\n`;
-    summary += `- Nom: ${registrationData.lastname}\n`;
-    summary += `- Email: ${registrationData.email}\n`;
-    summary += `- Mot de passe: ${registrationData.password ? '******' : 'Non renseigné'}\n`;
-    summary += `- Rôle: ${registrationData.roleName}\n\n`;
-    summary += "⚠️ Note: Le mot de passe est masqué pour des raisons de sécurité.\n\n";
-    summary += "Appuyez sur OK pour continuer l'inscription.";
-    
-    alert(summary);
 
     try {
       const response = await api.post('/auth/signup', {
@@ -73,13 +61,6 @@ const RegisterPage = () => {
       });
 
       console.log('Registration response:', response.data);
-      
-      // Show success information with the actual response data
-      let successSummary = `Inscription réussie!\n\n`;
-      successSummary += `Réponse du serveur: ${JSON.stringify(response.data, null, 2)}\n`;
-      successSummary += `\nUn email de vérification a été envoyé à ${email}`;
-      
-      alert(successSummary);
       
       navigate('/verify-email', { state: { email: email } });
     } catch (err) {

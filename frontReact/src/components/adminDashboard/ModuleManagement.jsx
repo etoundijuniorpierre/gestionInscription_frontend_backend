@@ -12,6 +12,12 @@ const ModuleManagement = () => {
     const [error, setError] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingModule, setEditingModule] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalData, setModalData] = useState({
+        message: '',
+        onConfirm: null
+    });
+    const [notification, setNotification] = useState(null);
 
     const [formData, setFormData] = useState({
         moduleName: '',
@@ -44,6 +50,31 @@ const ModuleManagement = () => {
         }
     };
 
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            setNotification(null);
+        }, 5000);
+    };
+
+    const openConfirmModal = (message, onConfirm) => {
+        setModalData({ message, onConfirm });
+        setShowConfirmModal(true);
+    };
+
+    const closeConfirmModal = () => {
+        setShowConfirmModal(false);
+        setModalData({ message: '', onConfirm: null });
+    };
+
+    const handleConfirm = () => {
+        if (modalData.onConfirm) {
+            modalData.onConfirm();
+        }
+        closeConfirmModal();
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -73,16 +104,18 @@ const ModuleManagement = () => {
     };
 
     const handleDeleteModule = async (moduleId) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer ce module ?')) {
-            try {
-                await deleteModule(moduleId);
-                // Refresh the modules list
-                fetchProgramAndModules();
-                console.log(`Module with ID ${moduleId} deleted successfully`);
-            } catch (err) {
-                console.error('Error deleting module:', err);
-                alert('Erreur lors de la suppression du module : ' + err.message);
-            }
+        openConfirmModal('Êtes-vous sûr de vouloir supprimer ce module ?', () => proceedWithModuleDeletion(moduleId));
+    };
+
+    const proceedWithModuleDeletion = async (moduleId) => {
+        try {
+            await deleteModule(moduleId);
+            // Refresh the modules list
+            fetchProgramAndModules();
+            console.log(`Module with ID ${moduleId} deleted successfully`);
+        } catch (err) {
+            console.error('Error deleting module:', err);
+            showNotification('Erreur lors de la suppression du module : ' + err.message);
         }
     };
 
@@ -101,7 +134,7 @@ const ModuleManagement = () => {
             setShowAddForm(false);
         } catch (err) {
             console.error('Error saving module:', err);
-            alert('Erreur lors de l\'enregistrement du module : ' + err.message);
+            showNotification('Erreur lors de l\'enregistrement du module : ' + err.message);
         }
     };
 
@@ -156,6 +189,39 @@ const ModuleManagement = () => {
 
     return (
         <div className="p-8">
+            {/* Notification display */}
+            {notification && (
+                <div className={`fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                    notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                }`}>
+                    {notification.message}
+                </div>
+            )}
+            
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirmation</h3>
+                        <p className="mb-6 text-gray-600">{modalData.message}</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={closeConfirmModal}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
@@ -277,22 +343,8 @@ const ModuleManagement = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="px-6 py-12 text-center">
-                                    <div className="flex flex-col items-center justify-center">
-                                        <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                        </svg>
-                                        <h3 className="mt-4 text-lg font-medium text-gray-900">Aucun module disponible</h3>
-                                        <p className="mt-1 text-sm text-gray-500">
-                                            Aucun module n'a été trouvé pour cette formation.
-                                        </p>
-                                        <button
-                                            onClick={handleAddModule}
-                                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#101957] hover:bg-[#1a2685] focus:outline-none"
-                                        >
-                                            Ajouter un module
-                                        </button>
-                                    </div>
+                                <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                                    Aucun module trouvé pour cette formation.
                                 </td>
                             </tr>
                         )}

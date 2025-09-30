@@ -2,12 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { getAllPrograms, deleteProgram } from '../../services/programService';
+import { getEnrollmentsByProgramId } from '../../services/enrollmentManagementService';
 
 const ProgramManagement = () => {
     const navigate = useNavigate();
     const [programs, setPrograms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notification, setNotification] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalData, setModalData] = useState({
+        message: '',
+        onConfirm: null
+    });
 
     useEffect(() => {
         fetchPrograms();
@@ -27,6 +34,31 @@ const ProgramManagement = () => {
         }
     };
 
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            setNotification(null);
+        }, 5000);
+    };
+
+    const openConfirmModal = (message, onConfirm) => {
+        setModalData({ message, onConfirm });
+        setShowConfirmModal(true);
+    };
+
+    const closeConfirmModal = () => {
+        setShowConfirmModal(false);
+        setModalData({ message: '', onConfirm: null });
+    };
+
+    const handleConfirm = () => {
+        if (modalData.onConfirm) {
+            modalData.onConfirm();
+        }
+        closeConfirmModal();
+    };
+
     const handleAddProgram = () => {
         navigate('/admin-dashboard/program-management/add');
     };
@@ -40,16 +72,34 @@ const ProgramManagement = () => {
     };
 
     const handleDeleteProgram = async (programId) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
-            try {
-                await deleteProgram(programId);
-                // Refresh the programs list
-                fetchPrograms();
-                console.log(`Program with ID ${programId} deleted successfully`);
-            } catch (err) {
-                console.error('Error deleting program:', err);
-                alert('Error deleting program: ' + err.message);
+        // First, check if there are any enrollments for this program
+        try {
+            const enrollments = await getEnrollmentsByProgramId(programId);
+            
+            // If there are enrollments, warn the user
+            if (enrollments && enrollments.length > 0) {
+                const confirmMessage = `Cette formation a ${enrollments.length} inscription(s) associée(s). Êtes-vous sûr de vouloir la supprimer ? Cette action pourrait affecter les données des étudiants.`;
+                openConfirmModal(confirmMessage, () => proceedWithDeletion(programId));
+            } else {
+                // If no enrollments, show the standard confirmation
+                openConfirmModal('Êtes-vous sûr de vouloir supprimer cette formation ?', () => proceedWithDeletion(programId));
             }
+        } catch (err) {
+            console.error('Error checking enrollments:', err);
+            showNotification('Error checking enrollments: ' + err.message);
+        }
+    };
+
+    const proceedWithDeletion = async (programId) => {
+        try {
+            // Proceed with deletion
+            await deleteProgram(programId);
+            // Refresh the programs list
+            fetchPrograms();
+            console.log(`Program with ID ${programId} deleted successfully`);
+        } catch (err) {
+            console.error('Error deleting program:', err);
+            showNotification('Error deleting program: ' + err.message);
         }
     };
 
@@ -99,6 +149,39 @@ const ProgramManagement = () => {
 
     return (
         <div className="p-8">
+            {/* Notification display */}
+            {notification && (
+                <div className={`fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                    notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                }`}>
+                    {notification.message}
+                </div>
+            )}
+            
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirmation</h3>
+                        <p className="mb-6 text-gray-600">{modalData.message}</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={closeConfirmModal}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Formations</h2>
@@ -134,7 +217,7 @@ const ProgramManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.programCode}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.registrationFee} F</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.maxCapacity}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.isOpen ? 'Oui' : 'Non'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.enrollmentOpen ? 'Oui' : 'Non'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
                                     <button
                                         onClick={() => handleManageModules(program.id)}

@@ -48,7 +48,8 @@ const StudentDashboardContent = () => {
                     id: program.id.toString(),
                     title: program.programName,
                     description: program.description,
-                    imageUrl: program.image || '/assets/images/default-course.jpg'
+                    imageUrl: program.image || '/assets/images/default-course.jpg',
+                    programCode: program.programCode // Add programCode for navigation
                 }));
                 setCourses(transformedCourses);
             } catch (err) {
