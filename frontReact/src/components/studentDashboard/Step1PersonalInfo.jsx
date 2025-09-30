@@ -10,6 +10,9 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
     const [nationality, setNationality] = useState(initialData.nationality || 'Camerounais');
     // Note: 'typePieceIdentite' is not in the backend DTO, so we keep it locally.
     const [typePieceIdentite, setTypePieceIdentite] = useState(initialData.typePieceIdentite || 'CNI');
+    
+    // Validation error states
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         setFirstName(initialData.firstName || '');
@@ -45,45 +48,91 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
         };
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+        
+        if (!firstName) newErrors.firstName = "Le prénom est obligatoire";
+        if (!lastName) newErrors.lastName = "Le nom est obligatoire";
+        if (!gender) newErrors.gender = "Le sexe est obligatoire";
+        if (!dateOfBirth) newErrors.dateOfBirth = "La date de naissance est obligatoire";
+        if (!nationality) newErrors.nationality = "La nationalité est obligatoire";
+        if (!typePieceIdentite) newErrors.typePieceIdentite = "Le type de pièce d'identité est obligatoire";
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSaveClick = () => {
         onSave(collectData());
     };
 
     const handleNextClick = () => {
-        onSaveAndNext(collectData());
+        if (validateForm()) {
+            onSaveAndNext(collectData());
+        }
+    };
+
+    // Get the document label based on the selected identity document type
+    const getIdentityDocumentLabel = () => {
+        switch (typePieceIdentite) {
+            case 'Passport':
+                return 'Photocopie Passport';
+            case 'Permis de conduire':
+                return 'Photocopie Permis de conduire';
+            default:
+                return 'Photocopie CNI';
+        }
     };
 
     return (
         <>
             <div className="grid grid-cols-1 gap-[1.28rem]">
                 <div>
-                    <label htmlFor="lastName" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Nom</label>
+                    <label htmlFor="lastName" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Nom <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         id="lastName"
-                        className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333]"
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.lastName ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
                         style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
                         placeholder="Entrez votre nom"
                         value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        onChange={(e) => {
+                            setLastName(e.target.value);
+                            if (errors.lastName) {
+                                setErrors(prev => ({ ...prev, lastName: '' }));
+                            }
+                        }}
+                        required
                     />
+                    {errors.lastName && <p className="text-red-500 text-[1.2rem] mt-1">{errors.lastName}</p>}
                 </div>
 
                 <div>
-                    <label htmlFor="firstName" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Prénom</label>
+                    <label htmlFor="firstName" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Prénom <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         id="firstName"
-                        className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333]"
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.firstName ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
                         style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
                         placeholder="Entrez votre prénom"
                         value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        onChange={(e) => {
+                            setFirstName(e.target.value);
+                            if (errors.firstName) {
+                                setErrors(prev => ({ ...prev, firstName: '' }));
+                            }
+                        }}
+                        required
                     />
+                    {errors.firstName && <p className="text-red-500 text-[1.2rem] mt-1">{errors.firstName}</p>}
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <label className="text-[#333333] text-[1.5rem] font-normal">Sexe :</label>
+                    <label className="text-[#333333] text-[1.5rem] font-normal">Sexe : <span className="text-red-500">*</span></label>
                     <div className="flex space-x-[1.28rem] items-center">
                         <label className="inline-flex items-center">
                             <input
@@ -92,7 +141,13 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
                                 name="gender"
                                 value="FEMALE"
                                 checked={gender === 'FEMALE'}
-                                onChange={(e) => setGender(e.target.value)}
+                                onChange={(e) => {
+                                    setGender(e.target.value);
+                                    if (errors.gender) {
+                                        setErrors(prev => ({ ...prev, gender: '' }));
+                                    }
+                                }}
+                                required
                             />
                             <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Féminin</span>
                         </label>
@@ -101,89 +156,109 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
                                 type="radio"
                                 className="form-radio text-[#6B4F8B]"
                                 name="gender"
-                                value="MALE"
-                                checked={gender === 'MALE'}
-                                onChange={(e) => setGender(e.target.value)}
+                                value="MASCULIN"
+                                checked={gender === 'MASCULIN'}
+                                onChange={(e) => {
+                                    setGender(e.target.value);
+                                    if (errors.gender) {
+                                        setErrors(prev => ({ ...prev, gender: '' }));
+                                    }
+                                }}
+                                required
                             />
                             <span className="ml-[0.43rem] text-[#333333] text-[1.5rem] font-normal">Masculin</span>
                         </label>
                     </div>
                 </div>
+                {errors.gender && <p className="text-red-500 text-[1.2rem] mt-1">{errors.gender}</p>}
 
                 <div>
-                    <label htmlFor="dateOfBirth" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Date de naissance</label>
+                    <label htmlFor="dateOfBirth" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Date de naissance <span className="text-red-500">*</span></label>
                     <input
                         type="date"
                         id="dateOfBirth"
-                        className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333]"
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.dateOfBirth ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
                         style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
                         placeholder="JJ/MM/AA"
                         value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        onChange={(e) => {
+                            setDateOfBirth(e.target.value);
+                            if (errors.dateOfBirth) {
+                                setErrors(prev => ({ ...prev, dateOfBirth: '' }));
+                            }
+                        }}
+                        required
                     />
+                    {errors.dateOfBirth && <p className="text-red-500 text-[1.2rem] mt-1">{errors.dateOfBirth}</p>}
                 </div>
 
                 <div>
-                    <label htmlFor="nationality" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Nationalité</label>
+                    <label htmlFor="nationality" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Nationalité <span className="text-red-500">*</span></label>
                     <select
                         id="nationality"
-                        className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] appearance-none"
-                        style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%236B4F8B' d='M9.293 12.95l.707.707L15 9.707l-1.414-1.414L10 10.586l-3.586-3.586L5 8.293z'/%3E%3C/svg%3E")`,
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right 0.64rem center',
-                            backgroundSize: '1.28rem',
-                            backgroundColor: 'rgba(242, 242, 242, 0.6)',
-                            fontSize: '1.5rem'
-                        }}
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.nationality ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
+                        style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
                         value={nationality}
-                        onChange={(e) => setNationality(e.target.value)}
+                        onChange={(e) => {
+                            setNationality(e.target.value);
+                            if (errors.nationality) {
+                                setErrors(prev => ({ ...prev, nationality: '' }));
+                            }
+                        }}
+                        required
                     >
-                        {centralAfricanNationalities.map(nat => (
-                            <option key={nat} value={nat}>{nat}</option>
+                        {centralAfricanNationalities.map((nation) => (
+                            <option key={nation} value={nation}>
+                                {nation}
+                            </option>
                         ))}
                     </select>
+                    {errors.nationality && <p className="text-red-500 text-[1.2rem] mt-1">{errors.nationality}</p>}
                 </div>
 
                 <div>
-                    <label htmlFor="typePieceIdentite" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Type de pièce d'identité</label>
+                    <label htmlFor="typePieceIdentite" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">
+                        Type de pièce d'identité <span className="text-red-500">*</span>
+                    </label>
                     <select
                         id="typePieceIdentite"
-                        className="w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border border-[#79747E] focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] appearance-none"
-                        style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%236B4F8B' d='M9.293 12.95l.707.707L15 9.707l-1.414-1.414L10 10.586l-3.586-3.586L5 8.293z'/%3E%3C/svg%3E")`,
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'right 0.64rem center',
-                            backgroundSize: '1.28rem',
-                            backgroundColor: 'rgba(242, 242, 242, 0.6)',
-                            fontSize: '1.5rem'
-                        }}
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.typePieceIdentite ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
+                        style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
                         value={typePieceIdentite}
-                        onChange={(e) => setTypePieceIdentite(e.target.value)}
+                        onChange={(e) => {
+                            setTypePieceIdentite(e.target.value);
+                            if (errors.typePieceIdentite) {
+                                setErrors(prev => ({ ...prev, typePieceIdentite: '' }));
+                            }
+                        }}
+                        required
                     >
-                        <option value="CNI">CNI</option>
+                        <option value="CNI">Carte Nationale d'Identité (CNI)</option>
                         <option value="Passport">Passport</option>
                         <option value="Permis de conduire">Permis de conduire</option>
                     </select>
+                    {errors.typePieceIdentite && <p className="text-red-500 text-[1.2rem] mt-1">{errors.typePieceIdentite}</p>}
                 </div>
             </div>
 
             <div className="flex justify-between gap-4 mt-8">
                 <Button
-                    secondary
-                    type="button"
+                    variant="secondary"
                     onClick={handleSaveClick}
-                    className="flex-1 !w-auto font-semibold text-[1.28rem] leading-[127.5%] tracking-[0.0298rem]"
-                    style={{ fontFamily: 'Roboto, sans-serif', height: '2.98rem' }}
+                    className="px-8 py-3 text-[1.5rem]"
                 >
                     Sauvegarder
                 </Button>
                 <Button
-                    primary
-                    type="button"
+                    variant="primary"
                     onClick={handleNextClick}
-                    className="flex-1 !w-auto font-semibold text-[1.28rem] leading-[127.5%] tracking-[0.0298rem]"
-                    style={{ fontFamily: 'Roboto, sans-serif', height: '2.98rem' }}
+                    className="px-8 py-3 text-[1.5rem]"
                 >
                     Suivant
                 </Button>

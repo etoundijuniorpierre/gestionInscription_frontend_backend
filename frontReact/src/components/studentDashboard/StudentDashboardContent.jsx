@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { getLatestEnrollment } from '../../services/enrollmentService';
+import { getLatestEnrollment, submitEnrollmentForm } from '../../services/enrollmentService';
 import CourseCard from './CourseCard.jsx';
 import EnrollmentForm from './EnrollmentForm.jsx';
 import StudentDashboardStatus from './StudentDashboardStatus.jsx';
@@ -28,8 +28,8 @@ const StudentDashboardContent = () => {
                 try {
                     const enrollment = await getLatestEnrollment();
                     setLatestEnrollment(enrollment);
-                } catch (error) {
-                    console.error("Failed to fetch latest enrollment:", error);
+                } catch (err) {
+                    console.error("Failed to fetch latest enrollment:", err);
                 } finally {
                     setLoading(false);
                 }
@@ -38,16 +38,16 @@ const StudentDashboardContent = () => {
             }
         };
 
-        fetchLatestEnrollment();
-    }, [isAuthenticated]);
-
-    useEffect(() => {
         const fetchCourses = async () => {
             try {
-                setCoursesLoading(true);
-                const response = await getAllPrograms();
-                // Transform API data to match the component's expected format
-                const transformedCourses = response.data.map(program => ({
+                const programs = await getAllPrograms();
+                
+                // Ensure programs is an array before trying to map
+                if (!Array.isArray(programs)) {
+                    throw new Error('Les données des formations ne sont pas au format attendu');
+                }
+                
+                const transformedCourses = programs.map(program => ({
                     id: program.id.toString(),
                     title: program.programName,
                     description: program.description,
@@ -64,8 +64,9 @@ const StudentDashboardContent = () => {
             }
         };
 
+        fetchLatestEnrollment();
         fetchCourses();
-    }, []);
+    }, [isAuthenticated]);
 
     // Check if we should start the enrollment flow based on location state
     useEffect(() => {
@@ -99,6 +100,100 @@ const StudentDashboardContent = () => {
     const handleGoBackToCourses = () => {
         setSelectedCourse(null);
         setDisplayMode('courses');
+    };
+
+    const handleFormSubmission = async (formData) => {
+        try {
+            // Prepare the enrollment data according to the API specification
+            const enrollmentData = {
+                programId: parseInt(selectedCourse.id),
+                personalInfo: {
+                    lastName: formData.nom,
+                    firstName: formData.prenom,
+                    gender: formData.sexe === 'MALE' ? 'MASCULIN' : formData.sexe === 'FEMALE' ? 'FEMININ' : formData.sexe,
+                    dateOfBirth: formData.dateNaissance,
+                    nationality: formData.nationalite,
+                    identityDocumentType: formData.typePieceIdentite,
+                    // Optional fields that may not be in the formData
+                    identityDocumentNumber: "",
+                    issueDate: "",
+                    expirationDate: "",
+                    placeOfIssue: ""
+                },
+                academicInfo: {
+                    lastInstitution: formData.lastInstitution,
+                    specialization: formData.specialization === 'Autre' ? formData.otherSpecialization : formData.specialization,
+                    availableForInternship: formData.availableForInternship,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
+                    diplomaObtained: true // Assuming they have a diploma if they're uploading one
+                },
+                contactDetails: {
+                    email: formData.email,
+                    phoneNumber: formData.phoneNumber,
+                    countryCode: formData.countryCode,
+                    country: formData.country,
+                    region: formData.region,
+                    city: formData.city,
+                    address: formData.address
+                }
+                // Note: The API documentation doesn't show emergency contacts in the enrollmentDtoRequest
+                // If they're needed, they might be handled separately or added to contactDetails
+            };
+
+            // Extract documents from formData
+            const documents = [];
+            if (formData.diplome1?.file) documents.push(formData.diplome1.file);
+            if (formData.diplome2?.file) documents.push(formData.diplome2.file);
+            if (formData.cniRecto?.file) documents.push(formData.cniRecto.file);
+            if (formData.cniVerso?.file) documents.push(formData.cniVerso.file);
+            if (formData.acteNaissance?.file) documents.push(formData.acteNaissance.file);
+            if (formData.photoIdentite?.file) documents.push(formData.photoIdentite.file);
+            if (formData.cv?.file) documents.push(formData.cv.file);
+            if (formData.lettreMotivation?.file) documents.push(formData.lettreMotivation.file);
+
+            // Submit the enrollment form
+            const response = await submitEnrollmentForm(enrollmentData, documents);
+            
+            // Show success message
+            alert("Votre dossier d'inscription a été soumis avec succès!");
+            
+            // Refresh the latest enrollment status
+            try {
+                const updatedEnrollment = await getLatestEnrollment();
+                setLatestEnrollment(updatedEnrollment);
+            } catch (err) {
+                console.error("Failed to fetch updated enrollment:", err);
+            }
+            
+            // Go back to courses view
+            handleGoBackToCourses();
+        } catch (error) {
+            console.error("Error submitting enrollment form:", error);
+            
+            // Provide more specific error information
+            let errorMessage = "Une erreur s'est produite lors de la soumission de votre dossier. Veuillez réessayer.";
+            
+            if (error.response) {
+                // Server responded with error status
+                if (error.response.status === 500) {
+                    // For 500 errors, provide more detailed information
+                    errorMessage = `Erreur interne du serveur (500). Ceci est une erreur côté serveur. Veuillez contacter l'administrateur du système. ${error.response.data?.message ? '\n\nDétails: ' + error.response.data.message : ''}`;
+                } else if (error.response.data && error.response.data.message) {
+                    errorMessage = `Erreur du serveur: ${error.response.data.message}`;
+                } else {
+                    errorMessage = `Erreur ${error.response.status}: ${error.response.statusText}`;
+                }
+            } else if (error.request) {
+                // Request was made but no response received
+                errorMessage = "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet.";
+            } else {
+                // Something else happened
+                errorMessage = `Erreur: ${error.message}`;
+            }
+            
+            alert(errorMessage);
+        }
     };
 
     if (loading || coursesLoading) {
@@ -154,7 +249,7 @@ const StudentDashboardContent = () => {
             ) : (
                 <EnrollmentForm 
                     course={selectedCourse} 
-                    onFormSubmitted={handleGoBackToCourses} 
+                    onFormSubmitted={handleFormSubmission} 
                 />
             )}
         </div>

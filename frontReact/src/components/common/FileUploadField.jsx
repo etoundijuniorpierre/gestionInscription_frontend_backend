@@ -113,7 +113,7 @@ const FileUploadField = ({
                     </span>
                 </div>
             )}
-            {showActions && fileState?.file && (fileState.status === 'rejected' || fileState.status === 'validated') && (
+            {showActions && (fileState?.file || fileState?.status === 'rejected') && (fileState.status === 'rejected' || fileState.status === 'validated') && (
                 <div className="flex mt-[0.53rem] justify-end" style={{ gap: '0.53rem' }}>
                     <Button
                         secondary
@@ -131,7 +131,7 @@ const FileUploadField = ({
                     </Button>
                     <button
                         type="button"
-                        onClick={() => onDelete(id)}
+                        onClick={onDelete}
                         className="text-red-600 font-semibold hover:underline"
                         style={{
                             fontSize: '0.74rem',

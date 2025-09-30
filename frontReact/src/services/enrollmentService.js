@@ -41,7 +41,7 @@ export const getMyEnrollments = async () => {
 export const submitEnrollmentForm = async (formData, documents) => {
   try {
     const data = new FormData();
-    data.append('enrollment', JSON.stringify(formData));
+    data.append('enrollmentDtoRequest', JSON.stringify(formData));
     documents.forEach((doc, index) => {
       data.append(`documents[${index}]`, doc);
     });

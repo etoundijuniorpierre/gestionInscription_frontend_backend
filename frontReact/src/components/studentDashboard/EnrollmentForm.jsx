@@ -37,6 +37,9 @@ const EnrollmentForm = ({ course, onFormSubmitted }) => {
         ...formData.step4,
     };
     
+    // Get the identity document type from step 1 data
+    const identityDocumentType = formData.step1.typePieceIdentite || 'CNI';
+    
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -51,6 +54,7 @@ const EnrollmentForm = ({ course, onFormSubmitted }) => {
                 return (
                     <Step2Documents
                         initialData={formData.step2}
+                        identityDocumentType={identityDocumentType}
                         onSaveAndNext={(data) => handleNext('step2', data)}
                         onSave={(data) => handleSave('step2', data)}
                         onPrevious={handlePrevious}

@@ -9,7 +9,7 @@ const PROGRAMS_URL = '/programs'; // Base path for program endpoints
 export const getAllPrograms = async () => {
   try {
     const response = await api.get(PROGRAMS_URL);
-    return response;
+    return response.data;
   } catch (error) {
     console.error('Error in getAllPrograms:', error);
     if (error.response) {
@@ -33,7 +33,7 @@ export const getAllPrograms = async () => {
 export const getProgramById = async (id) => {
   try {
     const response = await api.get(`${PROGRAMS_URL}/${id}`);
-    return response;
+    return response.data;
   } catch (error) {
     console.error(`Error in getProgramById with id ${id}:`, error);
     if (error.response) {
@@ -57,7 +57,7 @@ export const getProgramById = async (id) => {
 export const getProgramByCode = async (programCode) => {
   try {
     const response = await api.get(`${PROGRAMS_URL}/code/${programCode}`);
-    return response;
+    return response.data;
   } catch (error) {
     console.error(`Error in getProgramByCode with code ${programCode}:`, error);
     if (error.response) {

@@ -23,8 +23,8 @@ const ProgramManagement = () => {
     const fetchPrograms = async () => {
         try {
             setLoading(true);
-            const response = await getAllPrograms();
-            setPrograms(response.data);
+            const programsData = await getAllPrograms();
+            setPrograms(programsData);
             setError(null);
         } catch (err) {
             console.error('Error fetching programs:', err);
