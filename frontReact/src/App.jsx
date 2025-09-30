@@ -115,7 +115,7 @@ function App() {
                     <Route path="program-management/:programId/modules" element={<ModuleManagement />} />
                     <Route path="user-management" element={<UserManagement />} />
                     <Route path="user-management/add" element={<UserForm />} />
-                    <Route path="user-management/edit/:id" element={<UserForm />} />
+                    {/* Removed the edit route as requested */}
                     <Route path="messages" element={<div>Messagerie pour administrateur</div>} />
                     <Route path="settings" element={<div>Paramètres pour administrateur</div>} />
                     <Route path="faq" element={<AdminFAQ />} />

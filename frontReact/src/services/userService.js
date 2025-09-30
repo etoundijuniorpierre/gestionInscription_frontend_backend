@@ -1,6 +1,7 @@
 import api from './api';
 
-const USERS_URL = '/auth'; // Base path for authentication endpoints
+const AUTH_URL = '/auth'; // Base path for authentication endpoints
+const USERS_URL = '/users'; // Base path for user management endpoints
 
 /**
  * Service function to register a new user.
@@ -9,7 +10,7 @@ const USERS_URL = '/auth'; // Base path for authentication endpoints
  */
 export const registerUser = async (userData) => {
   try {
-    const response = await api.post(`${USERS_URL}/signup`, userData);
+    const response = await api.post(`${AUTH_URL}/signup`, userData);
     return response.data;
   } catch (error) {
     console.error('Error in registerUser:', error);
@@ -24,7 +25,7 @@ export const registerUser = async (userData) => {
  */
 export const loginUser = async (credentials) => {
   try {
-    const response = await api.post(`${USERS_URL}/login`, credentials);
+    const response = await api.post(`${AUTH_URL}/login`, credentials);
     return response.data;
   } catch (error) {
     console.error('Error in loginUser:', error);
@@ -39,7 +40,7 @@ export const loginUser = async (credentials) => {
  */
 export const activateAccount = async (token) => {
   try {
-    const response = await api.get(`${USERS_URL}/activate-account`, {
+    const response = await api.get(`${AUTH_URL}/activate-account`, {
       params: { token }
     });
     return response.data;
@@ -56,7 +57,7 @@ export const activateAccount = async (token) => {
  */
 export const forgotPassword = async (email) => {
   try {
-    const response = await api.post(`${USERS_URL}/forgot-password`, { email });
+    const response = await api.post(`${AUTH_URL}/forgot-password`, { email });
     return response.data;
   } catch (error) {
     console.error('Error in forgotPassword:', error);
@@ -70,7 +71,7 @@ export const forgotPassword = async (email) => {
  */
 export const logoutUser = async () => {
   try {
-    const response = await api.post(`${USERS_URL}/logout`);
+    const response = await api.post(`${AUTH_URL}/logout`);
     return response.data;
   } catch (error) {
     console.error('Error in logoutUser:', error);
@@ -84,7 +85,7 @@ export const logoutUser = async () => {
  */
 export const getAllUsers = async () => {
   try {
-    const response = await api.get(`${USERS_URL}/users`);
+    const response = await api.get(`${USERS_URL}`);
     return response.data;
   } catch (error) {
     console.error('Error in getAllUsers:', error);
@@ -99,7 +100,7 @@ export const getAllUsers = async () => {
  */
 export const getUserById = async (id) => {
   try {
-    const response = await api.get(`${USERS_URL}/users/${id}`);
+    const response = await api.get(`${USERS_URL}/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error in getUserById with id ${id}:`, error);
@@ -114,7 +115,7 @@ export const getUserById = async (id) => {
  */
 export const createUser = async (userData) => {
   try {
-    const response = await api.post(`${USERS_URL}/signup`, userData);
+    const response = await api.post(`${AUTH_URL}/signup`, userData);
     return response.data;
   } catch (error) {
     console.error('Error in createUser:', error);
@@ -130,7 +131,7 @@ export const createUser = async (userData) => {
  */
 export const updateUser = async (id, userData) => {
   try {
-    const response = await api.put(`${USERS_URL}/users/${id}`, userData);
+    const response = await api.put(`${USERS_URL}/${id}`, userData);
     return response.data;
   } catch (error) {
     console.error(`Error in updateUser with id ${id}:`, error);
@@ -145,7 +146,7 @@ export const updateUser = async (id, userData) => {
  */
 export const deleteUser = async (id) => {
   try {
-    const response = await api.delete(`${USERS_URL}/users/${id}`);
+    const response = await api.delete(`${USERS_URL}/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error in deleteUser with id ${id}:`, error);
@@ -160,10 +161,42 @@ export const deleteUser = async (id) => {
  */
 export const toggleUserStatus = async (id) => {
   try {
-    const response = await api.patch(`${USERS_URL}/users/${id}/toggle-status`);
+    const response = await api.patch(`${USERS_URL}/${id}/toggle-status`);
     return response.data;
   } catch (error) {
     console.error(`Error in toggleUserStatus with id ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Service function to change a user's password (Admin only).
+ * @param {number} userId The ID of the user.
+ * @param {string} newPassword The new password.
+ * @returns {Promise} A promise that resolves when the password is changed.
+ */
+export const changeUserPassword = async (userId, newPassword) => {
+  try {
+    const response = await api.patch(`${USERS_URL}/change-password`, { userId, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error(`Error in changeUserPassword with userId ${userId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Service function to update the authenticated user's password with verification of current password.
+ * @param {string} currentPassword The current password.
+ * @param {string} newPassword The new password.
+ * @returns {Promise} A promise that resolves when the password is updated.
+ */
+export const updateOwnPassword = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.patch(`${AUTH_URL}/update-password`, { currentPassword, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error('Error in updateOwnPassword:', error);
     throw error;
   }
 };

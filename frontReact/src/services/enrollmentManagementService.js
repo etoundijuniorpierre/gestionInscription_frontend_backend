@@ -123,3 +123,18 @@ export const updateDocumentStatus = async (enrollmentId, documentType, statusDat
     throw error;
   }
 };
+
+/**
+ * Service function to approve a specific enrollment.
+ * @param {number} enrollmentId The ID of the enrollment to approve.
+ * @returns {Promise} A promise that resolves to the approved enrollment object.
+ */
+export const approveEnrollment = async (enrollmentId) => {
+  try {
+    const response = await api.patch(`${ENROLLMENTS_URL}/${enrollmentId}/approve`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error in approveEnrollment with enrollmentId ${enrollmentId}:`, error);
+    throw error;
+  }
+};

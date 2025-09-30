@@ -153,6 +153,7 @@ const ModuleManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
+                        <p className="text-gray-600">Gérez les modules de la formation</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -170,6 +171,7 @@ const ModuleManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
+                        <p className="text-gray-600">Gérez les modules de la formation</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -225,9 +227,7 @@ const ModuleManagement = () => {
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
-                    {program && (
-                        <p className="text-gray-600">Formation: {program.programName}</p>
-                    )}
+                    <p className="text-gray-600">Gérez les modules de la formation</p>
                 </div>
                 <div className="flex gap-2">
                     <button

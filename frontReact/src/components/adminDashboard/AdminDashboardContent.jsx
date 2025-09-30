@@ -31,26 +31,45 @@ const AdminDashboardContent = () => {
     }, []);
 
     if (loading) {
-        return <div className="p-8">Chargement des statistiques...</div>;
+        return (
+            <div className="p-8">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Statistiques</h2>
+                        <p className="text-gray-600">Consultez les statistiques de la plateforme</p>
+                    </div>
+                </div>
+                <div className="w-full h-1 bg-[#101957] my-8"></div>
+                <div>Chargement des statistiques...</div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="p-8">Erreur lors du chargement des statistiques: {error.message}</div>;
+        return (
+            <div className="p-8">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Statistiques</h2>
+                        <p className="text-gray-600">Consultez les statistiques de la plateforme</p>
+                    </div>
+                </div>
+                <div className="w-full h-1 bg-[#101957] my-8"></div>
+                <div className="text-red-500">Erreur lors du chargement des statistiques: {error.message}</div>
+            </div>
+        );
     }
 
     return (
         <div className="p-8" style={{ backgroundColor: '#F8F8F8' }}>
-            <h2 className="text-[#101957] text-[2.5rem] font-bold mb-4" style={{ fontFamily: 'Roboto, sans-serif' }}>Statistiques</h2>
+            <div className="flex justify-between items-center mb-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Statistiques</h2>
+                    <p className="text-gray-600">Consultez les statistiques de la plateforme</p>
+                </div>
+            </div>
             
-            <div
-                className="w-full"
-                style={{
-                    height: '5px',
-                    backgroundColor: '#101957',
-                    borderRadius: '8px',
-                    marginBottom: '2rem',
-                }}
-            ></div>
+            <div className="w-full h-1 bg-[#101957] my-8"></div>
 
             {/* Main two-column layout */}
             <div className="flex gap-6">

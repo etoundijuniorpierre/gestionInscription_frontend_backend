@@ -16,6 +16,9 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [academicYears, setAcademicYears] = useState([]);
+    const [notification, setNotification] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalData, setModalData] = useState({});
 
     useEffect(() => {
         fetchEnrollments();
@@ -89,7 +92,10 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         return (
             <div className="p-8">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-[#333333] text-[2.5rem] font-bold">Gestion des Inscriptions</h2>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
+                        <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                    </div>
                     <div className="flex items-center space-x-4">
                         <div className="h-10 w-64 bg-gray-200 rounded animate-pulse"></div>
                     </div>
@@ -104,7 +110,10 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         return (
             <div className="p-8">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-[#333333] text-[2.5rem] font-bold">Gestion des Inscriptions</h2>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
+                        <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                    </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
                 <div className="text-red-500">Error: {error}</div>
@@ -112,16 +121,47 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         );
     }
 
-    // Calculate the enrollments to display on the current page
-    const startIndex = (currentPage - 1) * 10;
-    const endIndex = startIndex + 10;
-    const currentEnrollments = enrollmentData.slice(startIndex, endIndex);
-
     return (
         <div className="p-8">
+            {/* Notification display */}
+            {notification && (
+                <div className={`fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                    notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                }`}>
+                    {notification.message}
+                </div>
+            )}
+            
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirmation</h3>
+                        <p className="mb-6 text-gray-600">{modalData.message}</p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={closeConfirmModal}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+                            >
+                                Annuler
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                            >
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {/* Top Section with Title, Hamburger Menu, and Search Bar */}
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[#333333] text-[2.5rem] font-bold">Gestion des Inscriptions</h2>
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
+                    <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                </div>
                 <div className="flex items-center space-x-4">
                     {/* Hamburger Menu for Dropdowns */}
                     <div className="relative">

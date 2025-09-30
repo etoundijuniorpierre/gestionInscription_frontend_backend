@@ -16,10 +16,6 @@ const AdminFAQ = () => {
             answer: "Dans la section 'Gestion des Formations', cliquez sur 'Ajouter une formation'. Remplissez les informations requises telles que le nom, la description et les conditions d'admission."
         },
         {
-            question: "Comment ajouter une nouvelle formation ?",
-            answer: "Dans la section 'Gestion des Formations', cliquez sur 'Ajouter une formation'. Remplissez les informations requises telles que le nom, la description et les conditions d'admission."
-        },
-        {
             question: "Puis-je modifier les informations d'un utilisateur ?",
             answer: "Oui. Allez dans 'Gestion des Utilisateurs', recherchez l'utilisateur et cliquez sur 'Modifier'. Vous pourrez mettre à jour leurs informations personnelles et leur rôle si nécessaire."
         },
@@ -34,15 +30,24 @@ const AdminFAQ = () => {
     ];
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Foire Aux Questions (FAQ) - Espace Admin</h2>
-            <div className="space-y-6">
-                {faqItems.map((item, index) => (
-                    <div key={index} className="border-b pb-4">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2">{item.question}</h3>
-                        <p className="text-gray-600">{item.answer}</p>
-                    </div>
-                ))}
+        <div className="p-8">
+            <div className="flex justify-between items-center mb-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Foire Aux Questions (FAQ) - Espace Admin</h2>
+                    <p className="text-gray-600">Consultez les questions fréquemment posées</p>
+                </div>
+            </div>
+            <div className="w-full h-1 bg-[#101957] my-8"></div>
+            
+            <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="space-y-6">
+                    {faqItems.map((item, index) => (
+                        <div key={index} className="border-b pb-4">
+                            <h3 className="text-lg font-semibold text-gray-700 mb-2">{item.question}</h3>
+                            <p className="text-gray-600">{item.answer}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

@@ -32,24 +32,27 @@ const UserForm = () => {
 
     const fetchUserData = async () => {
         try {
-            const response = await getUserById(id);
+            const userData = await getUserById(id);
+            console.log('User data received:', userData); // Debug log
             // Map the response data to formData structure
             setFormData({
-                firstName: response.firstName || '',
-                lastName: response.lastName || '',
-                email: response.email || '',
-                role: response.role || 'Étudiant',
-                status: response.status || 'Actif',
+                firstName: userData.firstname || '',
+                lastName: userData.lastname || '',
+                email: userData.email || '',
+                role: userData.roleName || 'Étudiant',
+                status: userData.enabled ? 'Actif' : 'Inactif',
                 // Student-specific fields
-                birthDate: response.birthDate || '',
-                address: response.address || '',
-                phone: response.phone || '',
-                gender: response.gender || '',
-                nationality: response.nationality || '',
-                civilStatus: response.civilStatus || '',
+                birthDate: userData.dateOfBirth || '',
+                address: userData.address || '',
+                phone: userData.phoneNumber || '',
+                gender: userData.gender || '',
+                nationality: userData.nationality || '',
+                civilStatus: userData.maritalStatus || '',
             });
         } catch (err) {
             console.error('Error fetching user data:', err);
+            // Show error to user
+            alert('Error fetching user data: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -70,17 +73,55 @@ const UserForm = () => {
         }
 
         try {
+            // Map formData to API expected structure
+            const userData = {
+                firstname: formData.firstName,
+                lastname: formData.lastName,
+                email: formData.email,
+                roleName: formData.role,
+                enabled: formData.status === 'Actif',
+                dateOfBirth: formData.birthDate,
+                address: formData.address,
+                phoneNumber: formData.phone,
+                gender: formData.gender,
+                nationality: formData.nationality,
+                maritalStatus: formData.civilStatus,
+            };
+
             if (isEditing) {
-                await updateUser(id, formData);
-                console.log('User updated:', formData);
+                await updateUser(id, userData);
+                console.log('User updated:', userData);
             } else {
-                await createUser(formData);
-                console.log('New user added:', formData);
+                // For new users, include password
+                if (formData.password) {
+                    userData.password = formData.password;
+                }
+                await createUser(userData);
+                console.log('New user added:', userData);
             }
             navigate('/admin-dashboard/user-management');
         } catch (err) {
             console.error('Error saving user:', err);
-            alert('Error saving user: ' + err.message);
+            
+            // Provide more specific error information
+            let errorMessage = 'Error saving user: ';
+            
+            if (err.response) {
+                // Server responded with error status
+                if (err.response.data && err.response.data.message) {
+                    errorMessage += err.response.data.message;
+                } else {
+                    errorMessage += `Server error ${err.response.status}: ${err.response.statusText}`;
+                }
+            } else if (err.request) {
+                // Request was made but no response received
+                errorMessage += 'Unable to contact server. Please check your internet connection.';
+            } else {
+                // Something else happened
+                errorMessage += err.message;
+            }
+            
+            alert(errorMessage);
         }
     };
 

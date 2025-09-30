@@ -66,6 +66,19 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 **Response:**
 - 200 OK
 
+### 6. Update Password (Student)
+**Endpoint:** PATCH /auth/update-password
+**Description:** Update the authenticated user's password with verification of current password
+**Request Body:**
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
+
 ## Program Endpoints
 
 ### 1. Create Program (Admin only)
@@ -196,7 +209,7 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 **Request Parameters:**
 - programCode: string (path parameter)
 **Response:**
-```json
+``json
 {
   "id": "integer",
   "programName": "string",
@@ -650,7 +663,7 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 - programId: integer (path parameter)
 - academicYear: string (path parameter)
 **Response:**
-```json
+``json
 [
   {
     "id": "integer",
@@ -749,7 +762,7 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 **Endpoint:** POST /modules
 **Description:** Create a new module
 **Request Body:**
-```json
+``json
 {
   "moduleName": "string",
   "moduleDescription": "string",
@@ -790,7 +803,7 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
 **Request Parameters:**
 - programId: integer (path parameter)
 **Response:**
-```json
+``json
 [
   {
     "id": "integer",
@@ -942,6 +955,162 @@ All endpoints are prefixed with: `http://localhost:9090/api/v1`
   }
 }
 ```
+
+## User Management Endpoints
+
+### 1. Get All Users (Admin only)
+**Endpoint:** GET /users
+**Description:** Retrieve a list of all users with complete information including student-specific fields for student users
+**Request Parameters:** None
+**Response:**
+```json
+[
+  {
+    "id": "integer",
+    "firstname": "string",
+    "lastname": "string",
+    "email": "string",
+    "accountLocked": "boolean",
+    "enabled": "boolean",
+    "roleName": "string",
+    "dateOfBirth": "string (date format, optional)",
+    "address": "string (optional)",
+    "phoneNumber": "string (optional)",
+    "gender": "string (optional)",
+    "nationality": "string (optional)",
+    "maritalStatus": "string (optional)",
+    "desiredAcademicYear": "integer (optional)",
+    "intendedFieldOfStudy": "string (optional)",
+    "enrollmentIds": "array of integers (optional)"
+  }
+]
+```
+
+### 2. Get User by ID (Admin or User themselves)
+**Endpoint:** GET /users/{id}
+**Description:** Retrieve a specific user by ID with complete information including student-specific fields for student users
+**Request Parameters:**
+- id: integer (path parameter)
+**Response:**
+```json
+{
+  "id": "integer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean",
+  "roleName": "string",
+  "dateOfBirth": "string (date format, optional)",
+  "address": "string (optional)",
+  "phoneNumber": "string (optional)",
+  "gender": "string (optional)",
+  "nationality": "string (optional)",
+  "maritalStatus": "string (optional)",
+  "desiredAcademicYear": "integer (optional)",
+  "intendedFieldOfStudy": "string (optional)",
+  "enrollmentIds": "array of integers (optional)"
+}
+```
+
+### 3. Update User (Admin only)
+**Endpoint:** PUT /users/{id}
+**Description:** Update user information
+**Request Parameters:**
+- id: integer (path parameter)
+**Request Body:**
+```json
+{
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean"
+}
+```
+**Response:**
+```json
+{
+  "id": "integer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean",
+  "roleName": "string",
+  "dateOfBirth": "string (date format, optional)",
+  "address": "string (optional)",
+  "phoneNumber": "string (optional)",
+  "gender": "string (optional)",
+  "nationality": "string (optional)",
+  "maritalStatus": "string (optional)",
+  "desiredAcademicYear": "integer (optional)",
+  "intendedFieldOfStudy": "string (optional)",
+  "enrollmentIds": "array of integers (optional)"
+}
+```
+
+### 4. Delete User (Admin only)
+**Endpoint:** DELETE /users/{id}
+**Description:** Delete a user
+**Request Parameters:**
+- id: integer (path parameter)
+**Response:**
+- 204 No Content
+
+### 5. Change User Password (Admin only)
+**Endpoint:** PATCH /users/change-password
+**Description:** Change a user's password without knowing the old password
+**Request Body:**
+```json
+{
+  "userId": "integer",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
+
+### 6. Toggle User Status (Admin only)
+**Endpoint:** PATCH /users/{id}/toggle-status
+**Description:** Activate or deactivate a user account
+**Request Parameters:**
+- id: integer (path parameter)
+**Request Body:** None
+**Response:**
+```json
+{
+  "id": "integer",
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "accountLocked": "boolean",
+  "enabled": "boolean",
+  "roleName": "string",
+  "dateOfBirth": "string (date format, optional)",
+  "address": "string (optional)",
+  "phoneNumber": "string (optional)",
+  "gender": "string (optional)",
+  "nationality": "string (optional)",
+  "maritalStatus": "string (optional)",
+  "desiredAcademicYear": "integer (optional)",
+  "intendedFieldOfStudy": "string (optional)",
+  "enrollmentIds": "array of integers (optional)"
+}
+```
+
+### 7. Update Own Password (Student)
+**Endpoint:** PATCH /auth/update-password
+**Description:** Update the authenticated user's password with verification of current password
+**Request Body:**
+```json
+{
+  "currentPassword": "string",
+  "newPassword": "string"
+}
+```
+**Response:**
+- 200 OK
 
 ## Student Endpoints
 
