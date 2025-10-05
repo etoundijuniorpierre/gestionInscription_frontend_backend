@@ -71,11 +71,8 @@ const VerifyEmailPage = () => {
     }
 
     try {
-
       const response = await api.get(`/auth/activate-account?token=${verificationCode}`);
-
       console.log('Email verification successful:', response.data);
-
       navigate('/login');
     } catch (err) {
       console.error('Email verification failed:', err);
@@ -95,20 +92,24 @@ const VerifyEmailPage = () => {
     setError('');
     setIsLoading(true);
     try {
-      await api.post('/auth/activate-account', { email: registeredEmail });
+      await api.post('/auth/resend-activation-code', { email: registeredEmail });
       alert('Un nouveau code a été envoyé à votre adresse e-mail.');
     } catch (err) {
       console.error('Failed to resend code:', err);
-      setError('Impossible de renvoyer le code. Veuillez réessayer.');
+      if (err.response) {
+        setError(err.response.data.message || 'Impossible de renvoyer le code. Veuillez réessayer.');
+      } else if (err.request) {
+        setError('Impossible de se connecter au serveur. Veuillez vérifier votre connexion.');
+      } else {
+        setError('Une erreur inattendue est survenue.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-
   return (
     <section
-      className="relative flex items-center justify-center py-8 md:py-12 w-full h-full"
       style={{
         backgroundImage: `url('/assets/images/register-bg.png'), linear-gradient(to right, #EFEFEF, #EFEFEF)`,
         backgroundSize: '60% 100%, 40% 100%',

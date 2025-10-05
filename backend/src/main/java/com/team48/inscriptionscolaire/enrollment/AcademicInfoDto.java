@@ -10,5 +10,5 @@ public class AcademicInfoDto {
     private Boolean availableForInternship;
     private LocalDate startDate;
     private LocalDate endDate;
-    private Boolean diplomaObtained;
+    private String diplomaObtained;
 }

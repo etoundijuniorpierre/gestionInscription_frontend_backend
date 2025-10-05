@@ -5,7 +5,7 @@ describe('Data Mapping Verification', () => {
     // Transform backend data to frontend format
     const transformedData = sampleBackendPrograms.map(program => ({
       id: program.id,
-      image: program.image || '/assets/images/Filière.png',
+      image: program.image || '/assets/images/filiere-informatique.jpg',
       title: program.programName,
       description: program.description,
       link: `/courses/${program.programCode}`,
@@ -40,12 +40,12 @@ describe('Data Mapping Verification', () => {
 
     const transformedData = [{
       id: programWithoutImage.id,
-      image: programWithoutImage.image || '/assets/images/Filière.png',
+      image: programWithoutImage.image || '/assets/images/filiere-informatique.jpg',
       title: programWithoutImage.programName,
       description: programWithoutImage.description,
       link: `/courses/${programWithoutImage.programCode}`,
     }];
 
-    expect(transformedData[0].image).toBe('/assets/images/Filière.png');
+    expect(transformedData[0].image).toBe('/assets/images/filiere-informatique.jpg');
   });
 });

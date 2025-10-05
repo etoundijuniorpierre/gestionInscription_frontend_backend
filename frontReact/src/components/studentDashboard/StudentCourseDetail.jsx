@@ -6,7 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 // Define program images mapping for consistent imagery across the application
 const programImages = {
   // Formation image mappings based on program names
-  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain .webp',
+  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain.webp',
   'Cloud Computing et Architecture des Systèmes Distribués': '/assets/formationsImg/cloud.webp',
   'Communication Digitale et Stratégies de Contenu': '/assets/formationsImg/comDigital.webp',
   'Cybersécurité et Protection des Systèmes d\'Information': '/assets/formationsImg/cyberSecurity.webp',
@@ -114,7 +114,7 @@ const StudentCourseDetail = () => {
   const careerProspectsList = formatCareerProspects(course.careerProspects);
 
   // Determine the background image for the course
-  const backgroundImage = programImages[course.programName] || course.image || '/assets/images/default-course.jpg';
+  const backgroundImage = programImages[course.programName] || course.image || '/assets/images/filiere-informatique.jpg';
 
   return (
     <div className="px-4 py-8 w-full">
@@ -229,11 +229,11 @@ const StudentCourseDetail = () => {
                   )}
                   
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Statut:</span>
+                    <span className="font-medium text-gray-700">Inscriptions:</span>
                     <span className={`px-2 py-1 rounded text-sm font-medium ${
-                      course.status === 'Actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      course.enrollmentOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {course.status}
+                      {course.enrollmentOpen ? 'Ouvertes' : 'Fermées'}
                     </span>
                   </div>
                 </div>

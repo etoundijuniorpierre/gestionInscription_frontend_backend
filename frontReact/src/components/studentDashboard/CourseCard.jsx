@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // Define program images mapping for consistent imagery across the application
 const programImages = {
   // Formation image mappings based on program names
-  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain .webp',
+  'Blockchain et Technologies Décentralisées': '/assets/formationsImg/blockChain.webp',
   'Cloud Computing et Architecture des Systèmes Distribués': '/assets/formationsImg/cloud.webp',
   'Communication Digitale et Stratégies de Contenu': '/assets/formationsImg/comDigital.webp',
   'Cybersécurité et Protection des Systèmes d\'Information': '/assets/formationsImg/cyberSecurity.webp',
@@ -48,7 +48,7 @@ const CourseCard = ({ course, onEnrollClick, onViewDetails }) => {
     };
 
     // Use program-specific image if available, otherwise fallback to imageUrl or default
-    const backgroundImage = programImages[title] || imageUrl || '/assets/images/default-course.jpg';
+    const backgroundImage = programImages[title] || imageUrl || '/assets/images/filiere-informatique.jpg';
 
     return (
         <div

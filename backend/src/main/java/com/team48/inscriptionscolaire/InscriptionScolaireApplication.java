@@ -51,15 +51,13 @@ public class InscriptionScolaireApplication {
                         .orElseThrow(() -> new RuntimeException("Error: ADMIN role not found."));
 
                 // 3. Créer le nouvel utilisateur administrateur
-                User adminUser = User.builder()
-                        .firstname("Admin")
-                        .lastname("User")
-                        .email(adminEmail)
-                        .password(passwordEncoder.encode(adminPassword))
-                        .role(adminRole)
-                        .enabled(true) // <-- ICI ON ACTIVE LE COMPTE DIRECTEMENT
-                        .accountLocked(false)
-                        .build();
+                User adminUser = new User();
+                adminUser.setFirstname("Admin");
+                adminUser.setLastname("User");
+                adminUser.setEmail(adminEmail);
+                adminUser.setPassword(passwordEncoder.encode(adminPassword));
+                adminUser.setRole(adminRole);
+                adminUser.setStatus(false); // false = not disabled (i.e., enabled)
 
                 // 4. Sauvegarder l'admin dans la base de données
                 userRepository.save(adminUser);

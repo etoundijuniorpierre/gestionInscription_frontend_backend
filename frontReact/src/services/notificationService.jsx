@@ -1,7 +1,7 @@
 import axios from 'axios';
 import api from './api';
 
-const NOTIFICATIONS_URL = '/notifications'; // Base path for notification endpoints
+const NOTIFICATIONS_URL = '/api/v1/notifications'; // Base path for notification endpoints (full path required)
 
 export const getNotifications = async () => {
   try {

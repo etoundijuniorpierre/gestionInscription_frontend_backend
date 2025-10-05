@@ -21,4 +21,15 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Notification extends BaseEntity {
    private String content;
+   
+   @ManyToOne
+   private User user;
+   
+   private boolean isRead = false;
+   
+   // Custom constructor for backward compatibility
+   public Notification(String content) {
+       this.content = content;
+       this.isRead = false;
+   }
 }

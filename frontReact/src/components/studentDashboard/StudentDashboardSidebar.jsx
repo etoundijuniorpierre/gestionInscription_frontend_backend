@@ -7,6 +7,8 @@ const StudentDashboardSidebar = () => {
 
     const studentNavItems = [
         { name: 'Tableau de bord', icon: '/assets/svg/dashboard-icon.svg', path: '/dashboard', key: 'student-dashboard' },
+        { name: 'Mes inscriptions', icon: '/assets/svg/enrollment-icon.svg', path: '/dashboard/my-enrollments', key: 'my-enrollments' },
+        { name: 'Mes paiements', icon: '/assets/svg/payment-icon.svg', path: '/dashboard/my-payments', key: 'my-payments' },
         { name: 'FAQ', icon: '/assets/svg/faq-icon.svg', path: '/dashboard/faq', key: 'faq' },
         { name: 'Aide', icon: '/assets/svg/help-icon.svg', path: '/dashboard/help', key: 'help' },
     ];

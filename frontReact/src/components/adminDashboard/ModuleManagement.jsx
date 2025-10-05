@@ -153,7 +153,7 @@ const ModuleManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
-                        <p className="text-gray-600">Gérez les modules de la formation</p>
+                        <p className="text-gray-600 mt-1">Gérez les modules de la formation</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -171,7 +171,7 @@ const ModuleManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
-                        <p className="text-gray-600">Gérez les modules de la formation</p>
+                        <p className="text-gray-600 mt-1">Gérez les modules de la formation</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -224,21 +224,21 @@ const ModuleManagement = () => {
                 </div>
             )}
             
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Modules</h2>
-                    <p className="text-gray-600">Gérez les modules de la formation</p>
+                    <p className="text-gray-600 mt-1">Gérez les modules de la formation</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button
                         onClick={handleBack}
-                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center"
+                        className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center whitespace-nowrap"
                     >
                         Retour aux Formations
                     </button>
                     <button
                         onClick={handleAddModule}
-                        className="bg-[#101957] hover:bg-[#1a2685] text-white font-bold py-2 px-4 rounded flex items-center"
+                        className="bg-[#101957] hover:bg-[#1a2685] text-white font-bold py-2 px-4 rounded flex items-center whitespace-nowrap"
                     >
                         Ajouter un Module
                     </button>
@@ -289,7 +289,7 @@ const ModuleManagement = () => {
                                 required
                             ></textarea>
                         </div>
-                        <div className="flex justify-end gap-4">
+                        <div className="flex flex-wrap justify-end gap-4">
                             <button
                                 type="button"
                                 onClick={handleCancel}
@@ -309,47 +309,49 @@ const ModuleManagement = () => {
             ) : null}
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-[#B6B8CB]">
-                        <tr>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Nom du Module</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Description</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Ordre</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {modules.length > 0 ? (
-                            modules.map((module) => (
-                                <tr key={module.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{module.moduleName}</td>
-                                    <td className="px-6 py-4 text-center" style={{ borderRight: '3px solid white' }}>{module.moduleDescription}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{module.moduleOrder}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
-                                        <button
-                                            onClick={() => handleEditModule(module)}
-                                            className="py-1 px-3 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 transition-colors"
-                                        >
-                                            Modifier
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteModule(module.id)}
-                                            className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
-                                        >
-                                            Supprimer
-                                        </button>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-[#B6B8CB]">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Nom du Module</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Description</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Ordre</th>
+                                <th className="px-6 py-3 text-center text-white text-sm font-bold tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {modules.length > 0 ? (
+                                modules.map((module) => (
+                                    <tr key={module.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{module.moduleName}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{module.moduleDescription}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{module.moduleOrder}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                                            <button
+                                                onClick={() => handleEditModule(module)}
+                                                className="py-1 px-3 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 transition-colors"
+                                            >
+                                                Modifier
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteModule(module.id)}
+                                                className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
+                                            >
+                                                Supprimer
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                                        Aucun module trouvé pour cette formation.
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                                    Aucun module trouvé pour cette formation.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

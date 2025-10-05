@@ -156,12 +156,20 @@ export const deleteUser = async (id) => {
 
 /**
  * Service function to activate/deactivate a user.
+ * Note: This endpoint does not exist in the backend. Use updateUser instead.
  * @param {number} id The ID of the user to toggle status.
  * @returns {Promise} A promise that resolves when the user status is toggled.
  */
 export const toggleUserStatus = async (id) => {
   try {
-    const response = await api.patch(`${USERS_URL}/${id}/toggle-status`);
+    // Get current user data
+    const user = await getUserById(id);
+    // Toggle the enabled status
+    const updatedData = {
+      ...user,
+      enabled: !user.enabled
+    };
+    const response = await api.put(`${USERS_URL}/${id}`, updatedData);
     return response.data;
   } catch (error) {
     console.error(`Error in toggleUserStatus with id ${id}:`, error);

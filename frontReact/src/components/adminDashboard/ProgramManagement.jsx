@@ -109,7 +109,7 @@ const ProgramManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Formations</h2>
-                        <p className="text-gray-600">Gérez les formations de votre institution</p>
+                        <p className="text-gray-600 mt-1">Gérez les formations de votre institution</p>
                     </div>
                     <button
                         onClick={handleAddProgram}
@@ -131,7 +131,7 @@ const ProgramManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Formations</h2>
-                        <p className="text-gray-600">Gérez les formations de votre institution</p>
+                        <p className="text-gray-600 mt-1">Gérez les formations de votre institution</p>
                     </div>
                     <button
                         onClick={handleAddProgram}
@@ -182,14 +182,14 @@ const ProgramManagement = () => {
                 </div>
             )}
             
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Formations</h2>
-                    <p className="text-gray-600">Gérez les formations de votre institution</p>
+                    <p className="text-gray-600 mt-1">Gérez les formations de votre institution</p>
                 </div>
                 <button
                     onClick={handleAddProgram}
-                    className="bg-[#101957] hover:bg-[#1a2685] text-white font-bold py-2 px-4 rounded flex items-center"
+                    className="bg-[#101957] hover:bg-[#1a2685] text-white font-bold py-2 px-4 rounded flex items-center whitespace-nowrap"
                 >
                     <PlusIcon className="w-5 h-5 mr-2" />
                     Ajouter une nouvelle formation
@@ -199,49 +199,51 @@ const ProgramManagement = () => {
             <div className="w-full h-1 bg-[#101957] my-8"></div>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-[#B6B8CB]">
-                        <tr>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Nom de la Formation</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Code</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Frais d'Inscription</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Capacité Max.</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Ouverte aux Inscriptions</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {programs.map((program) => (
-                            <tr key={program.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.programName}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.programCode}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.registrationFee} F</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.maxCapacity}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{program.enrollmentOpen ? 'Oui' : 'Non'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
-                                    <button
-                                        onClick={() => handleManageModules(program.id)}
-                                        className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
-                                    >
-                                        Gérer les Modules
-                                    </button>
-                                    <button
-                                        onClick={() => handleModifyProgram(program.id)}
-                                        className="py-1 px-3 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 transition-colors"
-                                    >
-                                        Modifier
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteProgram(program.id)}
-                                        className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
-                                    >
-                                        Supprimer
-                                    </button>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-[#B6B8CB]">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Nom de la Formation</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Code</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Frais d'Inscription</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Capacité Max.</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Ouverte aux Inscriptions</th>
+                                <th className="px-6 py-3 text-center text-white text-sm font-bold tracking-wider">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {programs.map((program) => (
+                                <tr key={program.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{program.programName}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{program.programCode}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{program.registrationFee} F</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{program.maxCapacity}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" style={{ borderRight: '3px solid white' }}>{program.enrollmentOpen ? 'Oui' : 'Non'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                                        <button
+                                            onClick={() => handleManageModules(program.id)}
+                                            className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
+                                        >
+                                            Gérer les Modules
+                                        </button>
+                                        <button
+                                            onClick={() => handleModifyProgram(program.id)}
+                                            className="py-1 px-3 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 transition-colors"
+                                        >
+                                            Modifier
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteProgram(program.id)}
+                                            className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
+                                        >
+                                            Supprimer
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

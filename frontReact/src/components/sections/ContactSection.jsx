@@ -11,7 +11,9 @@ const ContactSection = () => {
     message: '',
   });
 
-  const [status, setStatus] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,21 +26,46 @@ const ContactSection = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus('sending');
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
     try {
-      await axios.post('http://localhost:9090/api/v1/contact', formData);
-      setStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' }); 
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setStatus('error');
+      console.log('Envoi du formulaire à:', 'http://localhost:9090/api/v1/contact');
+      console.log('Données envoyées:', formData);
+
+      const response = await axios.post('http://localhost:9090/api/v1/contact', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Réponse reçue:', response);
+      setSuccess(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      console.error('Erreur complète:', err);
+      console.error('Code d\'erreur:', err.code);
+      console.error('Message d\'erreur:', err.message);
+      console.error('Réponse d\'erreur:', err.response);
+
+      if (err.code === 'ECONNREFUSED') {
+        setError('Serveur backend non démarré. Veuillez démarrer le serveur sur le port 9090.');
+      } else if (err.response) {
+        setError(`Erreur serveur (${err.response.status}): ${err.response.data?.message || err.message}`);
+      } else {
+        setError('Erreur de connexion. Vérifiez que le serveur backend est démarré.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <section
+      id="contact"
       className="relative mt-[-20] pt-60 md:pt-80 pb-40 md:pb-60 bg-cover bg-no-repeat bg-center flex flex-col items-center justify-end overflow-hidden"
-      style={{ backgroundImage: "url('/assets/images/contact-section-bg.png')" }}
+      style={{ backgroundImage: "url('/assets/images/contact.jpg')" }}
     >
       
       {/*
@@ -68,7 +95,12 @@ const ContactSection = () => {
         <div
           className="absolute w-[33.33rem] h-[33.33rem] rounded-[0.44rem]
                      top-[4.98rem] left-[4.33rem]"
-          style={{ backgroundImage: "url('/assets/images/contact-section-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+          style={{ 
+            backgroundImage: "url('/assets/images/contact.jpg')", 
+            backgroundSize: '100% 100%', 
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
         >
           <div className="absolute inset-0 bg-black opacity-40"></div>
           
@@ -159,14 +191,14 @@ const ContactSection = () => {
                          w-[23.47rem] h-[3.04rem] rounded-lg /* Converted px to rem, rounded-lg is 0.5rem */
                          py-2 px-2 /* Converted 8px padding to py-2 px-2 */
                          border-t-[0.07rem] border-solid border-[#101957]"
-              disabled={status === 'sending'}
+              disabled={loading}
             >
-              {status === 'sending' ? 'Envoi en cours...' : 'Envoyer'}
+              {loading ? 'Envoi en cours...' : 'Envoyer'}
             </button>
           </form>
           
-          {status === 'success' && <p className="mt-4 text-green-500">Message envoyé avec succès !</p>}
-          {status === 'error' && <p className="mt-4 text-red-500">Échec de l'envoi du message. Veuillez réessayer.</p>}
+          {success && <p className="mt-4 text-green-500">Message envoyé avec succès !</p>}
+          {error && <p className="mt-4 text-red-500">{error}</p>}
         </div>
       </div>
     </section>

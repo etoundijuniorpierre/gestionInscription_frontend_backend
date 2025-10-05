@@ -139,8 +139,8 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
                                 type="radio"
                                 className="form-radio text-[#6B4F8B]"
                                 name="gender"
-                                value="FEMALE"
-                                checked={gender === 'FEMALE'}
+                                value="FEMININ"
+                                checked={gender === 'FEMININ'}
                                 onChange={(e) => {
                                     setGender(e.target.value);
                                     if (errors.gender) {

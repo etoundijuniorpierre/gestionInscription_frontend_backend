@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../common/Button.jsx';
+import { toast } from 'react-hot-toast';
 
 const SummaryField = ({ label, value }) => (
     <div>
@@ -73,7 +74,7 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
         if (isConfirmed) {
             onFinish({ ...formData, availableForInternship });
         } else {
-            alert("Veuillez cocher la case pour confirmer que les informations sont exactes.");
+            toast.error("Veuillez cocher la case pour confirmer que les informations sont exactes.");
         }
     };
 
@@ -150,6 +151,7 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
                     <SummaryField label="Spécialisation" value={getSpecializationDisplay()} />
                     <SummaryField label="Début de formation" value={formData.startDate} />
                     <SummaryField label="Fin de formation" value={formData.endDate} />
+                    <SummaryField label="Diplôme obtenu" value={formData.diplomaObtained || 'Non spécifié'} />
                 </div>
                 
                 <h3

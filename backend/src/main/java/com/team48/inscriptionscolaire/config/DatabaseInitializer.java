@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -39,6 +39,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(18) // 18 months
                             .price(new BigDecimal("13500.00")) // 13500 currency units
+                            .hoursPerDay(4)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "WEDNESDAY", "FRIDAY")))
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(13, 0))
                             .build(),
                     Program.builder()
                             .programName("Cloud Computing et Architecture des Systèmes Distribués")
@@ -52,6 +57,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("14500.00")) // 14500 currency units
+                            .hoursPerDay(5)
+                            .daysPerWeek(4)
+                            .courseDays(new HashSet<>(Arrays.asList("TUESDAY", "THURSDAY", "SATURDAY")))
+                            .startTime(LocalTime.of(14, 0))
+                            .endTime(LocalTime.of(19, 0))
                             .build(),
                     Program.builder()
                             .programName("Communication Digitale et Stratégies de Contenu")
@@ -65,6 +75,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(12) // 12 months
                             .price(new BigDecimal("8500.00")) // 8500 currency units
+                            .hoursPerDay(3)
+                            .daysPerWeek(2)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "THURSDAY")))
+                            .startTime(LocalTime.of(10, 0))
+                            .endTime(LocalTime.of(13, 0))
                             .build(),
                     Program.builder()
                             .programName("Cybersécurité et Protection des Systèmes d'Information")
@@ -78,6 +93,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("14000.00")) // 14000 currency units
+                            .hoursPerDay(6)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("TUESDAY", "FRIDAY", "SUNDAY")))
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(15, 0))
                             .build(),
                     Program.builder()
                             .programName("Développement Web et Applications Interactives")
@@ -91,6 +111,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(18) // 18 months
                             .price(new BigDecimal("11000.00")) // 11000 currency units
+                            .hoursPerDay(5)
+                            .daysPerWeek(4)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "WEDNESDAY", "FRIDAY", "SATURDAY")))
+                            .startTime(LocalTime.of(14, 0))
+                            .endTime(LocalTime.of(19, 0))
                             .build(),
                     Program.builder()
                             .programName("Design Graphique et Création Visuelle")
@@ -104,6 +129,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(12) // 12 months
                             .price(new BigDecimal("7000.00")) // 7000 currency units
+                            .hoursPerDay(4)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("TUESDAY", "THURSDAY", "SATURDAY")))
+                            .startTime(LocalTime.of(10, 0))
+                            .endTime(LocalTime.of(14, 0))
                             .build(),
                     Program.builder()
                             .programName("Génie Logiciel et Développement d'Applications")
@@ -117,6 +147,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("12000.00")) // 12000 currency units
+                            .hoursPerDay(5)
+                            .daysPerWeek(4)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "TUESDAY", "THURSDAY", "FRIDAY")))
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(14, 0))
                             .build(),
                     Program.builder()
                             .programName("Gestion de Projet et Leadership d'Équipe")
@@ -130,6 +165,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(12) // 12 months
                             .price(new BigDecimal("9000.00")) // 9000 currency units
+                            .hoursPerDay(3)
+                            .daysPerWeek(2)
+                            .courseDays(new HashSet<>(Arrays.asList("WEDNESDAY", "SUNDAY")))
+                            .startTime(LocalTime.of(15, 0))
+                            .endTime(LocalTime.of(18, 0))
                             .build(),
                     Program.builder()
                             .programName("Intelligence Artificielle et Machine Learning")
@@ -143,6 +183,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("15000.00")) // 15000 currency units
+                            .hoursPerDay(6)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "WEDNESDAY", "FRIDAY")))
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(15, 0))
                             .build(),
                     Program.builder()
                             .programName("Marketing Digital et Stratégies de Communication en Ligne")
@@ -156,6 +201,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(12) // 12 months
                             .price(new BigDecimal("8000.00")) // 8000 currency units
+                            .hoursPerDay(4)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("TUESDAY", "THURSDAY", "SATURDAY")))
+                            .startTime(LocalTime.of(10, 0))
+                            .endTime(LocalTime.of(14, 0))
                             .build(),
                     Program.builder()
                             .programName("Science des Données et Analyse Prédictive")
@@ -169,6 +219,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("13000.00")) // 13000 currency units
+                            .hoursPerDay(5)
+                            .daysPerWeek(4)
+                            .courseDays(new HashSet<>(Arrays.asList("MONDAY", "TUESDAY", "THURSDAY", "FRIDAY")))
+                            .startTime(LocalTime.of(14, 0))
+                            .endTime(LocalTime.of(19, 0))
                             .build(),
                     Program.builder()
                             .programName("Systèmes Embarqués et Internet des Objets")
@@ -182,6 +237,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                             .registrationEndDate(LocalDate.of(2025, 10, 31))
                             .duration(24) // 24 months
                             .price(new BigDecimal("14000.00")) // 14000 currency units
+                            .hoursPerDay(6)
+                            .daysPerWeek(3)
+                            .courseDays(new HashSet<>(Arrays.asList("WEDNESDAY", "FRIDAY", "SUNDAY")))
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(15, 0))
                             .build()
             );
 

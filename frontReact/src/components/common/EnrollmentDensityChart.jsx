@@ -22,7 +22,7 @@ const EnrollmentDensityChart = () => {
                 // Calculate enrollment count by program
                 const programEnrollmentCount = {};
                 enrollments.forEach(enrollment => {
-                    const programId = enrollment.program.id;
+                    const programId = enrollment.programId;
                     programEnrollmentCount[programId] = (programEnrollmentCount[programId] || 0) + 1;
                 });
                 
@@ -89,15 +89,15 @@ const EnrollmentDensityChart = () => {
                 className="p-4 rounded-t-[0.53rem]"
                 style={{ backgroundColor: '#1019574D' }}
             >
-                <h4 className="text-[#101957] font-semibold text-[1.5rem]">Densité des Inscriptions par Formation</h4>
+                <h4 className="text-[#101957] font-semibold text-sm">Densité des Inscriptions par Formation</h4>
             </div>
             <div className="p-6 flex-grow flex flex-col justify-center">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Densité des inscriptions</h3>
-                <p className="text-[#666666] text-[1rem] mb-4">Visualisation de la répartition des inscriptions par formation</p>
+                <h3 className="text-sm font-bold text-gray-800 mb-2">Densité des inscriptions</h3>
+                <p className="text-[#666666] text-sm mb-4">Visualisation de la répartition des inscriptions par formation</p>
                 <div className="space-y-4">
                     {densityData.map((item, index) => (
                         <div key={index}>
-                            <div className="flex justify-between text-[#333333] text-[1.2rem]">
+                            <div className="flex justify-between text-[#333333] text-sm">
                                 <span>{item.filiere}</span>
                                 <span>{item.percentage}% ({item.count})</span>
                             </div>

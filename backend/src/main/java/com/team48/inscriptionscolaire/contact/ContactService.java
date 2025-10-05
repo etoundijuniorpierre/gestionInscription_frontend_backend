@@ -10,14 +10,21 @@ import org.springframework.stereotype.Service;
 public class ContactService {
 
     private final JavaMailSender mailSender;
-    private final String recipientEmail = "contact@igniteacademy.com"; // Your receiving email
+    private final String recipientEmail = "teamkf48inscription@gmail.com"; // Your receiving email
 
     public void sendContactForm(ContactFormDTO dto) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(dto.getEmail()); // The sender's email
+        message.setFrom(recipientEmail); // Utiliser l'adresse configurée comme expéditeur
+        message.setReplyTo(dto.getEmail()); // Mais permettre les réponses à l'expéditeur
         message.setTo(recipientEmail);
         message.setSubject(dto.getSubject());
-        message.setText("Message from: " + dto.getName() + "\n" + dto.getMessage());
+        message.setText(
+            "Nouveau message de contact\n\n" +
+            "De: " + dto.getName() + "\n" +
+            "Email: " + dto.getEmail() + "\n" +
+            "Sujet: " + dto.getSubject() + "\n\n" +
+            "Message:\n" + dto.getMessage()
+        );
         mailSender.send(message);
     }
 }

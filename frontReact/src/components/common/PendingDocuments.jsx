@@ -49,11 +49,13 @@ const PendingDocuments = () => {
                 const enrollments = response.data;
                 
                 // Filter enrollments with pending documents
-                // This is a simplified implementation - in a real scenario, you would have specific document status fields
+                // Note: enrollment.student does not exist in EnrollmentDtoResponse
+                // Using generic student name until proper user data is available
                 const pendingDocs = enrollments
+                    .filter(enrollment => enrollment.status === 'PENDING' || enrollment.status === 'IN_PROGRESS')
                     .slice(0, 5) // Limit to first 5 for display
                     .map(enrollment => ({
-                        studentName: `${enrollment.student.firstname} ${enrollment.student.lastname}`,
+                        studentName: `Étudiant #${enrollment.studentId}`,
                         documentType: 'Document à valider',
                         date: new Date(enrollment.submissionDate).toLocaleDateString('fr-FR')
                     }));
@@ -107,15 +109,14 @@ const PendingDocuments = () => {
                 className="p-4 rounded-t-[0.53rem]"
                 style={{ backgroundColor: '#1019574D' }}
             >
-                <h4 className="text-[#101957] font-semibold text-[1.5rem]">Documents en Attente de Traitement</h4>
+                <h4 className="text-[#101957] font-semibold text-sm">Documents en Attente de Traitement</h4>
             </div>
             <div className="p-6 flex-grow flex flex-col overflow-y-auto">
                 <p 
-                    className="mb-4 text-center"
+                    className="mb-4 text-center text-sm"
                     style={{
                         fontFamily: 'Roboto, sans-serif',
                         fontWeight: 500,
-                        fontSize: '1.05rem',
                         lineHeight: '1.5rem',
                         letterSpacing: '0.046875rem',
                         color: '#999999'

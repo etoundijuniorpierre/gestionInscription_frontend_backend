@@ -32,7 +32,7 @@ const programImages = {
   'Cloud': '/assets/formationsImg/cloud.webp',
   'Intelligence Artificielle': '/assets/formationsImg/ia.webp',
   'IA': '/assets/formationsImg/ia.webp',
-  'Blockchain': '/assets/formationsImg/blockChain .webp',
+  'Blockchain': '/assets/formationsImg/blockChain.webp',
   'Design': '/assets/formationsImg/design.jpg',
   'Projet': '/assets/formationsImg/projet.png',
   'Embarqué': '/assets/formationsImg/embarqué.png',
@@ -155,7 +155,7 @@ const CourseDetail = () => {
   }
   
   // Fallback to default image
-  backgroundImage = backgroundImage || course.image || '/assets/images/default-course.jpg';
+  backgroundImage = backgroundImage || course.image || '/assets/images/filiere-informatique.jpg';
 
   return (
     <div className="px-4 py-8 w-full">

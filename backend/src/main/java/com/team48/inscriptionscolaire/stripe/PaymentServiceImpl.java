@@ -5,8 +5,10 @@ import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
 import com.team48.inscriptionscolaire.enrollment.EnrollmentRepository;
+import com.team48.inscriptionscolaire.enrollment.StatusSubmission;
 import com.team48.inscriptionscolaire.payment.Payment;
 import com.team48.inscriptionscolaire.payment.PaymentRepository;
+import com.team48.inscriptionscolaire.payment.PaymentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,10 @@ public class PaymentServiceImpl implements PaymentService {
         // Save payment information to our database
         Enrollment enrollment = enrollmentRepository.findById(paymentRequest.getEnrollmentId()).orElse(null);
         if (enrollment != null) {
+            // Determine payment type based on enrollment status
+            PaymentType paymentType = enrollment.getStatus() == StatusSubmission.APPROVED ? 
+                PaymentType.PROGRAM_PAYMENT : PaymentType.REGISTRATION_FEE;
+                
             Payment payment = Payment.builder()
                     .sessionId(session.getId())
                     .amount(new BigDecimal(paymentRequest.getAmount()).divide(new BigDecimal(100))) // Convert cents to dollars
@@ -58,6 +64,8 @@ public class PaymentServiceImpl implements PaymentService {
                     .status("PENDING")
                     .paymentDate(LocalDateTime.now())
                     .enrollment(enrollment)
+                    .paymentType(paymentType)
+                    .paymentMethod("STRIPE")
                     .build();
             
             paymentRepository.save(payment);

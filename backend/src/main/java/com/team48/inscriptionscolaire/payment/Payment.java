@@ -26,6 +26,14 @@ public class Payment extends BaseEntity {
     private String status;
     private LocalDateTime paymentDate;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enrollment_id")
     private Enrollment enrollment;
+    
+    // Type of payment: REGISTRATION_FEE or PROGRAM_PAYMENT
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
+    
+    // Payment method used
+    private String paymentMethod;
 }

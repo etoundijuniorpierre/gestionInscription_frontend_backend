@@ -72,6 +72,8 @@ All service functions have been verified to match the API_ENDPOINTS_DOCUMENTATIO
 ### Document Service (documentService.js)
 - `uploadDocument` → POST `/images/upload` ✓
 - `getDocumentByName` → GET `/images/{fileName}` ✓
+- `getDocumentById` → GET `/images/document/{id}` ✓
+- `downloadDocumentById` → GET `/images/download/{id}` ✓
 
 ### Notification Service (notificationService.js)
 - `getNotifications` → GET `/notifications` ✓

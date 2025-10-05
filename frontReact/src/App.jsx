@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Outlet, useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { UserProvider } from './contexts/UserContext';
 import AppHeader from './components/layout/AppHeader';
 import AppFooter from './components/layout/AppFooter';
@@ -8,8 +9,6 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
-import StudentDashboardPage from './pages/StudentDashboardPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
 import CourseDetail from './pages/CourseDetail';
 import PaymentPage from './pages/PaymentPage';
 import ProgramManagement from './components/adminDashboard/ProgramManagement';
@@ -28,8 +27,12 @@ import Step3AcademicInfo from './components/studentDashboard/Step3AcademicInfo';
 import Step4ContactInfo from './components/studentDashboard/Step4ContactInfo';
 import Step5Summary from './components/studentDashboard/Step5Summary';
 import EnrollmentStatusPage from './components/studentDashboard/EnrollmentStatusPage';
+import EnrollmentCorrections from './components/studentDashboard/EnrollmentCorrections';
 import StudentFAQ from './components/studentDashboard/StudentFAQ';
 import StudentHelp from './components/studentDashboard/StudentHelp';
+import MyEnrollments from './components/studentDashboard/MyEnrollments';
+import MyPayments from './components/studentDashboard/MyPayments';
+import StudentEnrollmentDetailsStudent from './components/studentDashboard/StudentEnrollmentDetails';
 import AdminDashboardLayout from './components/adminDashboard/AdminDashboardLayout';
 import AdminFAQ from './components/adminDashboard/AdminFAQ';
 import AdminHelp from './components/adminDashboard/AdminHelp';
@@ -72,6 +75,30 @@ function App() {
 
     return (
         <div className="App flex flex-col min-h-screen">
+            <Toaster 
+                position="top-right"
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                    },
+                    success: {
+                        duration: 3000,
+                        iconTheme: {
+                            primary: '#4ade80',
+                            secondary: '#fff',
+                        },
+                    },
+                    error: {
+                        duration: 4000,
+                        iconTheme: {
+                            primary: '#ef4444',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
+            />
             <Routes>
                 {/* Routes with a large footer, only the HomePage in this case */}
                 <Route path="/" element={<AppLayoutWithLargeFooter />}>
@@ -98,6 +125,10 @@ function App() {
                     <Route path="step4" element={<Step4ContactInfo />} />
                     <Route path="step5" element={<Step5Summary />} />
                     <Route path="status" element={<EnrollmentStatusPage />} />
+                    <Route path="corrections" element={<EnrollmentCorrections />} />
+                    <Route path="my-enrollments" element={<MyEnrollments />} />
+                    <Route path="my-enrollments/:enrollmentId" element={<StudentEnrollmentDetailsStudent />} />
+                    <Route path="my-payments" element={<MyPayments />} />
                     <Route path="messages" element={<div>Messagerie pour étudiant</div>} />
                     <Route path="settings" element={<div>Paramètres pour étudiant</div>} />
                     <Route path="faq" element={<StudentFAQ />} />

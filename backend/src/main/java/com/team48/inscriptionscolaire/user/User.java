@@ -1,62 +1,53 @@
 package com.team48.inscriptionscolaire.user;
 
-
+import com.team48.inscriptionscolaire.common.BaseEntity;
 import com.team48.inscriptionscolaire.notification.Notification;
 import com.team48.inscriptionscolaire.role.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor 
+@AllArgsConstructor
 @Entity
 @SuperBuilder
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails, Principal {
+public class User extends BaseEntity implements UserDetails, Principal {
 
-    @Id
-    @GeneratedValue()
-    private Integer id;
     private String firstname;
     private String lastname;
 
     @Column(unique = true)
     private String email;
     private String password;
-    private boolean accountLocked;
-    private boolean enabled;
+    private boolean status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
 
+        private LocalDate dateOfBirth;
+    private String address;
+    private String phoneNumber;
 
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdDate = LocalDateTime.now();
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime lastModifiedDate;
+    private String gender;
 
-
-    @Override
-    public String getName() {
-        return email; //the unique identifier of our users
-    }
+    private String nationality;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -65,12 +56,12 @@ public class User implements UserDetails, Principal {
 
     @Override
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return email; //the unique identifier
+        return this.email;
     }
 
     @Override
@@ -90,10 +81,16 @@ public class User implements UserDetails, Principal {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !this.status; // status represents disabled status, so we return the inverse
+    }
+
+    @Override
+    public String getName() {
+        return this.email;
     }
 
     public String fullName(){
         return firstname + " " + lastname;
     }
+
 }

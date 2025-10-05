@@ -59,7 +59,7 @@ const RealTimeStats = ({ connectedAccounts }) => {
                     height: '12.5%',
                 }}
             >
-                <h4 className="text-[#101957] font-semibold text-[1.4rem]">Statistiques en Temps Réel</h4>
+                <h4 className="text-[#101957] font-semibold text-sm">Statistiques en Temps Réel</h4>
             </div>
 
             {/* Main content area with list items */}
@@ -70,18 +70,7 @@ const RealTimeStats = ({ connectedAccounts }) => {
                     boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.2)',
                 }}
             >
-                <ul className="text-[#333333] text-[1.2rem] flex flex-col space-y-2 flex-grow">
-                    <li
-                        className="p-2 rounded-[0.5rem] flex justify-between items-center"
-                        style={{
-                            backgroundColor: '#1019571A',
-                            padding: '0.5rem',
-                            flexGrow: 1,
-                        }}
-                    >
-                        <span className="font-bold text-[1.1rem]" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>Comptes connectés</span>
-                        <span className="text-red-500 font-bold text-[1.1rem]">{connectedAccounts || statistics?.connectedAccounts || '0'}</span>
-                    </li>
+                <ul className="text-[#333333] text-sm flex flex-col space-y-2 flex-grow">
                     <li
                         className="p-2 rounded-[0.5rem] flex items-center"
                         style={{
@@ -90,7 +79,7 @@ const RealTimeStats = ({ connectedAccounts }) => {
                             flexGrow: 1,
                         }}
                     >
-                        <span className="font-bold text-[1.1rem]" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
+                        <span className="font-bold text-sm" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
                             {lastValidatedDocumentMessage}
                         </span>
                     </li>
@@ -102,7 +91,7 @@ const RealTimeStats = ({ connectedAccounts }) => {
                             flexGrow: 1,
                         }}
                     >
-                        <span className="font-bold text-[1.1rem]" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
+                        <span className="font-bold text-sm" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
                             {lastEnrollmentMessage}
                         </span>
                     </li>
@@ -114,7 +103,7 @@ const RealTimeStats = ({ connectedAccounts }) => {
                             flexGrow: 1,
                         }}
                     >
-                        <span className="font-bold text-[1.1rem]" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
+                        <span className="font-bold text-sm" style={{ color: '#666666', letterSpacing: '0.03125rem' }}>
                             {lastPaymentMessage}
                         </span>
                     </li>

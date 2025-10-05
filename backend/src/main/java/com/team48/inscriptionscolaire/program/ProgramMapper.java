@@ -20,6 +20,12 @@ public class ProgramMapper {
                 .registrationEndDate(dto.getRegistrationEndDate())
                 .duration(dto.getDuration())
                 .price(dto.getPrice())
+                .startDate(dto.getStartDate())
+                .hoursPerDay(dto.getHoursPerDay())
+                .daysPerWeek(dto.getDaysPerWeek())
+                .courseDays(dto.getCourseDays())
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
                 .build();
     }
 
@@ -37,8 +43,19 @@ public class ProgramMapper {
         dto.setRegistrationEndDate(program.getRegistrationEndDate());
         dto.setDuration(program.getDuration());
         dto.setPrice(program.getPrice());
+        dto.setStartDate(program.getStartDate());
+        dto.setEndDate(program.getEndDate());
+        dto.setCreatedDate(program.getCreatedDate());
+        dto.setLastModifiedDate(program.getLastModifiedDate());
         // Set enrollment status
         dto.setEnrollmentOpen(program.isEnrollmentOpen());
+        
+        // Set schedule properties
+        dto.setHoursPerDay(program.getHoursPerDay());
+        dto.setDaysPerWeek(program.getDaysPerWeek());
+        dto.setCourseDays(program.getCourseDays());
+        dto.setStartTime(program.getStartTime());
+        dto.setEndTime(program.getEndTime());
         
         // Map learn modules
         if (program.getLearnModules() != null) {

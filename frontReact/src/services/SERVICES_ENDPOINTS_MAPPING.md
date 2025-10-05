@@ -64,6 +64,8 @@ This document maps all frontend services to their corresponding backend API endp
 |------------------|-------------|----------|-------------------------|
 | `uploadDocument` | POST | `/images/upload` | [API Docs](file:///c:\Users\etoun\Documents\pk48\inscription\soumettre\frontReact\src\API_ENDPOINTS_DOCUMENTATION.md#L565-L571) |
 | `getDocumentByName` | GET | `/images/{fileName}` | [API Docs](file:///c:\Users\etoun\Documents\pk48\inscription\soumettre\frontReact\src\API_ENDPOINTS_DOCUMENTATION.md#L574-L580) |
+| `getDocumentById` | GET | `/images/document/{id}` | [API Docs](file:///c:\Users\etoun\Documents\pk48\inscription\soumettre\frontReact\src\API_ENDPOINTS_DOCUMENTATION.md#L583-L589) |
+| `downloadDocumentById` | GET | `/images/download/{id}` | [API Docs](file:///c:\Users\etoun\Documents\pk48\inscription\soumettre\frontReact\src\API_ENDPOINTS_DOCUMENTATION.md#L598-L604) |
 
 ## Payment Service
 **Base URL:** `/payments`

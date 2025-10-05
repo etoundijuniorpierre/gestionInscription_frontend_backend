@@ -39,3 +39,35 @@ export const getDocumentByName = async (fileName) => {
     throw error;
   }
 };
+
+/**
+ * Service function to get document metadata by ID.
+ * @param {number} documentId The ID of the document to retrieve.
+ * @returns {Promise} A promise that resolves to the document metadata.
+ */
+export const getDocumentById = async (documentId) => {
+  try {
+    const response = await api.get(`${IMAGES_URL}/document/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error in getDocumentById with documentId ${documentId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Service function to download a document by ID.
+ * @param {number} documentId The ID of the document to download.
+ * @returns {Promise} A promise that resolves to the document blob.
+ */
+export const downloadDocumentById = async (documentId) => {
+  try {
+    const response = await api.get(`${IMAGES_URL}/download/${documentId}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error in downloadDocumentById with documentId ${documentId}:`, error);
+    throw error;
+  }
+};

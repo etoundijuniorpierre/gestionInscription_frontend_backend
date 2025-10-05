@@ -40,7 +40,7 @@ export const sampleBackendPrograms = [
 // Expected frontend data structure after transformation
 export const expectedFrontendCourses = sampleBackendPrograms.map(program => ({
   id: program.id,
-  image: program.image || '/assets/images/Filière.png',
+  image: program.image || '/assets/images/filiere-informatique.jpg',
   title: program.programName,
   description: program.description,
   link: `/courses/${program.programCode}`,

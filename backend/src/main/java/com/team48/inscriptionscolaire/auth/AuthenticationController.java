@@ -52,6 +52,13 @@ public class AuthenticationController {
         return ResponseEntity.accepted().build();
     }
 
+    @PostMapping("/resend-activation-code")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<Void> resendActivationCode(@RequestBody @Valid ResendActivationCodeRequest request) throws MessagingException {
+        service.resendActivationCode(request.getEmail());
+        return ResponseEntity.accepted().build();
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         service.logout(request);

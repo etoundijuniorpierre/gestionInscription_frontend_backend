@@ -11,12 +11,12 @@ import java.util.List;
 @Data
 public class EnrollmentDtoResponse {
     private Integer id;
-    private String academicYear;
     private Integer programId;
     private Integer studentId;
     private String programName;
     private StatusSubmission status;
     private LocalDateTime createdDate;
+    private LocalDateTime lastModifiedDate;
     private LocalDateTime submissionDate;
     private LocalDateTime validationDate;
     private int currentStep;

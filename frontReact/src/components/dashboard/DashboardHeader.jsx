@@ -42,9 +42,10 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
         const fetchNotifications = async () => {
             if (isAuthenticated) {
                 try {
-                    const response = await api.get('/notifications');
+                    const response = await api.get('/api/v1/notifications');
                     const notifications = response.data;
                     setNotifications(notifications);
+                    // Count unread notifications (backend now provides isRead field)
                     const count = notifications.filter(n => !n.isRead).length;
                     setUnreadCount(count);
                 } catch (error) {
@@ -59,7 +60,8 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
     const markAllAsRead = async () => {
         if (isAuthenticated) {
             try {
-                await api.post('/notifications/mark-all-as-read');
+                await api.post('/api/v1/notifications/mark-all-as-read');
+                // Update local state to mark all as read
                 setNotifications(notifications.map(n => ({ ...n, isRead: true })));
                 setUnreadCount(0);
             } catch (error) {

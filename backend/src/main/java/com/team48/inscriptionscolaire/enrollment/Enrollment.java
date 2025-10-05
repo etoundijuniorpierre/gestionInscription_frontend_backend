@@ -2,6 +2,7 @@ package com.team48.inscriptionscolaire.enrollment;
 
 import com.team48.inscriptionscolaire.common.BaseEntity;
 import com.team48.inscriptionscolaire.document.Document;
+import com.team48.inscriptionscolaire.payment.Payment;
 import com.team48.inscriptionscolaire.program.Program;
 import com.team48.inscriptionscolaire.student.Student;
 import jakarta.persistence.*;
@@ -10,7 +11,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Entity
 @Getter @Setter
 @SuperBuilder
@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 public class Enrollment extends BaseEntity {
 
-    private String academicYear;
     private LocalDateTime submissionDate;
 
     @Enumerated(EnumType.STRING)
@@ -46,4 +45,7 @@ public class Enrollment extends BaseEntity {
     private ContactDetails contactDetails;
 
     private int stepCompleted;
+    
+    @OneToOne(mappedBy = "enrollment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
 }

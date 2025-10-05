@@ -18,14 +18,14 @@ class AcademicInfoTest {
         academicInfo.setAvailableForInternship(true);
         academicInfo.setStartDate(LocalDate.of(2020, 9, 1));
         academicInfo.setEndDate(LocalDate.of(2023, 6, 30));
-        academicInfo.setDiplomaObtained(true);
+        academicInfo.setDiplomaObtained("true");
 
         assertEquals("University of Technology", academicInfo.getLastInstitution());
         assertEquals("Computer Science", academicInfo.getSpecialization());
         assertTrue(academicInfo.getAvailableForInternship());
         assertEquals(LocalDate.of(2020, 9, 1), academicInfo.getStartDate());
         assertEquals(LocalDate.of(2023, 6, 30), academicInfo.getEndDate());
-        assertTrue(academicInfo.getDiplomaObtained());
+        assertEquals("true", academicInfo.getDiplomaObtained());
     }
 
     @Test
@@ -36,13 +36,13 @@ class AcademicInfoTest {
         academicInfoDto.setAvailableForInternship(true);
         academicInfoDto.setStartDate(LocalDate.of(2020, 9, 1));
         academicInfoDto.setEndDate(LocalDate.of(2023, 6, 30));
-        academicInfoDto.setDiplomaObtained(true);
+        academicInfoDto.setDiplomaObtained("true");
 
         assertEquals("University of Technology", academicInfoDto.getLastInstitution());
         assertEquals("Computer Science", academicInfoDto.getSpecialization());
         assertTrue(academicInfoDto.getAvailableForInternship());
         assertEquals(LocalDate.of(2020, 9, 1), academicInfoDto.getStartDate());
         assertEquals(LocalDate.of(2023, 6, 30), academicInfoDto.getEndDate());
-        assertTrue(academicInfoDto.getDiplomaObtained());
+        assertEquals("true", academicInfoDto.getDiplomaObtained());
     }
 }

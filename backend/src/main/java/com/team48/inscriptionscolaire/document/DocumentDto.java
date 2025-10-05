@@ -24,4 +24,8 @@ public class DocumentDto {
     private ValidationStatus validationStatus;
     private String documentType;
     private String rejectionReason;
+    
+    // BaseEntity audit fields
+    private LocalDateTime createdDate;
+    private LocalDateTime lastModifiedDate;
 }

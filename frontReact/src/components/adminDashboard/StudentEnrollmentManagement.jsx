@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllEnrollments, getAvailableAcademicYears } from '../../services/enrollmentManagementService';
+import { mapApiStatusToDisplay } from '../../utils/enrollmentStatusUtils';
 
 const StudentEnrollmentManagement = ({ onViewDetails }) => {
     const navigate = useNavigate();
@@ -33,18 +34,17 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         let result = enrollmentData;
         
         if (selectedStatus) {
-            result = result.filter(enrollment => enrollment.status === selectedStatus);
+            result = result.filter(enrollment => mapApiStatusToDisplay(enrollment.status) === selectedStatus);
         }
         
         if (selectedMajor) {
-            result = result.filter(enrollment => 
-                enrollment.program && enrollment.program.programName === selectedMajor
-            );
+            result = result.filter(enrollment => enrollment.programName === selectedMajor);
         }
         
-        if (selectedAcademicYear) {
-            result = result.filter(enrollment => enrollment.academicYear === selectedAcademicYear);
-        }
+        // Academic year filtering removed - feature abandoned
+        // if (selectedAcademicYear) {
+        //     result = result.filter(enrollment => enrollment.academicYear === selectedAcademicYear);
+        // }
         
         setFilteredEnrollments(result);
         setTotalPages(Math.ceil(result.length / 10)); // Update total pages based on filtered results
@@ -164,7 +164,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
-                        <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                        <p className="text-gray-600 mt-1">Gérez les inscriptions des étudiants</p>
                     </div>
                     <div className="flex items-center space-x-4">
                         <div className="h-10 w-64 bg-gray-200 rounded animate-pulse"></div>
@@ -182,7 +182,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
-                        <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                        <p className="text-gray-600 mt-1">Gérez les inscriptions des étudiants</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -227,10 +227,10 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
             )}
             
             {/* Top Section with Title, Hamburger Menu, and Search Bar */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
-                    <p className="text-gray-600">Gérez les inscriptions des étudiants</p>
+                    <p className="text-gray-600 mt-1">Gérez les inscriptions des étudiants</p>
                 </div>
                 <div className="flex items-center space-x-4">
                     {/* Hamburger Menu for Dropdowns */}
@@ -258,6 +258,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                                                 <button onClick={() => { setSelectedStatus('Soumis'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Soumis</button>
                                                 <button onClick={() => { setSelectedStatus('Validé'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Validé</button>
                                                 <button onClick={() => { setSelectedStatus('Refusé'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Refusé</button>
+                                                <button onClick={() => { setSelectedStatus('Corrections requises'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Corrections requises</button>
                                             </div>
                                         )}
                                     </li>
@@ -302,7 +303,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                     <input
                         type="text"
                         placeholder="Rechercher"
-                        className="p-2 rounded-md border border-gray-300 w-96"
+                        className="p-2 rounded-md border border-gray-300 w-full md:w-96"
                     />
                 </div>
             </div>
@@ -312,7 +313,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
 
             {/* Action Buttons */}
             {selectedEnrollments.length > 0 && (
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-4">
                     <button
                         className={`${actionButtonStyle} text-[#101957] border-[#101957] bg-white hover:bg-[#101957] hover:text-white`}
                     >
@@ -333,116 +334,154 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
             
             {/* Main Table Section */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-[#B6B8CB]">
-                        <tr>
-                            <th className="px-6 py-6 text-left text-white text-[1.2em] font-bold tracking-wider rounded-tl-xl" style={{ borderRight: '3px solid white' }}>
-                                <input
-                                    type="checkbox"
-                                    onChange={handleSelectAll}
-                                    checked={isAllSelected}
-                                    className="w-8 h-8"
-                                />
-                            </th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>ID Inscription</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Nom Étudiant</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Formation</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Date Soumission</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider" style={{ borderRight: '3px solid white' }}>Statut</th>
-                            <th className="px-6 py-6 text-center text-white text-[1.2em] font-bold tracking-wider rounded-tr-xl">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {currentEnrollments.map((enrollment) => (
-                            <tr key={enrollment.id} className={selectedEnrollments.includes(enrollment.id) ? 'bg-gray-100' : ''}>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-[#B6B8CB]">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">
                                     <input
                                         type="checkbox"
-                                        checked={selectedEnrollments.includes(enrollment.id)}
-                                        onChange={() => handleSelectEnrollment(enrollment.id)}
-                                        className="w-8 h-8"
+                                        onChange={handleSelectAll}
+                                        checked={isAllSelected}
+                                        className="w-4 h-4"
                                     />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{enrollment.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>
-                                    {enrollment.student ? `${enrollment.student.firstname} ${enrollment.student.lastname}` : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>
-                                    {enrollment.program ? enrollment.program.programName : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>
-                                    {enrollment.submissionDate ? new Date(enrollment.submissionDate).toLocaleString('fr-FR') : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center" style={{ borderRight: '3px solid white' }}>{enrollment.status}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                    <button
-                                        onClick={() => onViewDetails(enrollment)}
-                                        className="py-1 px-3 rounded-md bg-white text-[#999999] border transition-all duration-200
-                                        hover:bg-gray-100 hover:border-gray-500 hover:text-gray-500
-                                        active:bg-gray-200 active:border-blue-700 active:text-blue-700"
-                                        style={{ borderColor: '#999999', borderWidth: '0.7px' }}>
-                                        Voir les Détails
-                                    </button>
-                                </td>
+                                </th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">ID Inscription</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Nom Étudiant</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Formation</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Date Soumission</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Statut</th>
+                                <th className="px-6 py-3 text-center text-white text-sm font-bold tracking-wider">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {currentEnrollments.map((enrollment) => (
+                                <tr key={enrollment.id} className={selectedEnrollments.includes(enrollment.id) ? 'bg-gray-100' : 'hover:bg-gray-50'}>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 text-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedEnrollments.includes(enrollment.id)}
+                                            onChange={() => handleSelectEnrollment(enrollment.id)}
+                                            className="w-4 h-4"
+                                        />
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{enrollment.id}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                                        {enrollment.personalInfo ? `${enrollment.personalInfo.firstName} ${enrollment.personalInfo.lastName}` : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                                        {enrollment.programName || 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                                        {enrollment.submissionDate ? new Date(enrollment.submissionDate).toLocaleString('fr-FR') : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{mapApiStatusToDisplay(enrollment.status)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <button
+                                            onClick={() => onViewDetails(enrollment)}
+                                            className="py-1 px-3 rounded-md bg-white text-gray-500 border text-sm transition-all duration-200
+                                            hover:bg-gray-100 hover:border-gray-500 hover:text-gray-500
+                                            active:bg-gray-200 active:border-blue-700 active:text-blue-700"
+                                            style={{ borderColor: '#999999', borderWidth: '0.7px' }}>
+                                            Voir les Détails
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* Pagination Section */}
-            <div className="flex justify-end items-center mt-4">
-                <div className="flex-1 flex justify-between sm:hidden">
-                    <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Précédent </a>
-                    <a href="#" className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Suivant </a>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-end">
-                    <div>
-                        <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            <button
-                                onClick={handlePrevious}
-                                disabled={isFirstPage}
-                                className={`relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent border-b border-black/10 rounded-l-md ${previousBtnColor}`}
-                                style={{ gap: '0.3rem', opacity: isFirstPage ? '0.5' : '1' }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Précédent
-                            </button>
-                            <a href="#" aria-current="page"
-                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > 1 </a>
-                            <a href="#"
-                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > 2 </a>
-                            <a href="#"
-                                className="relative hidden md:inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > 3 </a>
-                            <span
-                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > ... </span>
-                            <a href="#"
-                                className="relative hidden md:inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > {totalPages - 1} </a>
-                            <a href="#"
-                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
-                            > {totalPages} </a>
-                            <button
-                                onClick={handleNext}
-                                disabled={isLastPage}
-                                className={`relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent border-b border-black/10 rounded-r-md ${nextBtnColor}`}
-                                style={{ gap: '0.3rem', opacity: isLastPage ? '0.5' : '1' }}
-                            >
-                                Suivant
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        </nav>
+            {/* Pagination Section - Only show when there are more than 10 items */}
+            {filteredEnrollments.length > 10 && (
+                <div className="flex justify-end items-center mt-4">
+                    <div className="flex-1 flex justify-between sm:hidden">
+                        <button 
+                            onClick={handlePrevious}
+                            disabled={isFirstPage}
+                            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${isFirstPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            Précédent
+                        </button>
+                        <button 
+                            onClick={handleNext}
+                            disabled={isLastPage}
+                            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ${isLastPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            Suivant
+                        </button>
+                    </div>
+                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-end">
+                        <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button
+                                    onClick={handlePrevious}
+                                    disabled={isFirstPage}
+                                    className={`relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent border-b border-black/10 rounded-l-md ${previousBtnColor} ${isFirstPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    style={{ gap: '0.3rem' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Précédent
+                                </button>
+                                
+                                {/* Page numbers */}
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const pageNum = index + 1;
+                                    // Show first, last, current, and nearby pages
+                                    if (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) {
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10 ${currentPage === pageNum ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    }
+                                    // Show ellipsis for skipped pages
+                                    if (pageNum === 2 && currentPage > 3) {
+                                        return (
+                                            <span
+                                                key="ellipsis-start"
+                                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
+                                            >
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                    if (pageNum === totalPages - 1 && currentPage < totalPages - 2) {
+                                        return (
+                                            <span
+                                                key="ellipsis-end"
+                                                className="relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent text-[#1E1E1E] border-b border-black/10"
+                                            >
+                                                ...
+                                            </span>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                                
+                                <button
+                                    onClick={handleNext}
+                                    disabled={isLastPage}
+                                    className={`relative inline-flex items-center px-6 py-3 text-base font-medium bg-transparent border-b border-black/10 rounded-r-md ${nextBtnColor} ${isLastPage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    style={{ gap: '0.3rem' }}
+                                >
+                                    Suivant
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </nav>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

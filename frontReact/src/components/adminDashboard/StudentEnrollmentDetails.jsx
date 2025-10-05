@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getEnrollmentById } from '../../services/enrollmentManagementService';
+import { mapApiStatusToDisplay } from '../../utils/enrollmentStatusUtils';
 
 const CollapsibleSection = ({ title, children, isCollapsed, onToggle }) => {
     return (
@@ -108,10 +109,13 @@ const StudentEnrollmentDetails = ({ onBack }) => {
     };
 
     const [collapsedSections, setCollapsedSections] = useState({
+        enrollmentInfo: false,
         personalInfo: false,
+        identityInfo: false,
         documents: false,
         academicHistory: false,
         contactInfo: false,
+        emergencyContacts: false,
     });
 
     const toggleSection = (sectionName) => {
@@ -137,8 +141,11 @@ const StudentEnrollmentDetails = ({ onBack }) => {
     const personalInfo = enrollmentData.personalInfo || {};
     const academicInfo = enrollmentData.academicInfo || {};
     const contactDetails = enrollmentData.contactDetails || {};
-    const student = enrollmentData.student || {};
-    const program = enrollmentData.program || {};
+    // Note: Backend now returns studentId, programId, and programName instead of full objects
+    const studentName = personalInfo.firstName && personalInfo.lastName 
+        ? `${personalInfo.firstName} ${personalInfo.lastName}` 
+        : 'N/A';
+    const studentEmail = contactDetails.email || 'N/A';
 
     return (
         <div className="p-8">
@@ -154,7 +161,7 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                     </svg>
                 </button>
                 <h2 className="text-[#333333] text-3xl font-bold">
-                    Détail de l'inscription de "{student.firstname} {student.lastname}" à "{program.programName}"
+                    Détail de l'inscription #{enrollmentData.id}
                 </h2>
             </div>
 
@@ -163,16 +170,36 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                 <label className="mr-4 text-lg font-semibold text-[#101957]">Statut global :</label>
                 <select
                     className="p-2 rounded-md border border-gray-300 bg-white"
-                    value={enrollmentData.status}
+                    value={mapApiStatusToDisplay(enrollmentData.status)}
                     onChange={(e) => setEnrollmentData(prev => ({ ...prev, status: e.target.value }))}
                 >
                     <option value="Soumis">Soumis</option>
                     <option value="Validé">Validé</option>
                     <option value="Refusé">Refusé</option>
+                    <option value="Corrections requises">Corrections requises</option>
                 </select>
             </div>
 
             {/* Collapsible Sections */}
+            <CollapsibleSection
+                title="Informations sur l'Inscription"
+                isCollapsed={collapsedSections.enrollmentInfo}
+                onToggle={() => toggleSection('enrollmentInfo')}
+            >
+                <DetailField label="ID de l'Inscription" value={enrollmentData.id} />
+                <DetailField label="Date de Création" value={enrollmentData.createdDate ? new Date(enrollmentData.createdDate).toLocaleString('fr-FR') : 'N/A'} />
+                <DetailField label="Dernière Modification" value={enrollmentData.lastModifiedDate ? new Date(enrollmentData.lastModifiedDate).toLocaleString('fr-FR') : 'N/A'} />
+                <DetailField label="Date de Soumission" value={enrollmentData.submissionDate ? new Date(enrollmentData.submissionDate).toLocaleString('fr-FR') : 'N/A'} />
+                <DetailField label="Date de Validation" value={enrollmentData.validationDate ? new Date(enrollmentData.validationDate).toLocaleString('fr-FR') : 'N/A'} />
+                <DetailField label="Raison du Rejet" value={enrollmentData.rejectionReason} />
+                <DetailField label="ID Étudiant" value={enrollmentData.studentId} />
+                <DetailField label="Étudiant" value={studentName} />
+                <DetailField label="Email de l'Étudiant" value={studentEmail} />
+                <DetailField label="ID Formation" value={enrollmentData.programId} />
+                <DetailField label="Formation" value={enrollmentData.programName} />
+                <DetailField label="Étape Actuelle" value={enrollmentData.currentStep} />
+            </CollapsibleSection>
+
             <CollapsibleSection
                 title="Informations Personnelles"
                 isCollapsed={collapsedSections.personalInfo}
@@ -181,9 +208,20 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                 <DetailField label="Nom" value={personalInfo.lastName} />
                 <DetailField label="Prénom" value={personalInfo.firstName} />
                 <DetailField label="Sexe" value={personalInfo.gender} />
-                <DetailField label="Date de naissance" value={personalInfo.dateOfBirth} />
+                <DetailField label="Date de Naissance" value={personalInfo.dateOfBirth} />
                 <DetailField label="Nationalité" value={personalInfo.nationality} />
-                <DetailField label="Type de pièce d'identité" value={personalInfo.identityDocumentType} />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+                title="Pièce d'Identité"
+                isCollapsed={collapsedSections.identityInfo}
+                onToggle={() => toggleSection('identityInfo')}
+            >
+                <DetailField label="Type de Pièce d'Identité" value={personalInfo.identityDocumentType} />
+                <DetailField label="Numéro de Pièce d'Identité" value={personalInfo.identityDocumentNumber} />
+                <DetailField label="Date de Délivrance" value={personalInfo.issueDate} />
+                <DetailField label="Date d'Expiration" value={personalInfo.expirationDate} />
+                <DetailField label="Lieu de Délivrance" value={personalInfo.placeOfIssue} />
             </CollapsibleSection>
 
             <CollapsibleSection
@@ -191,8 +229,38 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                 isCollapsed={collapsedSections.documents}
                 onToggle={() => toggleSection('documents')}
             >
-                {/* In a real implementation, you would map through actual documents */}
-                <div className="text-gray-500">Document management functionality would be implemented here</div>
+                {enrollmentData.documents && enrollmentData.documents.length > 0 ? (
+                    enrollmentData.documents.map((doc, index) => (
+                        <div key={doc.id} className="col-span-2 border border-gray-200 rounded p-4 mb-3">
+                            <div className="flex justify-between items-center mb-3">
+                                <h4 className="text-base font-semibold text-gray-800">{doc.name}</h4>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    doc.validationStatus === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                    doc.validationStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                    'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {doc.validationStatus === 'APPROVED' ? 'Approuvé' :
+                                     doc.validationStatus === 'REJECTED' ? 'Rejeté' : 'En attente'}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                <DetailField label="ID Document" value={doc.id} />
+                                <DetailField label="Type de Document" value={doc.documentType} />
+                                <DetailField label="Type de Contenu" value={doc.contentType} />
+                                <DetailField label="Date de Téléchargement" value={doc.uploadDate ? new Date(doc.uploadDate).toLocaleString('fr-FR') : 'N/A'} />
+                                <DetailField label="Date de Création" value={doc.createdDate ? new Date(doc.createdDate).toLocaleString('fr-FR') : 'N/A'} />
+                                <DetailField label="Dernière Modification" value={doc.lastModifiedDate ? new Date(doc.lastModifiedDate).toLocaleString('fr-FR') : 'N/A'} />
+                                {doc.rejectionReason && (
+                                    <div className="col-span-2">
+                                        <DetailField label="Raison du Rejet" value={doc.rejectionReason} />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="col-span-2 text-gray-500">Aucun document fourni</div>
+                )}
             </CollapsibleSection>
 
             <CollapsibleSection
@@ -200,11 +268,12 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                 isCollapsed={collapsedSections.academicHistory}
                 onToggle={() => toggleSection('academicHistory')}
             >
-                <DetailField label="Dernier établissement fréquenté" value={academicInfo.lastInstitution} />
+                <DetailField label="Dernier Établissement Fréquenté" value={academicInfo.lastInstitution} />
                 <DetailField label="Spécialisation" value={academicInfo.specialization} />
-                <DetailField label="Disponible pour un stage ?" value={academicInfo.availableForInternship ? 'Oui' : 'Non'} />
-                <DetailField label="Début de formation" value={academicInfo.startDate} />
-                <DetailField label="Fin de formation" value={academicInfo.endDate} />
+                <DetailField label="Disponible pour un Stage" value={academicInfo.availableForInternship ? 'Oui' : 'Non'} />
+                <DetailField label="Date de Début" value={academicInfo.startDate} />
+                <DetailField label="Date de Fin" value={academicInfo.endDate} />
+                <DetailField label="Diplôme Obtenu" value={academicInfo.diplomaObtained} />
             </CollapsibleSection>
 
             <CollapsibleSection
@@ -213,12 +282,33 @@ const StudentEnrollmentDetails = ({ onBack }) => {
                 onToggle={() => toggleSection('contactInfo')}
             >
                 <DetailField label="Email" value={contactDetails.email} />
-                <DetailField label="Numéro de téléphone" value={`${contactDetails.countryCode} ${contactDetails.phoneNumber}`} />
+                <DetailField label="Code Pays" value={contactDetails.countryCode} />
+                <DetailField label="Numéro de Téléphone" value={contactDetails.phoneNumber} />
                 <DetailField label="Pays" value={contactDetails.country} />
                 <DetailField label="Région" value={contactDetails.region} />
                 <DetailField label="Ville" value={contactDetails.city} />
                 <DetailField label="Adresse" value={contactDetails.address} />
-                {/* Emergency contacts would be handled here in a real implementation */}
+            </CollapsibleSection>
+
+            <CollapsibleSection
+                title="Contacts d'Urgence"
+                isCollapsed={collapsedSections.emergencyContacts}
+                onToggle={() => toggleSection('emergencyContacts')}
+            >
+                {contactDetails.emergencyContacts && contactDetails.emergencyContacts.length > 0 ? (
+                    contactDetails.emergencyContacts.map((contact, index) => (
+                        <div key={index} className="border border-gray-200 rounded p-3 mb-3">
+                            <div className="grid grid-cols-2 gap-2">
+                                <DetailField label="Nom" value={contact.name} />
+                                <DetailField label="Relation" value={contact.relationship} />
+                                <DetailField label="Code Pays" value={contact.countryCode} />
+                                <DetailField label="Numéro de Téléphone" value={contact.phone} />
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-gray-500">Aucun contact d'urgence fourni</div>
+                )}
             </CollapsibleSection>
         </div>
     );

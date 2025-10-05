@@ -67,4 +67,48 @@ public class DocumentController {
                 .body(imageData);
 
     }
+    
+    // New endpoint to get document metadata by ID
+    @GetMapping("/document/{id}")
+    @Operation(
+            summary = "Get document by ID",
+            description = "Retrieve document metadata by its ID"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Document retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = DocumentDto.class))),
+            @ApiResponse(responseCode = "404", description = "Document not found")
+    })
+    public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Integer id) {
+        try {
+            DocumentDto documentDto = service.getDocumentById(id);
+            return ResponseEntity.ok(documentDto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    // New endpoint to download document by ID
+    @GetMapping("/download/{id}")
+    @Operation(
+            summary = "Download document by ID",
+            description = "Download document file by its ID"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Document downloaded successfully"),
+            @ApiResponse(responseCode = "404", description = "Document not found")
+    })
+    public ResponseEntity<byte[]> downloadDocumentById(@PathVariable Integer id) {
+        try {
+            DocumentDto documentDto = service.getDocumentById(id);
+            byte[] documentData = service.downloadImage(documentDto.getName());
+            
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(documentDto.getContentType()))
+                    .header("Content-Disposition", "attachment; filename=\"" + documentDto.getName() + "\"")
+                    .body(documentData);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

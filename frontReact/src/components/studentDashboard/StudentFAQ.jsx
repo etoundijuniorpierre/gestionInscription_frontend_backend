@@ -33,8 +33,8 @@ const StudentFAQ = () => {
         <div className="p-6 bg-white rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Foire Aux Questions (FAQ) - Espace Étudiant</h2>
             <div className="space-y-6">
-                {faqItems.map((item, index) => (
-                    <div key={index} className="border-b pb-4">
+                {faqItems.map((item) => (
+                    <div key={item.id} className="border-b pb-4">
                         <h3 className="text-lg font-semibold text-gray-700 mb-2">{item.question}</h3>
                         <p className="text-gray-600">{item.answer}</p>
                     </div>
@@ -43,5 +43,4 @@ const StudentFAQ = () => {
         </div>
     );
 };
-
 export default StudentFAQ;

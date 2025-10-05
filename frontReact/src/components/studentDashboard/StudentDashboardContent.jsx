@@ -18,6 +18,7 @@ const StudentDashboardContent = () => {
     const [loading, setLoading] = useState(true);
     const [coursesLoading, setCoursesLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [notification, setNotification] = useState(null); // Add notification state
     const { isAuthenticated, userRole } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -51,7 +52,7 @@ const StudentDashboardContent = () => {
                     id: program.id.toString(),
                     title: program.programName,
                     description: program.description,
-                    imageUrl: program.image || '/assets/images/default-course.jpg',
+                    imageUrl: program.image || '/assets/images/filiere-informatique.jpg',
                     programCode: program.programCode, // Add programCode for navigation
                     registrationFee: program.registrationFee // Add registrationFee for enrollment form
                 }));
@@ -67,6 +68,15 @@ const StudentDashboardContent = () => {
         fetchLatestEnrollment();
         fetchCourses();
     }, [isAuthenticated]);
+
+    // Add notification function
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type });
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            setNotification(null);
+        }, 5000);
+    };
 
     // Check if we should start the enrollment flow based on location state
     useEffect(() => {
@@ -102,43 +112,53 @@ const StudentDashboardContent = () => {
         setDisplayMode('courses');
     };
 
+    const handleGoToCorrections = () => {
+        navigate('/dashboard/corrections', { state: { enrollmentId: latestEnrollment?.id } });
+    };
     const handleFormSubmission = async (formData) => {
         try {
-            // Prepare the enrollment data according to the API specification
+            // Prepare the enrollment data according to EnrollmentRequestDto
+            // Note: EnrollmentRequestDto accepts identity fields (lines 16-20)
+            // but PersonalInfoDto in response does not contain them
             const enrollmentData = {
                 programId: parseInt(selectedCourse.id),
-                personalInfo: {
-                    lastName: formData.nom,
-                    firstName: formData.prenom,
-                    gender: formData.sexe === 'MALE' ? 'MASCULIN' : formData.sexe === 'FEMALE' ? 'FEMININ' : formData.sexe,
-                    dateOfBirth: formData.dateNaissance,
-                    nationality: formData.nationalite,
-                    identityDocumentType: formData.typePieceIdentite,
-                    // Optional fields that may not be in the formData
-                    identityDocumentNumber: "",
-                    issueDate: "",
-                    expirationDate: "",
-                    placeOfIssue: ""
-                },
-                academicInfo: {
-                    lastInstitution: formData.lastInstitution,
-                    specialization: formData.specialization === 'Autre' ? formData.otherSpecialization : formData.specialization,
-                    availableForInternship: formData.availableForInternship,
-                    startDate: formData.startDate,
-                    endDate: formData.endDate,
-                    diplomaObtained: true // Assuming they have a diploma if they're uploading one
-                },
-                contactDetails: {
-                    email: formData.email,
-                    phoneNumber: formData.phoneNumber,
-                    countryCode: formData.countryCode,
-                    country: formData.country,
-                    region: formData.region,
-                    city: formData.city,
-                    address: formData.address
-                }
-                // Note: The API documentation doesn't show emergency contacts in the enrollmentDtoRequest
-                // If they're needed, they might be handled separately or added to contactDetails
+                lastName: formData.nom,
+                firstName: formData.prenom,
+                gender: formData.sexe,
+                dateOfBirth: formData.dateNaissance,
+                nationality: formData.nationalite,
+                identityDocumentType: formData.typePieceIdentite || 'CNI',
+                identityDocumentNumber: formData.numPieceIdentite || '',
+                issueDate: formData.dateDelivrancePieceIdentite || null,
+                expirationDate: formData.dateExpirationPieceIdentite || null,
+                placeOfIssue: formData.lieuDelivrancePieceIdentite || '',
+                lastInstitution: formData.lastInstitution,
+                specialization: formData.specialization === 'Autre' ? formData.otherSpecialization : formData.specialization,
+                availableForInternship: formData.availableForInternship,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                diplomaObtained: formData.diplomaObtained || '',
+                email: formData.email,
+                phoneNumber: formData.phoneNumber,
+                countryCode: formData.countryCode,
+                country: formData.country,
+                region: formData.region,
+                city: formData.city,
+                address: formData.address,
+                emergencyContacts: [
+                    {
+                        name: formData.emergencyContactName1,
+                        phone: formData.emergencyContactPhone1,
+                        countryCode: formData.emergencyContactCode1,
+                        relationship: formData.emergencyContactRelationship1
+                    },
+                    {
+                        name: formData.emergencyContactName2,
+                        phone: formData.emergencyContactPhone2,
+                        countryCode: formData.emergencyContactCode2,
+                        relationship: formData.emergencyContactRelationship2
+                    }
+                ]
             };
 
             // Extract documents from formData
@@ -155,8 +175,8 @@ const StudentDashboardContent = () => {
             // Submit the enrollment form
             const response = await submitEnrollmentForm(enrollmentData, documents);
             
-            // Show success message
-            alert("Votre dossier d'inscription a été soumis avec succès!");
+            // Show success notification instead of alert
+            showNotification("Votre dossier d'inscription a été soumis avec succès!");
             
             // Refresh the latest enrollment status
             try {
@@ -192,7 +212,8 @@ const StudentDashboardContent = () => {
                 errorMessage = `Erreur: ${error.message}`;
             }
             
-            alert(errorMessage);
+            // Show error notification instead of alert
+            showNotification(errorMessage, 'error');
         }
     };
 
@@ -206,6 +227,15 @@ const StudentDashboardContent = () => {
 
     return (
         <div className="p-8">
+            {/* Notification display */}
+            {notification && (
+                <div className={`fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 ${
+                    notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                }`}>
+                    {notification.message}
+                </div>
+            )}
+            
             {displayMode === 'courses' ? (
                 <>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">

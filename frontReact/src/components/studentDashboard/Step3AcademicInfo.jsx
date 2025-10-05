@@ -8,6 +8,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
     const [otherSpecialization, setOtherSpecialization] = useState(initialData.otherSpecialization || '');
     const [startDate, setStartDate] = useState(initialData.startDate || '');
     const [endDate, setEndDate] = useState(initialData.endDate || '');
+    const [diplomaObtained, setDiplomaObtained] = useState(initialData.diplomaObtained || '');
     
     // Validation error states
     const [errors, setErrors] = useState({});
@@ -19,6 +20,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
             setOtherSpecialization(initialData.otherSpecialization || '');
             setStartDate(initialData.startDate || '');
             setEndDate(initialData.endDate || '');
+            setDiplomaObtained(initialData.diplomaObtained || '');
         }
     }, [initialData]);
 
@@ -42,6 +44,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
             otherSpecialization: specialization === 'Autre' ? otherSpecialization : '',
             startDate,
             endDate,
+            diplomaObtained,
         };
     };
 
@@ -52,6 +55,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
         if (!specialization) newErrors.specialization = "La spécialisation est obligatoire";
         if (!startDate) newErrors.startDate = "La date de début de formation est obligatoire";
         if (!endDate) newErrors.endDate = "La date de fin de formation est obligatoire";
+        if (!diplomaObtained) newErrors.diplomaObtained = "Le diplôme obtenu est obligatoire";
         
         // If "Autre" is selected, ensure otherSpecialization is provided
         if (specialization === 'Autre' && !otherSpecialization) {
@@ -194,6 +198,28 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
                         required
                     />
                     {errors.endDate && <p className="text-red-500 text-[1.2rem] mt-1">{errors.endDate}</p>}
+                </div>
+
+                <div>
+                    <label htmlFor="diplomaObtained" className="block text-[#333333] text-[1.5rem] font-normal mb-[0.21rem]">Diplôme obtenu <span className="text-red-500">*</span></label>
+                    <input
+                        type="text"
+                        id="diplomaObtained"
+                        className={`w-full h-[2.98rem] px-[0.85rem] rounded-[0.21rem] border focus:outline-none focus:ring-2 focus:ring-[#6B4F8B] text-[#333333] ${
+                            errors.diplomaObtained ? 'border-red-500' : 'border-[#79747E]'
+                        }`}
+                        style={{ backgroundColor: 'rgba(242, 242, 242, 0.6)', fontSize: '1.5rem' }}
+                        placeholder="Entrez le nom du diplôme obtenu"
+                        value={diplomaObtained}
+                        onChange={(e) => {
+                            setDiplomaObtained(e.target.value);
+                            if (errors.diplomaObtained) {
+                                setErrors(prev => ({ ...prev, diplomaObtained: '' }));
+                            }
+                        }}
+                        required
+                    />
+                    {errors.diplomaObtained && <p className="text-red-500 text-[1.2rem] mt-1">{errors.diplomaObtained}</p>}
                 </div>
             </div>
 

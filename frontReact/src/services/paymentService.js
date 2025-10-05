@@ -1,6 +1,6 @@
 import api from './api';
 
-const PAYMENTS_URL = '/payments'; // Base path for payment endpoints
+const PAYMENTS_URL = '/api/v1/payments'; // Base path for payment endpoints (full path required)
 
 /**
  * Calls the backend to create a Stripe payment session.
@@ -34,6 +34,35 @@ export const handleWebhook = async (payload) => {
     return response.data;
   } catch (error) {
     console.error("Error handling webhook:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches all payments for the current user.
+ * @returns {Promise<Array>} A promise that resolves with an array of payment objects.
+ */
+export const getUserPayments = async () => {
+  try {
+    const response = await api.get(`${PAYMENTS_URL}/my-payments`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user payments:", error);
+    throw error;
+  }
+};
+
+/**
+ * Initiates payment for a specific enrollment.
+ * @param {number} enrollmentId - The ID of the enrollment to initiate payment for.
+ * @returns {Promise<{sessionId: string}>} A promise that resolves with the session ID.
+ */
+export const initiateEnrollmentPayment = async (enrollmentId) => {
+  try {
+    const response = await api.post(`/enrollments/${enrollmentId}/initiate-payment`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error initiating payment for enrollment ${enrollmentId}:`, error);
     throw error;
   }
 };

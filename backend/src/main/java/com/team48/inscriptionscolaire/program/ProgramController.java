@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/programs")
@@ -18,31 +19,43 @@ public class ProgramController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProgramResponseDTO> createProgram(@RequestBody ProgramRequestDTO dto) {
-        return ResponseEntity.ok(programService.createProgram(dto));
+        Program program = programService.createProgram(dto);
+        ProgramResponseDTO response = ProgramMapper.toDto(program);
+        return ResponseEntity.ok(response);
     }
 
 
     @GetMapping
     public ResponseEntity<List<ProgramResponseDTO>> getAllPrograms() {
-        return ResponseEntity.ok(programService.getAllPrograms());
+        List<Program> programs = programService.getAllPrograms();
+        List<ProgramResponseDTO> responses = programs.stream()
+                .map(ProgramMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
 
     @GetMapping("/{id}")
     public ResponseEntity<ProgramResponseDTO> getProgramById(@PathVariable Integer id) {
-        return ResponseEntity.ok(programService.getProgramById(id));
+        Program program = programService.getProgramById(id);
+        ProgramResponseDTO response = ProgramMapper.toDto(program);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/code/{programCode}")
     public ResponseEntity<ProgramResponseDTO> getProgramByCode(@PathVariable String programCode) {
-        return ResponseEntity.ok(programService.getProgramByCode(programCode));
+        Program program = programService.getProgramByCode(programCode);
+        ProgramResponseDTO response = ProgramMapper.toDto(program);
+        return ResponseEntity.ok(response);
     }
 
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProgramResponseDTO> updateProgram(@PathVariable Integer id, @RequestBody ProgramRequestDTO dto) {
-        return ResponseEntity.ok(programService.updateProgram(id, dto));
+        Program program = programService.updateProgram(id, dto);
+        ProgramResponseDTO response = ProgramMapper.toDto(program);
+        return ResponseEntity.ok(response);
     }
 
 

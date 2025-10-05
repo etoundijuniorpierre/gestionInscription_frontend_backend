@@ -233,7 +233,7 @@ const UserManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Utilisateurs</h2>
-                        <p className="text-gray-600">Gérez les utilisateurs de la plateforme</p>
+                        <p className="text-gray-600 mt-1">Gérez les utilisateurs de la plateforme</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -248,7 +248,7 @@ const UserManagement = () => {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Gestion des Utilisateurs</h2>
-                        <p className="text-gray-600">Gérez les utilisateurs de la plateforme</p>
+                        <p className="text-gray-600 mt-1">Gérez les utilisateurs de la plateforme</p>
                     </div>
                 </div>
                 <div className="w-full h-1 bg-[#101957] my-8"></div>
@@ -473,25 +473,25 @@ const UserManagement = () => {
                 </div>
             )}
             
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Utilisateurs</h2>
-                    <p className="text-gray-600">Gérez les utilisateurs de la plateforme</p>
+                    <p className="text-gray-600 mt-1">Gérez les utilisateurs de la plateforme</p>
                 </div>
             </div>
 
             <div className="w-full h-1 bg-[#101957] my-8"></div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-4">
                 <input
                     type="text"
                     placeholder="Rechercher par nom ou email..."
-                    className="py-2 px-4 rounded-md border border-gray-300"
+                    className="py-2 px-4 rounded-md border border-gray-300 w-full sm:w-auto sm:flex-grow"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <select
-                    className="py-2 px-4 rounded-md border border-gray-300"
+                    className="py-2 px-4 rounded-md border border-gray-300 w-full sm:w-auto"
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
                 >
@@ -501,7 +501,7 @@ const UserManagement = () => {
                     <option value="ADMIN">Administrateur</option>
                 </select>
                 <select
-                    className="py-2 px-4 rounded-md border border-gray-300"
+                    className="py-2 px-4 rounded-md border border-gray-300 w-full sm:w-auto"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -512,75 +512,87 @@ const UserManagement = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-[#B6B8CB]">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">ID</th>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Nom</th>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Prénom</th>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Email</th>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Rôle</th>
-                            <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Statut</th>
-                            <th className="px-6 py-3 text-center text-white text-sm font-bold tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.lastname}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.firstname}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.roleName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm border-r border-gray-200">
-                                        <span className={`py-1 px-3 rounded-full text-xs font-medium ${
-                                            user.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                            {user.enabled ? 'Actif' : 'Inactif'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
-                                        <button 
-                                            onClick={() => handleViewProfile(user)} 
-                                            className="py-1 px-3 rounded-md bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors"
-                                        >
-                                            Détails
-                                        </button>
-                                        <button 
-                                            onClick={() => handleModifyPassword(user.id)} 
-                                            className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
-                                        >
-                                            Modifier MDP
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteUser(user.id)} 
-                                            className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
-                                        >
-                                            Supprimer
-                                        </button>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-[#B6B8CB]">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">ID</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Nom</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Prénom</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Email</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Rôle</th>
+                                <th className="px-6 py-3 text-left text-white text-sm font-bold tracking-wider border-r border-white">Statut</th>
+                                <th className="px-6 py-3 text-center text-white text-sm font-bold tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map((user) => (
+                                    <tr key={user.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.lastname}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.firstname}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.email}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{user.roleName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm border-r border-gray-200">
+                                            <span className={`py-1 px-3 rounded-full text-xs font-medium ${
+                                                user.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {user.enabled ? 'Actif' : 'Inactif'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
+                                            <button 
+                                                onClick={() => handleViewProfile(user)} 
+                                                className="py-1 px-3 rounded-md bg-gray-500 text-white text-sm hover:bg-gray-600 transition-colors"
+                                            >
+                                                Détails
+                                            </button>
+                                            <button 
+                                                onClick={() => handleModifyPassword(user.id)} 
+                                                className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
+                                            >
+                                                Modifier MDP
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteUser(user.id)} 
+                                                className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
+                                            >
+                                                Supprimer
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                                        Aucun utilisateur trouvé.
                                     </td>
                                 </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                                    Aucun utilisateur trouvé.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            {/* Pagination controls */}
-            <div className="flex justify-center mt-4 space-x-2">
-                <button className="py-2 px-4 rounded-md border border-gray-300">Précédent</button>
-                <button className="py-2 px-4 rounded-md border border-gray-300">1</button>
-                <button className="py-2 px-4 rounded-md border border-gray-300">2</button>
-                <button className="py-2 px-4 rounded-md border border-gray-300">3</button>
-                <button className="py-2 px-4 rounded-md border border-gray-300">Suivant</button>
-            </div>
+            {/* Pagination controls - Only show when there are more than 10 items */}
+            {filteredUsers.length > 10 && (
+                <div className="flex justify-center mt-4 space-x-2">
+                    <button 
+                        className="py-2 px-4 rounded-md border border-gray-300 opacity-50 cursor-not-allowed"
+                        disabled
+                    >
+                        Précédent
+                    </button>
+                    <button className="py-2 px-4 rounded-md border border-gray-300 bg-gray-200">1</button>
+                    <button 
+                        className="py-2 px-4 rounded-md border border-gray-300 opacity-50 cursor-not-allowed"
+                        disabled
+                    >
+                        Suivant
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +43,7 @@ public class EnrollmentService {
     private final NotificationService notificationService;
 
     @Transactional
-    public EnrollmentDtoResponse processEnrollment(EnrollmentDtoRequest dto, List<MultipartFile> documents) {
+    public Enrollment processEnrollment(EnrollmentDtoRequest dto, List<MultipartFile> documents) {
         var student = (Student) userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new EntityNotFoundException("Student not found"));
         var program = programRepository.findById(dto.getProgramId())
@@ -51,14 +53,22 @@ public class EnrollmentService {
         if (!program.isEnrollmentOpen()) {
             throw new IllegalStateException("Enrollments are not currently open for this program.");
         }
+        
+        // Check if student is already enrolled in another program with the same start date
+        if (program.getStartDate() != null && hasConflictingEnrollment(student.getId(), program.getStartDate(), program.getId())) {
+            throw new IllegalStateException("You are already enrolled in another program that starts on the same date.");
+        }
+        // Check for schedule conflicts
+        if (hasScheduleConflict(student.getId(), program)) {
+            throw new IllegalStateException("You are already enrolled in another program with conflicting schedule.");
+        }
 
         var enrollment = enrollmentRepository
-                .findByStudentIdAndProgramIdAndAcademicYear(student.getId(), program.getId(), dto.getAcademicYear())
+                .findByStudentIdAndProgramId(student.getId(), program.getId())
                 .orElseGet(() -> {
                     var newEnrollment = new Enrollment();
                     newEnrollment.setStudent(student);
                     newEnrollment.setProgram(program);
-                    newEnrollment.setAcademicYear(dto.getAcademicYear());
                     newEnrollment.setStatus(StatusSubmission.IN_PROGRESS);
                     return newEnrollment;
                 });
@@ -77,7 +87,97 @@ public class EnrollmentService {
         }
 
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-        return convertToDto(savedEnrollment);
+        
+        // Send notification to student
+        String studentMessage = "Votre demande d'inscription pour le programme '" + 
+                program.getProgramName() + 
+                "' a été soumise avec succès. Elle est maintenant en attente de validation.";
+        notificationService.sendPrivateNotification(student.getUsername(), studentMessage);
+        
+        // Send notification to admins
+        String adminMessage = "Une nouvelle demande d'inscription a été soumise par " + 
+                student.fullName() + 
+                " pour le programme '" + 
+                program.getProgramName() + "'.";
+        notificationService.sendNotificationToAdmins(adminMessage);
+
+        return savedEnrollment;
+    }
+    
+    /**
+     * Check if student has conflicting enrollments (programs that start on the same date)
+     * @param studentId The student ID
+     * @param startDate The start date of the program being enrolled in
+     * @param programId The program ID being enrolled in (to exclude self)
+     * @return true if there's a conflict, false otherwise
+     */
+    private boolean hasConflictingEnrollment(Integer studentId, LocalDate startDate, Integer programId) {
+        return enrollmentRepository.countByStudentIdAndProgramStartDate(studentId, startDate) > 0;
+    }
+    
+    /**
+     * Check if student has conflicting enrollments based on schedule
+     * @param studentId The student ID
+     * @param newProgram The program being enrolled in
+     * @return true if there's a schedule conflict, false otherwise
+     */
+    private boolean hasScheduleConflict(Integer studentId, Program newProgram) {
+        // Get all active enrollments for the student
+        List<Enrollment> activeEnrollments = enrollmentRepository.findByStudentId(studentId)
+                .stream()
+                .filter(e -> e.getStatus() == StatusSubmission.IN_PROGRESS || 
+                            e.getStatus() == StatusSubmission.PENDING || 
+                            e.getStatus() == StatusSubmission.APPROVED)
+                .toList();
+        
+        // Check each active enrollment for schedule conflicts
+        for (Enrollment enrollment : activeEnrollments) {
+            Program existingProgram = enrollment.getProgram();
+            
+            // Skip if it's the same program
+            if (existingProgram.getId().equals(newProgram.getId())) {
+                continue;
+            }
+            
+            // Check if both programs have schedule information
+            if (newProgram.getCourseDays() == null || existingProgram.getCourseDays() == null ||
+                newProgram.getStartTime() == null || existingProgram.getStartTime() == null ||
+                newProgram.getEndTime() == null || existingProgram.getEndTime() == null) {
+                continue;
+            }
+            
+            // Check if the programs overlap in time
+            if (hasTimeOverlap(newProgram, existingProgram)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Check if two programs have overlapping schedules
+     * @param program1 First program
+     * @param program2 Second program
+     * @return true if there's a time overlap, false otherwise
+     */
+    private boolean hasTimeOverlap(Program program1, Program program2) {
+        // Check if they have any common course days
+        boolean hasCommonDay = program1.getCourseDays().stream()
+                .anyMatch(day -> program2.getCourseDays().contains(day));
+        
+        if (!hasCommonDay) {
+            return false;
+        }
+        
+        // Check if the time slots overlap
+        LocalTime start1 = program1.getStartTime();
+        LocalTime end1 = program1.getEndTime();
+        LocalTime start2 = program2.getStartTime();
+        LocalTime end2 = program2.getEndTime();
+        
+        // Time overlap condition: (StartA < EndB) and (StartB < EndA)
+        return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
     @Transactional
@@ -97,6 +197,9 @@ public class EnrollmentService {
 
         enrollment.setStatus(StatusSubmission.PENDING);
         enrollment.setSubmissionDate(LocalDateTime.now());
+        
+        // Payment will be created when student initiates the payment process
+        // Payment is now the final step of enrollment
     }
 
     private void addDocumentsToEnrollment(Enrollment enrollment, List<MultipartFile> documentFiles) {
@@ -195,41 +298,29 @@ public class EnrollmentService {
         }
     }
 
-    public EnrollmentDtoResponse getEnrollmentById(Integer enrollmentId) {
+    public Enrollment getEnrollmentById(Integer enrollmentId) {
         return enrollmentRepository.findById(enrollmentId)
-                .map(this::convertToDto)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + enrollmentId));
     }
 
-    public List<EnrollmentDtoResponse> getMyEnrollments() {
+    public List<Enrollment> getMyEnrollments() {
         var email = SecurityContextHolder.getContext().getAuthentication().getName();
         var user = userRepository.findByEmail(email).orElseThrow();
         var student = (Student) user;
-        return enrollmentRepository.findByStudentId(student.getId())
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return enrollmentRepository.findByStudentId(student.getId());
     }
 
-    public List<EnrollmentDtoResponse> getEnrollmentsByProgram(Integer programId) {
-        return enrollmentRepository.findByProgramId(programId)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public List<Enrollment> getEnrollmentsByProgram(Integer programId) {
+        return enrollmentRepository.findByProgramId(programId);
     }
 
-    public List<EnrollmentDtoResponse> getEnrollmentsByYear(String academicYear) {
-        return enrollmentRepository.findByAcademicYear(academicYear)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    // New methods to get all enrollments and non-approved enrollments
+    public List<Enrollment> getAllEnrollments() {
+        return enrollmentRepository.findAll();
     }
 
-    public List<EnrollmentDtoResponse> getEnrollmentsByProgramAndYear(Integer programId, String academicYear) {
-        return enrollmentRepository.findByProgramIdAndAcademicYear(programId, academicYear)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public List<Enrollment> getAllNonApprovedEnrollments() {
+        return enrollmentRepository.findAllNonApproved();
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -240,9 +331,14 @@ public class EnrollmentService {
      * Admin action: Approve an enrollment.
      */
     @Transactional
-    public EnrollmentDtoResponse approveEnrollment(Integer enrollmentId) {
+    public Enrollment approveEnrollment(Integer enrollmentId) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found"));
+
+        // Check if payment has been made before approving
+        if (enrollment.getPayment() == null || !"COMPLETED".equals(enrollment.getPayment().getStatus())) {
+            throw new IllegalStateException("Enrollment payment must be completed before approval.");
+        }
 
         // Ensure all documents are approved
         enrollment.getDocuments().forEach(doc -> doc.setValidationStatus(ValidationStatus.APPROVED));
@@ -253,17 +349,17 @@ public class EnrollmentService {
 
         String message = "Félicitations ! Votre demande d'inscription pour le programme '"
                 + enrollment.getProgram().getProgramName()
-                + "' a été approuvée. Vous pouvez maintenant procéder au paiement.";
+                + "' a été approuvée.";
 
         notificationService.sendPrivateNotification(enrollment.getStudent().getUsername(), message);
-        return convertToDto(enrollment);
+        return enrollment;
     }
 
     /**
      * Admin action: Request corrections for specific documents or information.
      */
     @Transactional
-    public EnrollmentDtoResponse requestCorrections(Integer enrollmentId, List<DocumentCorrectionDto> corrections) {
+    public Enrollment requestCorrections(Integer enrollmentId, List<DocumentCorrectionDto> corrections) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found"));
 
@@ -283,16 +379,21 @@ public class EnrollmentService {
         String message = "Votre demande d'inscription nécessite des corrections. Veuillez vérifier votre tableau de bord pour les détails et les documents à mettre à jour.";
         notificationService.sendPrivateNotification(enrollment.getStudent().getUsername(), message);
 
-        return convertToDto(enrollment);
+        return enrollment;
     }
 
     /**
      * Admin action: Fully reject an enrollment.
      */
     @Transactional
-    public EnrollmentDtoResponse rejectEnrollment(Integer enrollmentId, String rejectionReason) {
+    public Enrollment rejectEnrollment(Integer enrollmentId, String rejectionReason) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found"));
+
+        // Check if payment has been made before rejecting
+        if (enrollment.getPayment() == null || !"COMPLETED".equals(enrollment.getPayment().getStatus())) {
+            throw new IllegalStateException("Enrollment payment must be completed before rejection.");
+        }
 
         enrollment.setStatus(StatusSubmission.REJECTED);
         enrollment.setRejectionReason(rejectionReason);
@@ -301,14 +402,14 @@ public class EnrollmentService {
         String message = "Votre demande d'inscription a été rejetée. Vous pouvez recommencer le processus d'inscription depuis le début.";
         notificationService.sendPrivateNotification(enrollment.getStudent().getUsername(), message);
 
-        return convertToDto(enrollment);
+        return enrollment;
     }
 
     /**
      * Get the most recent enrollment for the current student.
      * This is what the student dashboard will call on load.
      */
-    public EnrollmentDtoResponse getMyLatestEnrollment() {
+    public Enrollment getMyLatestEnrollment() {
         var email = SecurityContextHolder.getContext().getAuthentication().getName();
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -316,7 +417,6 @@ public class EnrollmentService {
         var student = (Student) user;
 
         return enrollmentRepository.findTopByStudentIdOrderByCreatedDateDesc(student.getId())
-                .map(this::convertToDto)
                 .orElse(null);
     }
 
@@ -342,96 +442,24 @@ public class EnrollmentService {
         }
     }
 
-    private EnrollmentDtoResponse convertToDto(Enrollment enrollment) {
-        EnrollmentDtoResponse dto = new EnrollmentDtoResponse();
-        dto.setId(enrollment.getId());
-        dto.setStatus(enrollment.getStatus());
-        dto.setCreatedDate(enrollment.getCreatedDate());
-        dto.setSubmissionDate(enrollment.getSubmissionDate());
-        dto.setValidationDate(enrollment.getValidationDate());
-        dto.setAcademicYear(enrollment.getAcademicYear());
-        dto.setCurrentStep(enrollment.getStepCompleted());
-        dto.setProgramId(enrollment.getProgram().getId());
-        dto.setStudentId(enrollment.getStudent().getId());
-        dto.setProgramName(enrollment.getProgram().getProgramName());
-        dto.setRejectionReason(enrollment.getRejectionReason()); // Include rejection reason
-
-        if (enrollment.getPersonalInfo() != null) {
-            dto.setPersonalInfo(convertPersonalInfoToDto(enrollment.getPersonalInfo()));
-        }
-        if (enrollment.getAcademicInfo() != null) {
-            dto.setAcademicInfo(convertAcademicInfoToDto(enrollment.getAcademicInfo()));
-        }
-        if (enrollment.getContactDetails() != null) {
-            dto.setContactDetails(convertContactDetailsToDto(enrollment.getContactDetails()));
-        }
-        if (enrollment.getDocuments() != null && !enrollment.getDocuments().isEmpty()) {
-            dto.setDocuments(enrollment.getDocuments().stream()
-                    .map(this::convertDocumentToDto)
-                    .collect(Collectors.toList()));
-        }
-        return dto;
+    /**
+     * Check if an enrollment has a completed payment
+     * @param enrollment The enrollment to check
+     * @return true if payment is completed, false otherwise
+     */
+    public boolean isEnrollmentPaid(Enrollment enrollment) {
+        return enrollment.getPayment() != null && "COMPLETED".equals(enrollment.getPayment().getStatus());
     }
 
-    private DocumentDto convertDocumentToDto(Document document) {
-        DocumentDto dto = new DocumentDto();
-        dto.setId(document.getId());
-        dto.setName(document.getName());
-        dto.setContentType(document.getContentType());
-        dto.setUploadDate(document.getUploadDate());
-        dto.setValidationStatus(document.getValidationStatus());
-        dto.setDocumentType(document.getDocumentType());
-        dto.setRejectionReason(document.getRejectionReason()); // Include document rejection reason
-        return dto;
-    }
-
-    private PersonalInfoDto convertPersonalInfoToDto(PersonalInfo personalInfo) {
-        PersonalInfoDto dto = new PersonalInfoDto();
-        dto.setFirstName(personalInfo.getFirstName());
-        dto.setLastName(personalInfo.getLastName());
-        dto.setNationality(personalInfo.getNationality());
-        dto.setGender(personalInfo.getGender());
-        dto.setDateOfBirth(personalInfo.getDateOfBirth());
-        return dto;
-    }
-
-    private AcademicInfoDto convertAcademicInfoToDto(AcademicInfo academicInfo) {
-        AcademicInfoDto dto = new AcademicInfoDto();
-        dto.setLastInstitution(academicInfo.getLastInstitution());
-        dto.setSpecialization(academicInfo.getSpecialization());
-        dto.setAvailableForInternship(academicInfo.getAvailableForInternship());
-        dto.setStartDate(academicInfo.getStartDate());
-        dto.setEndDate(academicInfo.getEndDate());
-        dto.setDiplomaObtained(academicInfo.getDiplomaObtained());
-        return dto;
-    }
-
-    private ContactDetailsDto convertContactDetailsToDto(ContactDetails contactDetails) {
-        ContactDetailsDto dto = new ContactDetailsDto();
-        dto.setEmail(contactDetails.getEmail());
-        dto.setPhoneNumber(contactDetails.getPhoneNumber());
-        dto.setCountryCode(contactDetails.getCountryCode());
-        dto.setCountry(contactDetails.getCountry());
-        dto.setRegion(contactDetails.getRegion());
-        dto.setCity(contactDetails.getCity());
-        dto.setAddress(contactDetails.getAddress());
-
-        if (contactDetails.getEmergencyContacts() != null) {
-            List<EmergencyContactDto> emergencyContactDtos = contactDetails.getEmergencyContacts().stream()
-                    .map(this::mapEmergencyContactEntityToDto)
-                    .collect(Collectors.toList());
-            dto.setEmergencyContacts(emergencyContactDtos);
+    /**
+     * Get the payment status for an enrollment
+     * @param enrollment The enrollment to check
+     * @return Payment status string
+     */
+    public String getEnrollmentPaymentStatus(Enrollment enrollment) {
+        if (enrollment.getPayment() == null) {
+            return "NO_PAYMENT";
         }
-
-        return dto;
-    }
-
-    private EmergencyContactDto mapEmergencyContactEntityToDto(EmergencyContact entity) {
-        EmergencyContactDto dto = new EmergencyContactDto();
-        dto.setName(entity.getName());
-        dto.setPhone(entity.getPhone());
-        dto.setCountryCode(entity.getCountryCode());
-        dto.setRelationship(entity.getRelationship());
-        return dto;
+        return enrollment.getPayment().getStatus();
     }
 }

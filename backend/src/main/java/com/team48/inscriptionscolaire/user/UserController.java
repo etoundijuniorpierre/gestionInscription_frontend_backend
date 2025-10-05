@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -21,6 +22,7 @@ import java.util.List;
 @Tag(name = "User Management", description = "CRUD operations for users and password management")
 public class UserController {
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @Operation(summary = "Get all users", description = "Retrieve a list of all users. Accessible only by admins.")
     @ApiResponses(value = {
@@ -31,7 +33,11 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<User> users = userService.getAllUsers();
+        List<UserResponseDto> userDtos = users.stream()
+                .map(userMapper::toUserResponseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDtos);
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieve a specific user by ID. Accessible by admins and the user themselves.")
@@ -44,7 +50,9 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable Integer id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+        User user = userService.getUserById(id);
+        UserResponseDto userDto = userMapper.toUserResponseDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @Operation(summary = "Update user", description = "Update user information. Accessible only by admins.")
@@ -57,7 +65,9 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Integer id, @RequestBody @Valid UserRequestDto userRequestDto) {
-        return ResponseEntity.ok(userService.updateUser(id, userRequestDto));
+        User user = userService.updateUser(id, userRequestDto);
+        UserResponseDto userDto = userMapper.toUserResponseDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @Operation(summary = "Delete user", description = "Delete a user. Accessible only by admins.")

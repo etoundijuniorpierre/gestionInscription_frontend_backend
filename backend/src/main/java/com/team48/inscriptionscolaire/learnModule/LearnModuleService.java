@@ -15,28 +15,24 @@ public class LearnModuleService {
     private final LearnModuleRepository learnModuleRepository;
     private final ProgramRepository programRepository;
     
-    public LearnModuleDTO createModule(LearnModuleDTO dto) {
+    public LearnModule createModule(LearnModuleDTO dto) {
         Program program = programRepository.findById(dto.getProgramId())
                 .orElseThrow(() -> new RuntimeException("Program not found with id: " + dto.getProgramId()));
         
         LearnModule module = LearnModuleMapper.toEntity(dto, program);
-        return LearnModuleMapper.toDto(learnModuleRepository.save(module));
+        return learnModuleRepository.save(module);
     }
     
-    public LearnModuleDTO getModuleById(Integer id) {
-        LearnModule module = learnModuleRepository.findById(id)
+    public LearnModule getModuleById(Integer id) {
+        return learnModuleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Learn module not found with id: " + id));
-        return LearnModuleMapper.toDto(module);
     }
     
-    public List<LearnModuleDTO> getModulesByProgramId(Integer programId) {
-        return learnModuleRepository.findByProgramIdOrderByModuleOrder(programId)
-                .stream()
-                .map(LearnModuleMapper::toDto)
-                .collect(Collectors.toList());
+    public List<LearnModule> getModulesByProgramId(Integer programId) {
+        return learnModuleRepository.findByProgramIdOrderByModuleOrder(programId);
     }
     
-    public LearnModuleDTO updateModule(Integer id, LearnModuleDTO dto) {
+    public LearnModule updateModule(Integer id, LearnModuleDTO dto) {
         LearnModule existingModule = learnModuleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Learn module not found with id: " + id));
         
@@ -48,7 +44,7 @@ public class LearnModuleService {
         existingModule.setModuleOrder(dto.getModuleOrder());
         existingModule.setProgram(program);
         
-        return LearnModuleMapper.toDto(learnModuleRepository.save(existingModule));
+        return learnModuleRepository.save(existingModule);
     }
     
     public void deleteModule(Integer id) {
@@ -58,12 +54,12 @@ public class LearnModuleService {
         learnModuleRepository.deleteById(id);
     }
     
-    public LearnModuleDTO addModuleToProgram(Integer programId, LearnModuleDTO dto) {
+    public LearnModule addModuleToProgram(Integer programId, LearnModuleDTO dto) {
         Program program = programRepository.findById(programId)
                 .orElseThrow(() -> new RuntimeException("Program not found with id: " + programId));
         
         dto.setProgramId(programId);
         LearnModule module = LearnModuleMapper.toEntity(dto, program);
-        return LearnModuleMapper.toDto(learnModuleRepository.save(module));
+        return learnModuleRepository.save(module);
     }
 }

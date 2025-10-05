@@ -5,7 +5,6 @@ import com.team48.inscriptionscolaire.email.EmailTemplateName;
 import com.team48.inscriptionscolaire.role.Role;
 import com.team48.inscriptionscolaire.role.RoleRepository;
 import com.team48.inscriptionscolaire.security.JwtService;
-import com.team48.inscriptionscolaire.student.MaritalStatus;
 import com.team48.inscriptionscolaire.student.Student;
 import com.team48.inscriptionscolaire.user.Token;
 import com.team48.inscriptionscolaire.user.TokenRepository;
@@ -53,17 +52,13 @@ public class AuthenticationService {
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .accountLocked(false)
-                .enabled(false)
+                .status(true) // accountLocked = true (locked until activation)
                 .role(userRole)
                 .dateOfBirth(LocalDate.now()) // Valeur par défaut, à mettre à jour plus tard
                 .address("Tradex Emana") // Valeur par défaut
                 .phoneNumber("+237 69910023") // Valeur par défaut
                 .gender("FEMININ") // Valeur par défaut
                 .nationality("Cameroonian") // Valeur par défaut
-                .maritalStatus(MaritalStatus.SINGLE) // Valeur par défaut
-                .desiredAcademicYear(LocalDate.now().getYear()) // Valeur par défaut
-                .intendedFieldOfStudy("Computer Science") // Valeur par défaut
                 .build();
 
         userRepository.save(user);
@@ -175,7 +170,8 @@ public class AuthenticationService {
 
         var user = userRepository.findById(savedToken.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setEnabled(true);
+        // Set status to false to enable the user (status = false means enabled)
+        user.setStatus(false);
         userRepository.save(user);
         //validate the token
         savedToken.setValidatedAt(LocalDateTime.now());
@@ -192,10 +188,43 @@ public class AuthenticationService {
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            // Re-use the existing token and email sending logic
             sendValidationEmail(user);
         }
         // If the user doesn't exist, we do nothing to prevent user enumeration attacks.
+    }
+
+    // ===================================================================================
+    // ================= MÉTHODE POUR RENVOYER LE CODE D'ACTIVATION ======================
+    // ===================================================================================
+
+    /**
+     * Renvoie un nouveau code d'activation à l'utilisateur.
+     * @param email L'adresse email de l'utilisateur.
+     * @throws MessagingException Si l'envoi de l'email échoue.
+     */
+    public void resendActivationCode(String email) throws MessagingException {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            
+            // Vérifier si le compte est déjà activé
+            if (!user.isStatus()) {
+                throw new RuntimeException("Account is already activated");
+            }
+            
+            // Révoquer tous les anciens tokens d'activation de l'utilisateur
+            var oldTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+            oldTokens.forEach(token -> {
+                token.setExpired(true);
+                token.setRevoked(true);
+            });
+            tokenRepository.saveAll(oldTokens);
+            
+            // Envoyer un nouveau code d'activation
+            sendValidationEmail(user);
+        }
+        // Si l'utilisateur n'existe pas, ne rien faire pour éviter l'énumération des utilisateurs
     }
 
     // ===================================================================================

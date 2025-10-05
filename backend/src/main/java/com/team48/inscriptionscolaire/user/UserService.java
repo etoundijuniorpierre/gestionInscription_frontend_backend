@@ -15,34 +15,33 @@ public class UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public List<UserResponseDto> getAllUsers() {
-        return userMapper.toUserResponseDtoList(userRepository.findAll());
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public UserResponseDto getUserById(Integer id) {
-        User user = userRepository.findById(id)
+    public User getUserById(Integer id) {
+        return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
-        return userMapper.toUserResponseDto(user);
     }
 
-    public UserResponseDto createUser(UserRequestDto userRequestDto) {
+    public User createUser(UserRequestDto userRequestDto) {
         // This would typically be used for admin creation of users
         // For simplicity, we're not implementing full creation logic here
         throw new UnsupportedOperationException("User creation should be done through the authentication service");
     }
 
-    public UserResponseDto updateUser(Integer id, UserRequestDto userRequestDto) {
+    public User updateUser(Integer id, UserRequestDto userRequestDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
         
         user.setFirstname(userRequestDto.getFirstname());
         user.setLastname(userRequestDto.getLastname());
         user.setEmail(userRequestDto.getEmail());
-        user.setAccountLocked(userRequestDto.isAccountLocked());
-        user.setEnabled(userRequestDto.isEnabled());
+        user.setStatus(userRequestDto.isAccountLocked());
+        // The isEnabled() method in User returns the inverse of status (true = enabled)
+        // This is handled by the UserDetails interface implementation
         
-        User updatedUser = userRepository.save(user);
-        return userMapper.toUserResponseDto(updatedUser);
+        return userRepository.save(user);
     }
 
     public void deleteUser(Integer id) {

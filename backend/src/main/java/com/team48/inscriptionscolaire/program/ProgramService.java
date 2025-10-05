@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,7 +13,7 @@ public class ProgramService {
 
     private final ProgramRepository programRepository;
 
-    public ProgramResponseDTO createProgram(ProgramRequestDTO dto) {
+    public Program createProgram(ProgramRequestDTO dto) {
         if (programRepository.existsByProgramCode(dto.getProgramCode())) {
             throw new IllegalArgumentException("Program code already exists");
         }
@@ -26,29 +25,25 @@ public class ProgramService {
             // This would be extended in a more complete implementation
         }
         
-        return ProgramMapper.toDto(programRepository.save(program));
+        return programRepository.save(program);
     }
 
-    public ProgramResponseDTO getProgramByCode(String programCode) {
+    public Program getProgramByCode(String programCode) {
         return programRepository.findByProgramCode(programCode)
-                .map(ProgramMapper::toDto)
                 .orElseThrow(() -> new RuntimeException("Program not found with code: " + programCode));
     }
 
-    public List<ProgramResponseDTO> getAllPrograms() {
-        return programRepository.findAll().stream()
-                .map(ProgramMapper::toDto)
-                .collect(Collectors.toList());
+    public List<Program> getAllPrograms() {
+        return programRepository.findAll();
     }
 
-    public ProgramResponseDTO getProgramById(Integer id) {
+    public Program getProgramById(Integer id) {
         return programRepository.findById(id)
-                .map(ProgramMapper::toDto)
                 .orElseThrow(() -> new RuntimeException("Program not found"));
     }
 
     @Transactional
-    public ProgramResponseDTO updateProgram(Integer id, ProgramRequestDTO dto) {
+    public Program updateProgram(Integer id, ProgramRequestDTO dto) {
         Program program = programRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Program not found"));
 
@@ -62,7 +57,7 @@ public class ProgramService {
         program.setDuration(dto.getDuration());
         program.setPrice(dto.getPrice());
 
-        return ProgramMapper.toDto(program);
+        return programRepository.save(program);
     }
 
     public void deleteProgram(Integer id) {

@@ -51,4 +51,25 @@ public class DocumentService {
         return dbDocument.map(doc -> DocumentUtils.decompressImage(doc.getFileData()))
                 .orElseThrow(() -> new RuntimeException("Document not found with name: " + fileName));
     }
+    
+    // New method to get document metadata by ID
+    public DocumentDto getDocumentById(Integer id) {
+        Optional<Document> document = repository.findById(id);
+        if (document.isPresent()) {
+            Document doc = document.get();
+            DocumentDto dto = new DocumentDto();
+            dto.setId(doc.getId());
+            dto.setName(doc.getName());
+            dto.setContentType(doc.getContentType());
+            dto.setUploadDate(doc.getUploadDate());
+            dto.setValidationStatus(doc.getValidationStatus());
+            dto.setDocumentType(doc.getDocumentType());
+            dto.setRejectionReason(doc.getRejectionReason());
+            dto.setCreatedDate(doc.getCreatedDate());
+            dto.setLastModifiedDate(doc.getLastModifiedDate());
+            return dto;
+        } else {
+            throw new RuntimeException("Document not found with id: " + id);
+        }
+    }
 }

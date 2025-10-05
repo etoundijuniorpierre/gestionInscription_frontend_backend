@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getStatusDetails } from '../../utils/enrollmentStatusUtils';
 
 const StatusCard = ({ title, message, status, onAction, actionLabel, actionColor }) => {
     const statusColors = {
@@ -26,7 +28,9 @@ const StatusCard = ({ title, message, status, onAction, actionLabel, actionColor
     );
 };
 
-const EnrollmentStatusPage = ({ enrollment, onCorrection, onRestart, onPayment }) => {
+const EnrollmentStatusPage = ({ enrollment }) => {
+    const navigate = useNavigate();
+    
     if (!enrollment) {
         return (
             <div className="text-center p-10">
@@ -35,9 +39,27 @@ const EnrollmentStatusPage = ({ enrollment, onCorrection, onRestart, onPayment }
             </div>
         );
     }
+    
+    const handleGoToCorrections = () => {
+        navigate('/dashboard/corrections', { state: { enrollmentId: enrollment.id } });
+    };
 
+    const handleRestart = () => {
+        // Navigate back to dashboard to start a new enrollment
+        navigate('/dashboard');
+    };
+
+    const handlePayment = () => {
+        // Navigate to payments page
+        navigate('/dashboard/my-payments');
+    };
+
+    // Get status details using the utility function
+    const statusDetails = getStatusDetails(enrollment.status);
+    
     switch (enrollment.status) {
         case 'PENDING':
+        case 'IN_PROGRESS':
             return (
                 <StatusCard
                     title="Demande d'inscription en attente"
@@ -51,7 +73,7 @@ const EnrollmentStatusPage = ({ enrollment, onCorrection, onRestart, onPayment }
                     title="Demande d'inscription approuvée !"
                     message="Félicitations ! Votre demande a été acceptée. Vous pouvez maintenant passer à la dernière étape: le paiement des frais."
                     status="APPROVED"
-                    onAction={onPayment}
+                    onAction={handlePayment}
                     actionLabel="Procéder au paiement"
                     actionColor="bg-green-600 hover:bg-green-700"
                 />
@@ -60,9 +82,9 @@ const EnrollmentStatusPage = ({ enrollment, onCorrection, onRestart, onPayment }
             return (
                 <StatusCard
                     title="Corrections requises"
-                    message={`Votre demande nécessite des ajustements. Veuillez corriger les documents ou informations suivants: ${enrollment.rejectionReason}`}
+                    message={`Votre demande nécessite des ajustements. Veuillez corriger les documents ou informations suivants: ${enrollment.rejectionReason || 'Veuillez consulter les détails dans la section des corrections.'}`}
                     status="CORRECTIONS_REQUIRED"
-                    onAction={onCorrection}
+                    onAction={handleGoToCorrections}
                     actionLabel="Aller aux corrections"
                     actionColor="bg-orange-600 hover:bg-orange-700"
                 />
@@ -73,7 +95,7 @@ const EnrollmentStatusPage = ({ enrollment, onCorrection, onRestart, onPayment }
                     title="Demande d'inscription rejetée"
                     message={`Votre demande a été rejetée. Raison: ${enrollment.rejectionReason}`}
                     status="REJECTED"
-                    onAction={onRestart}
+                    onAction={handleRestart}
                     actionLabel="Recommencer"
                     actionColor="bg-red-600 hover:bg-red-700"
                 />

@@ -5,7 +5,7 @@ const ENROLLMENTS_URL = '/enrollments'; // Base path for enrollment endpoints
 /**
  * Service function to get the latest enrollment for the authenticated student.
  * This is used to determine the status of the student's current application.
- * @returns {Promise} A promise that resolves to the latest enrollment object.
+ * @returns {Promise} A promise that resolves to the latest enrollment object or null.
  */
 export const getLatestEnrollment = async () => {
   try {
@@ -42,8 +42,9 @@ export const submitEnrollmentForm = async (formData, documents) => {
   try {
     const data = new FormData();
     data.append('enrollmentDtoRequest', JSON.stringify(formData));
-    documents.forEach((doc, index) => {
-      data.append(`documents[${index}]`, doc);
+    // Append documents with the correct field name
+    documents.forEach((doc) => {
+      data.append('documents', doc);
     });
 
     const response = await api.post(ENROLLMENTS_URL, data, {
