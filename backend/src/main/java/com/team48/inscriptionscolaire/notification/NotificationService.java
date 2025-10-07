@@ -37,8 +37,14 @@ public class NotificationService {
      * @param message Le contenu du message à envoyer
      */
     public void sendPrivateNotification(final String userId, final String message) {
-        Notification notification = new Notification(message);
-        messagingTemplate.convertAndSendToUser(userId, "/topic/private-notifications", notification);
+        try {
+            Notification notification = new Notification(message);
+            messagingTemplate.convertAndSendToUser(userId, "/topic/private-notifications", notification);
+
+        } catch (Exception e) {
+
+            // Don't throw exception to avoid breaking the enrollment process
+        }
     }
     
     /**
@@ -46,11 +52,20 @@ public class NotificationService {
      * @param message Le contenu du message à envoyer
      */
     public void sendNotificationToAdmins(final String message) {
-        List<User> adminUsers = userRepository.findAdminUsers();
-        Notification notification = new Notification(message);
-        
-        for (User admin : adminUsers) {
-            messagingTemplate.convertAndSendToUser(admin.getUsername(), "/topic/private-notifications", notification);
+        try {
+            List<User> adminUsers = userRepository.findAdminUsers();
+            Notification notification = new Notification(message);
+
+            for (User admin : adminUsers) {
+                try {
+                    messagingTemplate.convertAndSendToUser(admin.getUsername(), "/topic/private-notifications", notification);
+
+                } catch (Exception e) {
+
+                }
+            }
+        } catch (Exception e) {
+            // Don't throw exception to avoid breaking the enrollment process
         }
     }
     

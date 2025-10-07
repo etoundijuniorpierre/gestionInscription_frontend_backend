@@ -45,6 +45,7 @@ const Step3AcademicInfo = ({ initialData = {}, onSaveAndNext, onSave, onPrevious
             startDate,
             endDate,
             diplomaObtained,
+            availableForInternship: null // This will be set in the summary step
         };
     };
 

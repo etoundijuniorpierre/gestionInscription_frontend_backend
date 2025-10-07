@@ -12,15 +12,30 @@ export const uploadDocument = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post(`${IMAGES_URL}/upload`, formData, {
+    // Add timeout and better error handling
+    const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    });
+      timeout: 30000, // 30 second timeout
+    };
+    
+    const response = await api.post(`${IMAGES_URL}/upload`, formData, config);
     
     return response.data;
   } catch (error) {
     console.error('Error in uploadDocument:', error);
+    
+    // Enhanced error logging
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network error details:', {
+        baseURL: api.defaults.baseURL,
+        url: `${IMAGES_URL}/upload`,
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    
     throw error;
   }
 };

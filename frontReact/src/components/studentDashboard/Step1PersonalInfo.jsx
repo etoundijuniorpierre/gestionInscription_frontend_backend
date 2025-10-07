@@ -38,13 +38,13 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
 
     const collectData = () => {
         return {
-            // Correctly map state variables to DTO/summary keys
+            // Map frontend field names to backend field names
             nom: lastName,
             prenom: firstName,
             sexe: gender,
             dateNaissance: dateOfBirth,
             nationalite: nationality,
-            typePieceIdentite: typePieceIdentite, // Add this to the data payload
+            typePieceIdentite: typePieceIdentite
         };
     };
 

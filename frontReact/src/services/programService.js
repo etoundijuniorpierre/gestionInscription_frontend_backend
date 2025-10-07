@@ -32,17 +32,28 @@ export const getAllPrograms = async () => {
  */
 export const getProgramById = async (id) => {
   try {
+    console.log('Appel API getProgramById avec id:', id);
+    console.log('URL complète:', `${PROGRAMS_URL}/${id}`);
     const response = await api.get(`${PROGRAMS_URL}/${id}`);
+    console.log('Réponse complète reçue:', response);
+    console.log('Status de la réponse:', response.status);
+    console.log('Données de la réponse:', response.data);
+    console.log('Type des données:', typeof response.data);
     return response.data;
   } catch (error) {
     console.error(`Error in getProgramById with id ${id}:`, error);
     if (error.response) {
+      console.error('Error response:', error.response);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response data:', error.response.data);
       // Server responded with error status
       throw new Error(`Erreur ${error.response.status}: ${error.response.data.message || 'Impossible de récupérer les détails de la formation'}`);
     } else if (error.request) {
+      console.error('Error request:', error.request);
       // Request was made but no response received
       throw new Error('Impossible de contacter le serveur. Veuillez vérifier votre connexion.');
     } else {
+      console.error('Error message:', error.message);
       // Something else happened
       throw new Error('Une erreur inattendue s\'est produite lors de la récupération des détails de la formation.');
     }

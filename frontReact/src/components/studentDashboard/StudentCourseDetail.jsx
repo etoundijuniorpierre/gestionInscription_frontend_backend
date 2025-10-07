@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProgramByCode } from '../../services/programService';
+import { getProgramById } from '../../services/programService';
 import { useAuth } from '../../hooks/useAuth';
 
 // Define program images mapping for consistent imagery across the application
@@ -31,9 +31,14 @@ const StudentCourseDetail = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const response = await getProgramByCode(courseName);
-        setCourse(response.data);
+        console.log('Tentative de récupération du cours avec ID:', courseName);
+        const response = await getProgramById(courseName);
+        console.log('Réponse reçue dans StudentCourseDetail:', response);
+        console.log('Type de la réponse:', typeof response);
+        console.log('Clés de la réponse:', response ? Object.keys(response) : 'null/undefined');
+        setCourse(response);
       } catch (err) {
+        console.error('Erreur lors de la récupération du cours:', err);
         setError(err);
       } finally {
         setLoading(false);
@@ -109,6 +114,20 @@ const StudentCourseDetail = () => {
       .filter(item => item.length > 0);
     
     return items;
+  };
+
+  // Function to translate day names to French
+  const translateDayToFrench = (day) => {
+    const translations = {
+      'MONDAY': 'Lundi',
+      'TUESDAY': 'Mardi',
+      'WEDNESDAY': 'Mercredi',
+      'THURSDAY': 'Jeudi',
+      'FRIDAY': 'Vendredi',
+      'SATURDAY': 'Samedi',
+      'SUNDAY': 'Dimanche'
+    };
+    return translations[day] || day;
   };
 
   const careerProspectsList = formatCareerProspects(course.careerProspects);
@@ -188,15 +207,22 @@ const StudentCourseDetail = () => {
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Code:</span>
-                    <span className="text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">{course.programCode}</span>
+                    <span className="font-medium text-gray-700">Inscriptions:</span>
+                    <div className="flex flex-col items-end">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        course.enrollmentOpen
+                          ? 'bg-green-100 text-green-800 border border-green-200'
+                          : 'bg-red-100 text-red-800 border border-red-200'
+                      }`}>
+                        {course.enrollmentOpen ? 'Ouvertes' : 'Fermées'}
+                      </span>
+                      {!course.enrollmentOpen && (
+                        <span className="text-xs text-gray-500 mt-1 text-center">
+                          Contactez l'administration
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  
-                  <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Durée:</span>
-                    <span className="text-gray-900">{course.duration} mois</span>
-                  </div>
-                  
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                     <span className="font-medium text-gray-700">Frais d'inscription:</span>
                     <span className="text-gray-900 font-semibold">{course.registrationFee} FCFA</span>
@@ -229,13 +255,79 @@ const StudentCourseDetail = () => {
                   )}
                   
                   <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                    <span className="font-medium text-gray-700">Inscriptions:</span>
-                    <span className={`px-2 py-1 rounded text-sm font-medium ${
-                      course.enrollmentOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {course.enrollmentOpen ? 'Ouvertes' : 'Fermées'}
-                    </span>
+                    <span className="font-medium text-gray-700">Capacité maximale:</span>
+                    <span className="text-gray-900">{course.maxCapacity} étudiants</span>
                   </div>
+
+                  {/* Program dates */}
+                  {(course.startDate || course.endDate) && (
+                    <div className="pb-2 border-b border-gray-200">
+                      <span className="font-medium text-gray-700 block mb-2">Dates du programme:</span>
+                      <div className="text-gray-900">
+                        {course.startDate && (
+                          <div className="flex justify-between">
+                            <span>Début:</span>
+                            <span>{new Date(course.startDate).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        )}
+                        {course.endDate && (
+                          <div className="flex justify-between">
+                            <span>Fin:</span>
+                            <span>{new Date(course.endDate).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Schedule information */}
+                  {(course.hoursPerDay || course.daysPerWeek || course.startTime || course.endTime) && (
+                    <div className="pb-2 border-b border-gray-200">
+                      <span className="font-medium text-gray-700 block mb-2">Emploi du temps:</span>
+                      <div className="text-gray-900">
+                        {course.hoursPerDay && (
+                          <div className="flex justify-between">
+                            <span>Heures par jour:</span>
+                            <span>{course.hoursPerDay}h</span>
+                          </div>
+                        )}
+                        {course.daysPerWeek && (
+                          <div className="flex justify-between">
+                            <span>Jours par semaine:</span>
+                            <span>{course.daysPerWeek}</span>
+                          </div>
+                        )}
+                        {(course.startTime || course.endTime) && (
+                          <div className="flex justify-between">
+                            <span>Horaires:</span>
+                            <span>
+                              {course.startTime && course.endTime
+                                ? `${course.startTime} - ${course.endTime}`
+                                : course.startTime || course.endTime
+                              }
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Course days */}
+                  {course.courseDays && course.courseDays.length > 0 && (
+                    <div className="pb-2 border-b border-gray-200">
+                      <span className="font-medium text-gray-700 block mb-2">Jours de cours:</span>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {Array.from(course.courseDays).map((day, index) => (
+                          <span
+                            key={index}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full border border-blue-200"
+                          >
+                            {translateDayToFrench(day)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mt-8">

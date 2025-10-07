@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { jwtDecode } from 'jwt-decode';
 import { UserContext } from '../contexts/UserContext';
+import toast from 'react-hot-toast';
 
 const pxToRem = (px) => `${(px / 16).toFixed(2)}rem`;
 
@@ -103,6 +104,28 @@ const LoginPage = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const handleGoogleSignIn = () => {
+    toast('Fonctionnalité Google Sign-In bientôt disponible !', {
+      icon: '🚧',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
+  };
+
+  const handleAppleSignIn = () => {
+    toast('Fonctionnalité Apple Sign-In bientôt disponible !', {
+      icon: '🚧',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
   };
 
   return (
@@ -391,6 +414,7 @@ const LoginPage = () => {
 
           <div className="flex flex-col sm:flex-row" style={{ gap: pxToRem(2.74), marginTop: pxToRem(7.50) }}>
             <button
+              onClick={handleGoogleSignIn}
               className="flex items-center justify-center shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out"
               type="button"
               style={{
@@ -409,6 +433,7 @@ const LoginPage = () => {
               Google
             </button>
             <button
+              onClick={handleAppleSignIn}
               className="flex items-center justify-center shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out"
               type="button"
               style={{
@@ -431,7 +456,6 @@ const LoginPage = () => {
           <p className="text-center text-gray-600"
             style={{
               fontSize: pxToRem(12.00),
-              marginTop: pxToRem(15.00),
               marginBottom: pxToRem(29.00)
             }}
           >

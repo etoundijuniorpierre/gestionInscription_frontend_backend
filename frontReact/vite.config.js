@@ -8,6 +8,14 @@ export default defineConfig({
     hmr: true,
     watch: {
       usePolling: true,
+    },
+    // Add proxy for API requests to avoid CORS issues
+    proxy: {
+      '/api/v1': {
+        target: 'http://localhost:9090',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   }
 })

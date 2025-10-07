@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const pxToRem = (px) => `${(px / 16).toFixed(2)}rem`;
 
@@ -89,6 +90,28 @@ const RegisterPage = () => {
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword((prev) => !prev);
+  };
+
+  const handleGoogleSignIn = () => {
+    toast('Fonctionnalité Google Sign-In bientôt disponible !', {
+      icon: '🚧',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
+  };
+
+  const handleAppleSignIn = () => {
+    toast('Fonctionnalité Apple Sign-In bientôt disponible !', {
+      icon: '🚧',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    });
   };
 
   return (
@@ -448,6 +471,7 @@ const RegisterPage = () => {
 
           <div className="flex flex-col space-y-[0.68rem] sm:flex-row sm:space-y-0 sm:space-x-[0.90rem] mt-[0.45rem]">
             <button
+              onClick={handleGoogleSignIn}
               className="flex items-center justify-center shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out"
               type="button"
               style={{
@@ -466,6 +490,7 @@ const RegisterPage = () => {
               Google
             </button>
             <button
+              onClick={handleAppleSignIn}
               className="flex items-center justify-center shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150 ease-in-out"
               type="button"
               style={{
@@ -488,7 +513,6 @@ const RegisterPage = () => {
           <p className="text-center text-gray-600 text-[0.79rem] mt-[1.35rem]">
             Avez-vous déjà un compte ?{' '}
             <Link to="/login" className="text-[#2A3B7C] hover:text-[#3B4C8D] font-bold">
-              Connectez-vous
             </Link>
           </p>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/common/Button';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const VerifyEmailPage = () => {
   const navigate = useNavigate();
@@ -93,7 +94,15 @@ const VerifyEmailPage = () => {
     setIsLoading(true);
     try {
       await api.post('/auth/resend-activation-code', { email: registeredEmail });
-      alert('Un nouveau code a été envoyé à votre adresse e-mail.');
+      toast.success('Un nouveau code a été envoyé à votre adresse e-mail !', {
+        icon: '📧',
+        style: {
+          borderRadius: '10px',
+          background: '#10B981',
+          color: '#fff',
+        },
+        duration: 4000,
+      });
     } catch (err) {
       console.error('Failed to resend code:', err);
       if (err.response) {
@@ -110,11 +119,14 @@ const VerifyEmailPage = () => {
 
   return (
     <section
+      className="relative flex items-center justify-center w-full h-full"
       style={{
         backgroundImage: `url('/assets/images/register-bg.png'), linear-gradient(to right, #EFEFEF, #EFEFEF)`,
         backgroundSize: '60% 100%, 40% 100%',
         backgroundPosition: 'left center, right center',
-        backgroundRepeat: 'no-repeat'
+        backgroundRepeat: 'no-repeat',
+        paddingTop: '1.48rem',
+        paddingBottom: '1.48rem',
       }}
     >
       <div

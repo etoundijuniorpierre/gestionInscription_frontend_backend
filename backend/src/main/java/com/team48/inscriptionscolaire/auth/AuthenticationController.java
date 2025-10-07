@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
+
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
@@ -41,7 +43,7 @@ public class AuthenticationController {
     @GetMapping("/activate-account")
     public void confirm(
             @RequestParam String token
-    ) throws MessagingException {
+    ) throws MessagingException, NoSuchAlgorithmException {
         service.activateAccount(token);
     }
 

@@ -8,8 +8,7 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
     const [documents, setDocuments] = useState({
         diplome1: initialData.diplome1 || null,
         diplome2: initialData.diplome2 || null,
-        cniRecto: initialData.cniRecto || { file: null, status: null },
-        cniVerso: initialData.cniVerso || { file: null, status: null },
+        cni: initialData.cni || { file: null, status: null },
         acteNaissance: initialData.acteNaissance || { file: null, status: null },
         photoIdentite: initialData.photoIdentite || { file: null, status: null },
         cv: initialData.cv || { file: null, status: null },
@@ -23,8 +22,7 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
         setDocuments({
             diplome1: initialData.diplome1 || null,
             diplome2: initialData.diplome2 || null,
-            cniRecto: initialData.cniRecto || { file: null, status: null },
-            cniVerso: initialData.cniVerso || { file: null, status: null },
+            cni: initialData.cni || { file: null, status: null },
             acteNaissance: initialData.acteNaissance || { file: null, status: null },
             photoIdentite: initialData.photoIdentite || { file: null, status: null },
             cv: initialData.cv || { file: null, status: null },
@@ -49,8 +47,7 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
         switch (documentType) {
             case 'diplome1':
             case 'diplome2':
-            case 'cniRecto':
-            case 'cniVerso':
+            case 'cni':
             case 'acteNaissance':
             case 'photoIdentite':
                 allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
@@ -112,12 +109,15 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
             const formData = new FormData();
             formData.append('file', file);
             
-            // Upload the document
-            const response = await api.post('/images/upload', formData, {
+            // Upload the document with timeout and better error handling
+            const config = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-            });
+                timeout: 30000, // 30 second timeout
+            };
+            
+            const response = await api.post('/images/upload', formData, config);
             
             // Update state with the response
             setDocuments(prevDocs => ({
@@ -130,11 +130,38 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
             }));
         } catch (error) {
             console.error('Error uploading document:', error);
+            
+            // Provide more specific error information
+            let errorMessage = "Une erreur s'est produite lors du téléchargement du document. Veuillez réessayer.";
+            
+            if (error.code === 'ERR_NETWORK') {
+                // Network error - likely backend not reachable
+                errorMessage = "Impossible de contacter le serveur pour le téléchargement du document. Veuillez vérifier que le serveur backend est en cours d'exécution et que vous êtes connecté à Internet.";
+            } else if (error.response) {
+                // Server responded with error status
+                if (error.response.status === 500) {
+                    errorMessage = "Erreur interne du serveur lors du téléchargement du document.";
+                } else if (error.response.data && error.response.data.message) {
+                    errorMessage = `Erreur du serveur: ${error.response.data.message}`;
+                } else {
+                    errorMessage = `Erreur ${error.response.status}: ${error.response.statusText}`;
+                }
+            } else if (error.request) {
+                // Request was made but no response received
+                errorMessage = "Impossible de contacter le serveur pour le téléchargement du document. Veuillez vérifier votre connexion internet.";
+            } else {
+                // Something else happened
+                errorMessage = `Erreur: ${error.message}`;
+            }
+            
             // Set status to rejected on error
             setDocuments(prevDocs => ({
                 ...prevDocs,
                 [documentType]: { file: file, status: 'rejected' }
             }));
+            
+            // Set error message
+            setErrors(prev => ({ ...prev, [documentType]: errorMessage }));
         }
     };
 
@@ -154,7 +181,7 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
         const newErrors = {};
         
         // Check if required documents are uploaded
-        const requiredDocuments = ['diplome1', 'cniRecto', 'cniVerso', 'acteNaissance', 'photoIdentite', 'cv', 'lettreMotivation'];
+        const requiredDocuments = ['diplome1', 'cni', 'acteNaissance', 'photoIdentite', 'cv', 'lettreMotivation'];
         const missingDocuments = requiredDocuments.filter(doc => !documents[doc] || !documents[doc].file);
         
         if (missingDocuments.length > 0) {
@@ -178,14 +205,14 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
     };
 
     // Get the document label based on the selected identity document type
-    const getIdentityDocumentLabel = (side) => {
+    const getIdentityDocumentLabel = () => {
         switch (identityDocumentType) {
             case 'Passport':
-                return `Photocopie Passport ${side}`;
+                return 'Photocopie Passport';
             case 'Permis de conduire':
-                return `Photocopie Permis de conduire ${side}`;
+                return 'Photocopie Permis de conduire';
             default:
-                return `Photocopie CNI ${side}`;
+                return 'Photocopie CNI';
         }
     };
 
@@ -214,39 +241,27 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
                     fileState={documents.diplome1}
                     onFileChange={handleFileUpload('diplome1')}
                     onDelete={handleFileDelete('diplome1')}
-                    showActions={false}
                 />
                 {errors.diplome1 && <p className="text-red-500 text-[1.2rem] mt-1 col-span-2">{errors.diplome1}</p>}
                 
                 <FileUploadField
                     id="diplome2"
-                    label={<span>Dernier diplôme obtenu "2" (Facultatif)</span>}
+                    label={<span>Autre diplôme obtenu "2" (Facultatif)</span>}
                     description='Importer un fichier compatible : PDF ou image claire et lisible, max 5Mo'
                     fileState={documents.diplome2}
                     onFileChange={handleFileUpload('diplome2')}
                     onDelete={handleFileDelete('diplome2')}
-                    showActions={false}
                 />
                 
                 <FileUploadField
-                    id="cniRecto"
-                    label={<span>{getIdentityDocumentLabel('Recto')} <span className="text-red-500">*</span></span>}
+                    id="cni"
+                    label={<span>{getIdentityDocumentLabel()} <span className="text-red-500">*</span></span>}
                     description='Importer un fichier compatible : PDF ou image claire et lisible(JPG/PNG)'
-                    fileState={documents.cniRecto}
-                    onFileChange={handleFileUpload('cniRecto')}
-                    onDelete={handleFileDelete('cniRecto')}
+                    fileState={documents.cni}
+                    onFileChange={handleFileUpload('cni')}
+                    onDelete={handleFileDelete('cni')}
                 />
-                {errors.cniRecto && <p className="text-red-500 text-[1.2rem] mt-1 col-span-2">{errors.cniRecto}</p>}
-                
-                <FileUploadField
-                    id="cniVerso"
-                    label={<span>{getIdentityDocumentLabel('Verso')} <span className="text-red-500">*</span></span>}
-                    description='Importer un fichier compatible : PDF ou image claire et lisible(JPG/PNG)'
-                    fileState={documents.cniVerso}
-                    onFileChange={handleFileUpload('cniVerso')}
-                    onDelete={handleFileDelete('cniVerso')}
-                />
-                {errors.cniVerso && <p className="text-red-500 text-[1.2rem] mt-1 col-span-2">{errors.cniVerso}</p>}
+                {errors.cni && <p className="text-red-500 text-[1.2rem] mt-1 col-span-2">{errors.cni}</p>}
                 
                 <FileUploadField
                     id="acteNaissance"

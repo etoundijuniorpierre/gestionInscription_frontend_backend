@@ -93,6 +93,18 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
         return 'Non spécifié';
     };
 
+    // Get the document label based on the selected identity document type
+    const getIdentityDocumentLabel = () => {
+        switch (formData.typePieceIdentite) {
+            case 'Passport':
+                return 'Photocopie Passport';
+            case 'Permis de conduire':
+                return 'Photocopie Permis de conduire';
+            default:
+                return 'Photocopie CNI';
+        }
+    };
+
     return (
         <>
             <h2
@@ -134,10 +146,11 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
                     {/* Updated to correctly reference the formData */}
                     <DocumentSummaryField label='Dernier diplôme obtenu "1"' fileState={formData.diplome1} />
                     <DocumentSummaryField label='Dernier diplôme obtenu "2" (Facultatif)' fileState={formData.diplome2} />
-                    <DocumentSummaryField label='Photocopie CNI Recto' fileState={formData.cniRecto} />
-                    <DocumentSummaryField label='Photocopie CNI Verso' fileState={formData.cniVerso} />
+                    <DocumentSummaryField label={getIdentityDocumentLabel()} fileState={formData.cni} />
                     <DocumentSummaryField label='Acte de naissance' fileState={formData.acteNaissance} />
                     <DocumentSummaryField label="Photo d'identité 4+4" fileState={formData.photoIdentite} />
+                    <DocumentSummaryField label="Curriculum Vitae (CV)" fileState={formData.cv} />
+                    <DocumentSummaryField label="Lettre de motivation" fileState={formData.lettreMotivation} />
                 </div>
 
                 <h3

@@ -23,6 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -137,13 +140,40 @@ public class AuthenticationService {
 
     // AJOUT : Méthode pour sauvegarder un token
     private void saveUserToken(User user, String jwtToken) {
-        var token = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .expired(false)
-                .revoked(false)
-                .build();
-        tokenRepository.save(token);
+        try {
+            // Créer un hash du token pour la recherche sécurisée
+            String tokenHash = hashToken(jwtToken);
+
+            var token = Token.builder()
+                    .user(user)
+                    .token(jwtToken) // Token complet pour la validation
+                    .tokenHash(tokenHash) // Hash pour la recherche rapide
+                    .expired(false)
+                    .revoked(false)
+                    .build();
+            tokenRepository.save(token);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save authentication token", e);
+        }
+    }
+
+    /**
+     * Génère un hash SHA-256 du token pour la recherche sécurisée
+     */
+    private String hashToken(String token) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hexString = new StringBuilder();
+
+        for (byte b : hashBytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
     }
 
     // AJOUT : Méthode pour révoquer les tokens
@@ -159,10 +189,16 @@ public class AuthenticationService {
     }
 
     //@Transactional
-    public void activateAccount(String token) throws MessagingException {
-        Token savedToken= tokenRepository.findByToken(token)
-                //to do exception has to be defined
+    public void activateAccount(String token) throws MessagingException, NoSuchAlgorithmException {
+        String tokenHash = hashToken(token);
+        Token savedToken = tokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        // Vérifier que le token correspond exactement (sécurité supplémentaire)
+        if (!savedToken.getToken().equals(token)) {
+            throw new RuntimeException("Token hash mismatch");
+        }
+
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())){
             sendValidationEmail(savedToken.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
@@ -244,13 +280,23 @@ public class AuthenticationService {
         }
 
         jwt = authHeader.substring(7);
-        var storedToken = tokenRepository.findByToken(jwt).orElse(null);
 
-        if (storedToken != null) {
-            storedToken.setExpired(true);
-            storedToken.setRevoked(true);
-            tokenRepository.save(storedToken);
-            SecurityContextHolder.clearContext(); // Nettoie le contexte de sécurité
+        try {
+            // Utiliser le hash du token pour la recherche
+            String tokenHash = hashToken(jwt);
+            var storedToken = tokenRepository.findByTokenHash(tokenHash).orElse(null);
+
+            if (storedToken != null) {
+                // Vérifier que le token correspond exactement
+                if (storedToken.getToken().equals(jwt)) {
+                    storedToken.setExpired(true);
+                    storedToken.setRevoked(true);
+                    tokenRepository.save(storedToken);
+                    SecurityContextHolder.clearContext(); // Nettoie le contexte de sécurité
+                }
+            }
+        } catch (Exception e) {
+
         }
     }
 }

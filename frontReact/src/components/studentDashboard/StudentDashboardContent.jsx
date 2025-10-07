@@ -19,7 +19,7 @@ const StudentDashboardContent = () => {
     const [coursesLoading, setCoursesLoading] = useState(true);
     const [error, setError] = useState(null);
     const [notification, setNotification] = useState(null); // Add notification state
-    const { isAuthenticated, userRole } = useAuth();
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -99,81 +99,86 @@ const StudentDashboardContent = () => {
     };
 
     const handleViewCourseDetail = (course) => {
-        // Navigate to the course detail page within the student dashboard
-        if (course.programCode) {
-            navigate(`/dashboard/courses/${course.programCode}`);
-        } else {
-            navigate(`/dashboard/courses/${course.id}`);
-        }
+        // Navigate to the course detail page within the student dashboard using course ID
+        navigate(`/dashboard/courses/${course.id}`);
     };
-
     const handleGoBackToCourses = () => {
         setSelectedCourse(null);
         setDisplayMode('courses');
     };
 
-    const handleGoToCorrections = () => {
-        navigate('/dashboard/corrections', { state: { enrollmentId: latestEnrollment?.id } });
-    };
     const handleFormSubmission = async (formData) => {
         try {
-            // Prepare the enrollment data according to EnrollmentRequestDto
-            // Note: EnrollmentRequestDto accepts identity fields (lines 16-20)
-            // but PersonalInfoDto in response does not contain them
+            // Prepare the enrollment data according to the backend's expected structure
             const enrollmentData = {
                 programId: parseInt(selectedCourse.id),
-                lastName: formData.nom,
-                firstName: formData.prenom,
-                gender: formData.sexe,
-                dateOfBirth: formData.dateNaissance,
-                nationality: formData.nationalite,
-                identityDocumentType: formData.typePieceIdentite || 'CNI',
-                identityDocumentNumber: formData.numPieceIdentite || '',
-                issueDate: formData.dateDelivrancePieceIdentite || null,
-                expirationDate: formData.dateExpirationPieceIdentite || null,
-                placeOfIssue: formData.lieuDelivrancePieceIdentite || '',
-                lastInstitution: formData.lastInstitution,
-                specialization: formData.specialization === 'Autre' ? formData.otherSpecialization : formData.specialization,
-                availableForInternship: formData.availableForInternship,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                diplomaObtained: formData.diplomaObtained || '',
-                email: formData.email,
-                phoneNumber: formData.phoneNumber,
-                countryCode: formData.countryCode,
-                country: formData.country,
-                region: formData.region,
-                city: formData.city,
-                address: formData.address,
-                emergencyContacts: [
-                    {
-                        name: formData.emergencyContactName1,
-                        phone: formData.emergencyContactPhone1,
-                        countryCode: formData.emergencyContactCode1,
-                        relationship: formData.emergencyContactRelationship1
-                    },
-                    {
-                        name: formData.emergencyContactName2,
-                        phone: formData.emergencyContactPhone2,
-                        countryCode: formData.emergencyContactCode2,
-                        relationship: formData.emergencyContactRelationship2
-                    }
-                ]
+                currentStep: 5, // Final step
+                personalInfo: {
+                    firstName: formData.prenom,
+                    gender: formData.sexe,
+                    dateOfBirth: formData.dateNaissance,
+                    nationality: formData.nationalite
+                    // Note: identity document fields are not part of PersonalInfoDto in backend
+                },
+                academicInfo: {
+                    lastInstitution: formData.lastInstitution,
+                    specialization: formData.specialization === 'Autre' ? formData.otherSpecialization : formData.specialization,
+                    availableForInternship: formData.availableForInternship,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
+                    diplomaObtained: formData.diplomaObtained || ''
+                },
+                contactDetails: {
+                    email: formData.email,
+                    phoneNumber: formData.phoneNumber,
+                    countryCode: formData.countryCode,
+                    country: formData.country,
+                    region: formData.region,
+                    city: formData.city,
+                    address: formData.address,
+                    emergencyContacts: [
+                        {
+                            name: formData.emergencyContactName1,
+                            phone: formData.emergencyContactPhone1,
+                            countryCode: formData.emergencyContactCode1,
+                            relationship: formData.emergencyContactRelationship1
+                        },
+                        {
+                            name: formData.emergencyContactName2,
+                            phone: formData.emergencyContactPhone2,
+                            countryCode: formData.emergencyContactCode2,
+                            relationship: formData.emergencyContactRelationship2
+                        }
+                    ]
+                }
             };
 
-            // Extract documents from formData
+            // Extract documents from formData with proper type mapping
             const documents = [];
-            if (formData.diplome1?.file) documents.push(formData.diplome1.file);
-            if (formData.diplome2?.file) documents.push(formData.diplome2.file);
-            if (formData.cniRecto?.file) documents.push(formData.cniRecto.file);
-            if (formData.cniVerso?.file) documents.push(formData.cniVerso.file);
-            if (formData.acteNaissance?.file) documents.push(formData.acteNaissance.file);
-            if (formData.photoIdentite?.file) documents.push(formData.photoIdentite.file);
-            if (formData.cv?.file) documents.push(formData.cv.file);
-            if (formData.lettreMotivation?.file) documents.push(formData.lettreMotivation.file);
+            if (formData.diplome1?.file) {
+                documents.push({ file: formData.diplome1.file, type: 'diplome1' });
+            }
+            if (formData.diplome2?.file) {
+                documents.push({ file: formData.diplome2.file, type: 'diplome2' });
+            }
+            if (formData.cni?.file) {
+                documents.push({ file: formData.cni.file, type: 'cni' });
+            }
+            if (formData.acteNaissance?.file) {
+                documents.push({ file: formData.acteNaissance.file, type: 'acteNaissance' });
+            }
+            if (formData.photoIdentite?.file) {
+                documents.push({ file: formData.photoIdentite.file, type: 'photoIdentite' });
+            }
+            if (formData.cv?.file) {
+                documents.push({ file: formData.cv.file, type: 'cv' });
+            }
+            if (formData.lettreMotivation?.file) {
+                documents.push({ file: formData.lettreMotivation.file, type: 'lettreMotivation' });
+            }
 
             // Submit the enrollment form
-            const response = await submitEnrollmentForm(enrollmentData, documents);
+            await submitEnrollmentForm(enrollmentData, documents);
             
             // Show success notification instead of alert
             showNotification("Votre dossier d'inscription a été soumis avec succès!");
@@ -194,7 +199,10 @@ const StudentDashboardContent = () => {
             // Provide more specific error information
             let errorMessage = "Une erreur s'est produite lors de la soumission de votre dossier. Veuillez réessayer.";
             
-            if (error.response) {
+            if (error.code === 'ERR_NETWORK') {
+                // Network error - likely backend not reachable
+                errorMessage = "Impossible de contacter le serveur. Veuillez vérifier que le serveur backend est en cours d'exécution et que vous êtes connecté à Internet.";
+            } else if (error.response) {
                 // Server responded with error status
                 if (error.response.status === 500) {
                     // For 500 errors, provide more detailed information
@@ -206,7 +214,7 @@ const StudentDashboardContent = () => {
                 }
             } else if (error.request) {
                 // Request was made but no response received
-                errorMessage = "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet.";
+                errorMessage = "Impossible de contacter le serveur. Veuillez vérifier votre connexion internet et que le serveur backend est en cours d'exécution.";
             } else {
                 // Something else happened
                 errorMessage = `Erreur: ${error.message}`;

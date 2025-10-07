@@ -44,64 +44,89 @@ public class EnrollmentService {
 
     @Transactional
     public Enrollment processEnrollment(EnrollmentDtoRequest dto, List<MultipartFile> documents) {
-        var student = (Student) userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
-        var program = programRepository.findById(dto.getProgramId())
-                .orElseThrow(() -> new EntityNotFoundException("Program not found"));
+        try {
+            var student = (Student) userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                    .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+            var program = programRepository.findById(dto.getProgramId())
+                    .orElseThrow(() -> new EntityNotFoundException("Program not found"));
 
-        // Check if enrollments are open for this program
-        if (!program.isEnrollmentOpen()) {
-            throw new IllegalStateException("Enrollments are not currently open for this program.");
+            log.info("Processing enrollment for student: {} and program: {}", student.getEmail(), program.getProgramName());
+
+            // Check if enrollments are open for this program
+            if (!program.isEnrollmentOpen()) {
+                log.warn("Enrollment closed for program: {}", program.getProgramName());
+                throw new IllegalStateException("Enrollments are not currently open for this program.");
+            }
+
+            // Check if student is already enrolled in another program with the same start date
+            if (program.getStartDate() != null && hasConflictingEnrollment(student.getId(), program.getStartDate(), program.getId())) {
+                log.warn("Student {} has conflicting enrollment for program: {}", student.getEmail(), program.getProgramName());
+                throw new IllegalStateException("You are already enrolled in another program that starts on the same date.");
+            }
+            // Check for schedule conflicts
+            if (hasScheduleConflict(student.getId(), program)) {
+                log.warn("Student {} has schedule conflict for program: {}", student.getEmail(), program.getProgramName());
+                throw new IllegalStateException("You are already enrolled in another program with conflicting schedule.");
+            }
+
+            var enrollment = enrollmentRepository
+                    .findByStudentIdAndProgramId(student.getId(), program.getId())
+                    .orElseGet(() -> {
+                        var newEnrollment = new Enrollment();
+                        newEnrollment.setStudent(student);
+                        newEnrollment.setProgram(program);
+                        newEnrollment.setStatus(StatusSubmission.IN_PROGRESS);
+                        newEnrollment.setSubmissionDate(LocalDateTime.now()); // Synchroniser avec createdDate
+                        log.info("Creating new enrollment for student: {} and program: {}", student.getEmail(), program.getProgramName());
+                        return newEnrollment;
+                    });
+
+            updatePersonalInfo(enrollment, dto.getPersonalInfo());
+            updateAcademicInfo(enrollment, dto.getAcademicInfo());
+            updateContactDetails(enrollment, dto.getContactDetails());
+            enrollment.setStepCompleted(dto.getCurrentStep());
+
+            if (documents != null && !documents.isEmpty()) {
+                addDocumentsToEnrollment(enrollment, documents);
+            }
+
+            if (dto.getCurrentStep() == 5) {
+                completeEnrollment(enrollment);
+            }
+
+            Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+            log.info("Enrollment saved successfully with ID: {}", savedEnrollment.getId());
+
+            // Send notification to student
+            try {
+                String studentMessage = "Votre demande d'inscription pour le programme '" +
+                        program.getProgramName() +
+                        "' a été soumise avec succès. Elle est maintenant en attente de validation.";
+                notificationService.sendPrivateNotification(student.getUsername(), studentMessage);
+                log.info("Student notification sent successfully");
+            } catch (Exception e) {
+                log.error("Failed to send student notification: {}", e.getMessage(), e);
+                // Don't fail the enrollment process if notification fails
+            }
+
+            // Send notification to admins
+            try {
+                String adminMessage = "Une nouvelle demande d'inscription a été soumise par " +
+                        student.fullName() +
+                        " pour le programme '" +
+                        program.getProgramName() + "'.";
+                notificationService.sendNotificationToAdmins(adminMessage);
+                log.info("Admin notification sent successfully");
+            } catch (Exception e) {
+                log.error("Failed to send admin notification: {}", e.getMessage(), e);
+                // Don't fail the enrollment process if notification fails
+            }
+
+            return savedEnrollment;
+        } catch (Exception e) {
+            log.error("Error processing enrollment: {}", e.getMessage(), e);
+            throw e; // Re-throw to maintain original error handling
         }
-        
-        // Check if student is already enrolled in another program with the same start date
-        if (program.getStartDate() != null && hasConflictingEnrollment(student.getId(), program.getStartDate(), program.getId())) {
-            throw new IllegalStateException("You are already enrolled in another program that starts on the same date.");
-        }
-        // Check for schedule conflicts
-        if (hasScheduleConflict(student.getId(), program)) {
-            throw new IllegalStateException("You are already enrolled in another program with conflicting schedule.");
-        }
-
-        var enrollment = enrollmentRepository
-                .findByStudentIdAndProgramId(student.getId(), program.getId())
-                .orElseGet(() -> {
-                    var newEnrollment = new Enrollment();
-                    newEnrollment.setStudent(student);
-                    newEnrollment.setProgram(program);
-                    newEnrollment.setStatus(StatusSubmission.IN_PROGRESS);
-                    return newEnrollment;
-                });
-
-        updatePersonalInfo(enrollment, dto.getPersonalInfo());
-        updateAcademicInfo(enrollment, dto.getAcademicInfo());
-        updateContactDetails(enrollment, dto.getContactDetails());
-        enrollment.setStepCompleted(dto.getCurrentStep());
-
-        if (documents != null && !documents.isEmpty()) {
-            addDocumentsToEnrollment(enrollment, documents);
-        }
-
-        if (dto.getCurrentStep() == 5) {
-            completeEnrollment(enrollment);
-        }
-
-        Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
-        
-        // Send notification to student
-        String studentMessage = "Votre demande d'inscription pour le programme '" + 
-                program.getProgramName() + 
-                "' a été soumise avec succès. Elle est maintenant en attente de validation.";
-        notificationService.sendPrivateNotification(student.getUsername(), studentMessage);
-        
-        // Send notification to admins
-        String adminMessage = "Une nouvelle demande d'inscription a été soumise par " + 
-                student.fullName() + 
-                " pour le programme '" + 
-                program.getProgramName() + "'.";
-        notificationService.sendNotificationToAdmins(adminMessage);
-
-        return savedEnrollment;
     }
     
     /**
@@ -122,37 +147,49 @@ public class EnrollmentService {
      * @return true if there's a schedule conflict, false otherwise
      */
     private boolean hasScheduleConflict(Integer studentId, Program newProgram) {
-        // Get all active enrollments for the student
-        List<Enrollment> activeEnrollments = enrollmentRepository.findByStudentId(studentId)
-                .stream()
-                .filter(e -> e.getStatus() == StatusSubmission.IN_PROGRESS || 
-                            e.getStatus() == StatusSubmission.PENDING || 
-                            e.getStatus() == StatusSubmission.APPROVED)
-                .toList();
-        
-        // Check each active enrollment for schedule conflicts
-        for (Enrollment enrollment : activeEnrollments) {
-            Program existingProgram = enrollment.getProgram();
-            
-            // Skip if it's the same program
-            if (existingProgram.getId().equals(newProgram.getId())) {
-                continue;
+        try {
+            // Get all active enrollments for the student
+            List<Enrollment> activeEnrollments = enrollmentRepository.findByStudentId(studentId)
+                    .stream()
+                    .filter(e -> e.getStatus() == StatusSubmission.IN_PROGRESS ||
+                                e.getStatus() == StatusSubmission.PENDING ||
+                                e.getStatus() == StatusSubmission.APPROVED)
+                    .toList();
+
+            log.debug("Found {} active enrollments for student {}", activeEnrollments.size(), studentId);
+
+            // Check each active enrollment for schedule conflicts
+            for (Enrollment enrollment : activeEnrollments) {
+                Program existingProgram = enrollment.getProgram();
+
+                // Skip if it's the same program
+                if (existingProgram.getId().equals(newProgram.getId())) {
+                    continue;
+                }
+
+                // Check if both programs have schedule information
+                if (newProgram.getCourseDays() == null || existingProgram.getCourseDays() == null ||
+                    newProgram.getStartTime() == null || existingProgram.getStartTime() == null ||
+                    newProgram.getEndTime() == null || existingProgram.getEndTime() == null) {
+                    log.debug("Skipping conflict check - missing schedule info for programs {} and {}",
+                            newProgram.getProgramName(), existingProgram.getProgramName());
+                    continue;
+                }
+
+                // Check if the programs overlap in time
+                if (hasTimeOverlap(newProgram, existingProgram)) {
+                    log.warn("Schedule conflict detected between {} and {} for student {}",
+                            newProgram.getProgramName(), existingProgram.getProgramName(), studentId);
+                    return true;
+                }
             }
-            
-            // Check if both programs have schedule information
-            if (newProgram.getCourseDays() == null || existingProgram.getCourseDays() == null ||
-                newProgram.getStartTime() == null || existingProgram.getStartTime() == null ||
-                newProgram.getEndTime() == null || existingProgram.getEndTime() == null) {
-                continue;
-            }
-            
-            // Check if the programs overlap in time
-            if (hasTimeOverlap(newProgram, existingProgram)) {
-                return true;
-            }
+
+            return false;
+        } catch (Exception e) {
+            log.error("Error checking schedule conflicts for student {}: {}", studentId, e.getMessage(), e);
+            // Return false to not block enrollment if there's an error in conflict checking
+            return false;
         }
-        
-        return false;
     }
     
     /**
@@ -162,22 +199,29 @@ public class EnrollmentService {
      * @return true if there's a time overlap, false otherwise
      */
     private boolean hasTimeOverlap(Program program1, Program program2) {
-        // Check if they have any common course days
-        boolean hasCommonDay = program1.getCourseDays().stream()
-                .anyMatch(day -> program2.getCourseDays().contains(day));
-        
-        if (!hasCommonDay) {
+        try {
+            // Check if they have any common course days
+            boolean hasCommonDay = program1.getCourseDays().stream()
+                    .anyMatch(day -> program2.getCourseDays().contains(day));
+
+            if (!hasCommonDay) {
+                return false;
+            }
+
+            // Check if the time slots overlap
+            LocalTime start1 = program1.getStartTime();
+            LocalTime end1 = program1.getEndTime();
+            LocalTime start2 = program2.getStartTime();
+            LocalTime end2 = program2.getEndTime();
+
+            // Time overlap condition: (StartA < EndB) and (StartB < EndA)
+            return start1.isBefore(end2) && start2.isBefore(end1);
+        } catch (Exception e) {
+            log.error("Error checking time overlap between {} and {}: {}",
+                    program1.getProgramName(), program2.getProgramName(), e.getMessage(), e);
+            // Return false if there's an error in overlap checking
             return false;
         }
-        
-        // Check if the time slots overlap
-        LocalTime start1 = program1.getStartTime();
-        LocalTime end1 = program1.getEndTime();
-        LocalTime start2 = program2.getStartTime();
-        LocalTime end2 = program2.getEndTime();
-        
-        // Time overlap condition: (StartA < EndB) and (StartB < EndA)
-        return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
     @Transactional
@@ -190,13 +234,18 @@ public class EnrollmentService {
 
         if (enrollment.getDocuments() == null ||
                 !enrollment.getDocuments().stream().anyMatch(doc -> "diplome1".equals(doc.getDocumentType())) ||
-                !enrollment.getDocuments().stream().anyMatch(doc -> "cniRecto".equals(doc.getDocumentType()))
+                !enrollment.getDocuments().stream().anyMatch(doc -> "cni".equals(doc.getDocumentType())) ||
+                !enrollment.getDocuments().stream().anyMatch(doc -> "acteNaissance".equals(doc.getDocumentType())) ||
+                !enrollment.getDocuments().stream().anyMatch(doc -> "photoIdentite".equals(doc.getDocumentType())) ||
+                !enrollment.getDocuments().stream().anyMatch(doc -> "cv".equals(doc.getDocumentType())) ||
+                !enrollment.getDocuments().stream().anyMatch(doc -> "lettreMotivation".equals(doc.getDocumentType()))
         ) {
             throw new IllegalStateException("All required documents must be uploaded before final submission.");
         }
 
         enrollment.setStatus(StatusSubmission.PENDING);
-        enrollment.setSubmissionDate(LocalDateTime.now());
+        // submissionDate est déjà défini lors de la création et égal à createdDate
+        // Ne pas le modifier ici pour maintenir la synchronisation
         
         // Payment will be created when student initiates the payment process
         // Payment is now the final step of enrollment
@@ -231,6 +280,9 @@ public class EnrollmentService {
     }
 
     private void updatePersonalInfo(Enrollment enrollment, PersonalInfoDto personalInfoDto) {
+        if (personalInfoDto == null) {
+            return;
+        }
         PersonalInfo personalInfo = enrollment.getPersonalInfo() != null ? enrollment.getPersonalInfo() : new PersonalInfo();
         personalInfo.setFirstName(personalInfoDto.getFirstName());
         personalInfo.setLastName(personalInfoDto.getLastName());
@@ -241,6 +293,9 @@ public class EnrollmentService {
     }
 
     private void updateAcademicInfo(Enrollment enrollment, AcademicInfoDto academicInfoDto) {
+        if (academicInfoDto == null) {
+            return;
+        }
         AcademicInfo academicInfo = enrollment.getAcademicInfo() != null ? enrollment.getAcademicInfo() : new AcademicInfo();
         academicInfo.setLastInstitution(academicInfoDto.getLastInstitution());
         academicInfo.setSpecialization(academicInfoDto.getSpecialization());
@@ -252,6 +307,9 @@ public class EnrollmentService {
     }
 
     private void updateContactDetails(Enrollment enrollment, ContactDetailsDto contactDetailsDto) {
+        if (contactDetailsDto == null) {
+            return;
+        }
         ContactDetails contactDetails = enrollment.getContactDetails() != null ? enrollment.getContactDetails() : new ContactDetails();
         contactDetails.setEmail(contactDetailsDto.getEmail());
         contactDetails.setPhoneNumber(contactDetailsDto.getPhoneNumber());
