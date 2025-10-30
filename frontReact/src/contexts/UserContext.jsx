@@ -7,25 +7,28 @@ export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const storedUserName = localStorage.getItem('user_name');
         const storedUserEmail = localStorage.getItem('user_email');
         const storedToken = localStorage.getItem('jwt_token');
         const storedUserRole = localStorage.getItem('user_role');
 
-        if (storedUserName && storedUserEmail && storedToken) {
-            // If we don't have the role stored, try to decode it from the token
-            let role = storedUserRole;
-            if (!role) {
-                try {
-                    const decodedToken = jwtDecode(storedToken);
-                    role = decodedToken.role;
-                } catch (error) {
-                    console.error('Error decoding token:', error);
-                }
+        if (storedUserEmail && storedToken) {
+            // Decode the token to get user information
+            let decodedToken = null;
+            try {
+                decodedToken = jwtDecode(storedToken);
+            } catch (error) {
+                console.error('Error decoding token:', error);
             }
+
+            // Extract user information from token or localStorage
+            const firstname = decodedToken?.firstname || localStorage.getItem('user_firstname') || 'Utilisateur';
+            const lastname = decodedToken?.lastname || localStorage.getItem('user_lastname') || '';
+            const role = storedUserRole || decodedToken?.role || null;
             
             setUser({
-                name: storedUserName,
+                name: firstname + (lastname ? ' ' + lastname : ''),
+                firstname: firstname,
+                lastname: lastname,
                 email: storedUserEmail,
                 role: role,
             });

@@ -1,11 +1,9 @@
 // src/pages/PaymentPage.jsx
 
 import React, { useState } from 'react';
-import { useStripe } from '@stripe/react-stripe-js';
-import { createCheckoutSession } from '../services/paymentService'; // Importez le service
+import { createRegistrationFeePaymentLink } from '../services/paymentService';
 
 const PaymentPage = () => {
-    const stripe = useStripe();
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -14,27 +12,31 @@ const PaymentPage = () => {
         setIsLoading(true);
         setError(null);
 
-        // 1. S'assurer que Stripe.js est bien chargé
-        if (!stripe) {
-            setError("Stripe.js n'a pas encore été chargé. Veuillez patienter.");
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            // Appeler votre backend pour créer une session de paiement
-            const { sessionId } = await createCheckoutSession();
+            console.log('Creating Flutterwave payment link');
+            // For demo purposes, using a fixed enrollment ID
+            // In a real application, you would get this from context or props
+            const enrollmentId = 1; // Replace with actual enrollment ID
+            const redirectUrl = window.location.origin + "/payment/success";
+            
+            const paymentData = {
+                enrollmentId: enrollmentId,
+                redirectUrl: redirectUrl
+            };
+            
+            // For demo purposes, we'll use registration fee payment
+            // In a real application, you would determine the payment type based on enrollment status
+            const response = await createRegistrationFeePaymentLink(paymentData);
+            console.log('Flutterwave payment link created:', response);
 
-            // Rediriger l'utilisateur vers la page de paiement hébergée par Stripe
-            const { error: stripeError } = await stripe.redirectToCheckout({
-                sessionId: sessionId
-            });
-
-            // Cette partie n'est atteinte que s'il y a une erreur de redirection
-            if (stripeError) {
-                setError(stripeError.message);
+            // Redirect to Flutterwave checkout page
+            if (response && response.link) {
+                window.location.href = response.link;
+            } else {
+                throw new Error('Lien de paiement non reçu');
             }
         } catch (err) {
+            console.error('Error creating Flutterwave payment link:', err);
             setError("Impossible de se connecter au service de paiement. Veuillez réessayer plus tard.");
         } finally {
             setIsLoading(false);
@@ -49,7 +51,7 @@ const PaymentPage = () => {
             {/* Le bouton de paiement */}
             <button
                 onClick={handlePayment}
-                disabled={isLoading || !stripe}
+                disabled={isLoading}
                 style={{
                     backgroundColor: '#6772E5',
                     color: 'white',

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import Button from '../components/common/Button';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { loginUser } from '../services/userService';
 import { jwtDecode } from 'jwt-decode';
 import { UserContext } from '../contexts/UserContext';
 import toast from 'react-hot-toast';
@@ -31,31 +31,26 @@ const LoginPage = () => {
       return;
     }
 
-    // Display the login data being sent
-    const loginData = {
-      email: email,
-      password: password,
-    };
-
     try {
-      const response = await api.post('/auth/login', {
+      const response = await loginUser({
         email: email,
         password: password,
       });
 
-      console.log('Login response:', response.data);
+      console.log('Login response:', response);
       
-      const { token } = response.data;
+      const { token } = response;
       localStorage.setItem('jwt_token', token);
 
       const decodedToken = jwtDecode(token);
-      console.log("Decoded token:", decodedToken);
+      console.log("LoginPage - Decoded token:", decodedToken);
 
       // --- DÉBUT DES MODIFICATIONS ---
 
       // 1. 🕵️‍♂️ Récupérer le rôle depuis le token décodé
       // Assurez-vous que le nom de la clé 'role' correspond à ce que votre backend envoie.
       const userRole = decodedToken.role;
+      console.log("LoginPage - User role:", userRole);
 
       const userFirstName = decodedToken.firstname;
       const userLastName = decodedToken.lastname;
@@ -71,13 +66,18 @@ const LoginPage = () => {
       setUser({ name: userName, email: userEmail, role: userRole });
 
       // 4. 🧭 Remplacer l'ancienne redirection par une logique conditionnelle
-      if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
-        console.log("Redirecting to admin dashboard");
+      console.log("LoginPage - Checking user role for redirection:", userRole);
+      if (userRole === 'ADMIN') {
+        console.log("LoginPage - Redirecting to admin dashboard");
         navigate('/admin-dashboard'); // Redirection pour l'administrateur
+      } else if (userRole === 'STUDENT') {
+        console.log("LoginPage - Redirecting to student dashboard");
+        navigate('/dashboard'); // Redirection pour les étudiants
       } else {
-        console.log("Redirecting to student dashboard");
-        // Pour tous les autres utilisateurs (ex: STUDENT), rediriger vers le tableau de bord par défaut
-        navigate('/dashboard'); // ou '/student/dashboard' si c'est votre route
+        // If role is neither ADMIN nor STUDENT, show error
+        setError('Rôle utilisateur non reconnu. Veuillez contacter l\'administrateur.');
+        setIsLoading(false);
+        return;
       }
 
       // --- FIN DES MODIFICATIONS ---
@@ -86,9 +86,14 @@ const LoginPage = () => {
       console.error('Login failed:', err);
       if (err.response) {
         if (err.response.status === 403 || err.response.status === 401) {
-          setError('Email ou mot de passe incorrect ou compte non activé.');
+          setError('Email ou mot de passe incorrect.');
         } else if (err.response.data && err.response.data.message) {
-          setError(err.response.data.message);
+          // Handle the specific case of disabled user account
+          if (err.response.data.message.includes('disabled')) {
+            setError('Compte désactivé. Veuillez contacter l\'administrateur.');
+          } else {
+            setError(err.response.data.message);
+          }
         } else {
           setError('Échec de la connexion. Veuillez réessayer.');
         }

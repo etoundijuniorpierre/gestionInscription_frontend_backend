@@ -1,7 +1,7 @@
 import api from './api';
 
-const AUTH_URL = '/auth'; // Base path for authentication endpoints
-const USERS_URL = '/users'; // Base path for user management endpoints
+const AUTH_URL = '/api/v1/auth'; // Base path for authentication endpoints
+const USERS_URL = '/api/v1/users'; // Base path for user management endpoints
 
 /**
  * Service function to register a new user.
@@ -85,7 +85,7 @@ export const logoutUser = async () => {
  */
 export const getAllUsers = async () => {
   try {
-    const response = await api.get(`${USERS_URL}`);
+    const response = await api.get(`${USERS_URL}/all`);
     return response.data;
   } catch (error) {
     console.error('Error in getAllUsers:', error);
@@ -155,21 +155,13 @@ export const deleteUser = async (id) => {
 };
 
 /**
- * Service function to activate/deactivate a user.
- * Note: This endpoint does not exist in the backend. Use updateUser instead.
- * @param {number} id The ID of the user to toggle status.
- * @returns {Promise} A promise that resolves when the user status is toggled.
+ * Service function to toggle a user's enabled status.
+ * @param {number} id The ID of the user to toggle status for.
+ * @returns {Promise} A promise that resolves to the updated user object.
  */
 export const toggleUserStatus = async (id) => {
   try {
-    // Get current user data
-    const user = await getUserById(id);
-    // Toggle the enabled status
-    const updatedData = {
-      ...user,
-      enabled: !user.enabled
-    };
-    const response = await api.put(`${USERS_URL}/${id}`, updatedData);
+    const response = await api.patch(`${USERS_URL}/${id}/toggle-status`);
     return response.data;
   } catch (error) {
     console.error(`Error in toggleUserStatus with id ${id}:`, error);

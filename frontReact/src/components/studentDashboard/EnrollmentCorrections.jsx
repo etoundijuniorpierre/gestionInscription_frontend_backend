@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { getEnrollmentById, requestEnrollmentCorrections } from '../../services/enrollmentManagementService';
-import { UserContext } from '../../contexts/UserContext';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import Button from '../common/Button.jsx';
+import { getEnrollmentById, requestEnrollmentCorrections } from '../../services/enrollmentManagementService';
+import { mapApiStatusToDisplay } from '../../utils/enrollmentStatusUtils';
+import Button from '../common/Button';
 
 const EnrollmentCorrections = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useContext(UserContext);
     const [enrollment, setEnrollment] = useState(null);
     const [corrections, setCorrections] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -163,7 +162,7 @@ const EnrollmentCorrections = () => {
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <p className="text-gray-600">Étudiant:</p>
-                        <p className="font-medium">{user?.fullName || user?.name || 'N/A'}</p>
+                        <p className="font-medium">{enrollment.studentName || 'N/A'}</p>
                     </div>
                     <div>
                         <p className="text-gray-600">Formation:</p>
@@ -179,7 +178,7 @@ const EnrollmentCorrections = () => {
                     </div>
                     <div>
                         <p className="text-gray-600">Statut:</p>
-                        <p className="font-medium">{enrollment.status}</p>
+                        <p className="font-medium">{mapApiStatusToDisplay(enrollment.status)}</p>
                     </div>
                 </div>
             </div>

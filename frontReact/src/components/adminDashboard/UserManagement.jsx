@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { getAllUsers, deleteUser, changeUserPassword, toggleUserStatus } from '../../services/userService';
+import { jwtDecode } from 'jwt-decode';
 
 const UserManagement = () => {
-    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,9 +14,11 @@ const UserManagement = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalData, setModalData] = useState({
         message: '',
-        onConfirm: null
+        onConfirm: null,
+        title: 'Confirmation'
     });
     const [notification, setNotification] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
     
     // State for password change modal
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -32,6 +33,20 @@ const UserManagement = () => {
     const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
+        // Get current user ID from JWT token
+        const token = localStorage.getItem('jwt_token');
+        if (token) {
+            try {
+                const decodedToken = jwtDecode(token);
+                // Assuming the user ID is stored in the 'sub' field or another field of the token
+                // You might need to adjust this based on your actual token structure
+                const userId = decodedToken.userId || decodedToken.id || decodedToken.sub;
+                // Store as number to ensure consistent comparison
+                setCurrentUserId(parseInt(userId));
+            } catch (error) {
+                console.error('Error decoding token:', error);
+            }
+        }
         fetchUsers();
     }, []);
 
@@ -125,14 +140,14 @@ const UserManagement = () => {
         }, 5000);
     };
 
-    const openConfirmModal = (message, onConfirm) => {
-        setModalData({ message, onConfirm });
+    const openConfirmModal = (title, message, onConfirm) => {
+        setModalData({ title, message, onConfirm });
         setShowConfirmModal(true);
     };
 
     const closeConfirmModal = () => {
         setShowConfirmModal(false);
-        setModalData({ message: '', onConfirm: null });
+        setModalData({ message: '', onConfirm: null, title: 'Confirmation' });
     };
 
     const handleConfirm = () => {
@@ -143,7 +158,20 @@ const UserManagement = () => {
     };
 
     const handleDeleteUser = (userId) => {
-        openConfirmModal('Êtes-vous sûr de vouloir supprimer cet utilisateur ?', () => proceedWithUserDeletion(userId));
+        // Prevent deleting the current user
+        if (parseInt(userId) === parseInt(currentUserId)) {
+            showNotification('Vous ne pouvez pas supprimer votre propre compte.', 'error');
+            return;
+        }
+        
+        const userToDelete = users.find(user => user.id === userId);
+        if (userToDelete) {
+            openConfirmModal(
+                'Suppression d\'utilisateur',
+                `Êtes-vous sûr de vouloir supprimer l'utilisateur ${userToDelete.firstname} ${userToDelete.lastname} ?`,
+                () => proceedWithUserDeletion(parseInt(userId))
+            );
+        }
     };
 
     const proceedWithUserDeletion = async (userId) => {
@@ -151,10 +179,10 @@ const UserManagement = () => {
             await deleteUser(userId);
             // Refresh the users list
             fetchUsers();
-            console.log(`User with ID ${userId} deleted successfully`);
+            showNotification('Utilisateur supprimé avec succès.', 'success');
         } catch (err) {
             console.error('Error deleting user:', err);
-            showNotification('Error deleting user: ' + err.message);
+            showNotification('Erreur lors de la suppression de l\'utilisateur: ' + (err.response?.data?.message || err.message), 'error');
         }
     };
 
@@ -216,6 +244,26 @@ const UserManagement = () => {
     };
 
     const handleToggleStatus = async (userId) => {
+        // Prevent disabling the current user
+        if (parseInt(userId) === parseInt(currentUserId)) {
+            showNotification('Vous ne pouvez pas désactiver votre propre compte.', 'error');
+            return;
+        }
+        
+        const userToToggle = users.find(user => user.id === userId);
+        if (userToToggle) {
+            const action = userToToggle.enabled ? 'désactiver' : 'activer';
+            const status = userToToggle.enabled ? 'actif' : 'inactif';
+            
+            openConfirmModal(
+                `${action.charAt(0).toUpperCase() + action.slice(1)} un utilisateur`,
+                `Êtes-vous sûr de vouloir ${action} l'utilisateur ${userToToggle.firstname} ${userToToggle.lastname} (actuellement ${status}) ?`,
+                () => proceedWithStatusToggle(parseInt(userId))
+            );
+        }
+    };
+
+    const proceedWithStatusToggle = async (userId) => {
         try {
             await toggleUserStatus(userId);
             // Refresh the users list
@@ -272,7 +320,7 @@ const UserManagement = () => {
             {showConfirmModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-96">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-800">Confirmation</h3>
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800">{modalData.title}</h3>
                         <p className="mb-6 text-gray-600">{modalData.message}</p>
                         <div className="flex justify-end space-x-4">
                             <button
@@ -341,130 +389,163 @@ const UserManagement = () => {
             
             {/* User Details Modal */}
             {showDetailsModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-screen overflow-y-auto">
-                        <h3 className="text-xl font-semibold mb-6 text-gray-800 border-b pb-2">Détails de l'utilisateur</h3>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">ID</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedUser.id}</p>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-screen overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
+                            <h3 className="text-2xl font-bold text-gray-800">Détails de l'utilisateur</h3>
+                            <button 
+                                onClick={closeDetailsModal}
+                                className="text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {/* User Profile Header */}
+                            <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-[#101957] to-[#B6B8CB] rounded-lg text-white">
+                                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Nom</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedUser.lastname || 'Non spécifié'}</p>
+                                <div>
+                                    <h4 className="text-xl font-semibold">{selectedUser.firstname} {selectedUser.lastname}</h4>
+                                    <p className="text-indigo-200">{selectedUser.email}</p>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mt-1 ${
+                                        selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {selectedUser.enabled ? 'Actif' : 'Inactif'}
+                                    </span>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Prénom</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedUser.firstname || 'Non spécifié'}</p>
+                            </div>
+                            
+                            {/* Basic Information Grid */}
+                            <div>
+                                <h4 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">Informations de base</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">ID</label>
+                                        <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.id}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Rôle</label>
+                                        <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.roleName || 'Non spécifié'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
+                                        <p className="mt-1 text-sm text-gray-900 font-medium break-words">{selectedUser.email || 'Non spécifié'}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Statut du compte</label>
+                                        <p className="mt-1">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {selectedUser.enabled ? 'Actif' : 'Inactif'}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Compte verrouillé</label>
+                                        <p className="mt-1">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                selectedUser.accountLocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                                            }`}>
+                                                {selectedUser.accountLocked ? 'Oui' : 'Non'}
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedUser.email || 'Non spécifié'}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Rôle</label>
-                                    <p className="mt-1 text-sm text-gray-900">{selectedUser.roleName || 'Non spécifié'}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Statut du compte</label>
-                                    <p className="mt-1">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                            selectedUser.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                        }`}>
-                                            {selectedUser.enabled ? 'Actif' : 'Inactif'}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Compte verrouillé</label>
-                                    <p className="mt-1">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                            selectedUser.accountLocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                                        }`}>
-                                            {selectedUser.accountLocked ? 'Oui' : 'Non'}
-                                        </span>
-                                    </p>
-                                </div>
-                                
-                                {/* Student-specific fields - only show if user has student data */}
-                                {(selectedUser.dateOfBirth || 
-                                  selectedUser.address || 
-                                  selectedUser.phoneNumber || 
-                                  selectedUser.gender || 
-                                  selectedUser.nationality || 
-                                  selectedUser.maritalStatus || 
-                                  selectedUser.desiredAcademicYear || 
-                                  selectedUser.intendedFieldOfStudy) && (
-                                    <>
-                                        <div className="col-span-1 border-t pt-4 mt-2">
-                                            <h4 className="text-lg font-semibold text-gray-700 mb-3">Informations Étudiant</h4>
-                                        </div>
+                            </div>
+                            
+                            {/* Student-specific fields - only show if user has student data */}
+                            {(selectedUser.dateOfBirth || 
+                              selectedUser.address || 
+                              selectedUser.phoneNumber || 
+                              selectedUser.gender || 
+                              selectedUser.nationality || 
+                              selectedUser.maritalStatus || 
+                              selectedUser.desiredAcademicYear || 
+                              selectedUser.intendedFieldOfStudy) && (
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">Informations Étudiant</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {selectedUser.dateOfBirth && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Date de naissance</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.dateOfBirth}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.dateOfBirth}</p>
                                             </div>
                                         )}
                                         {selectedUser.address && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Adresse</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.address}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.address}</p>
                                             </div>
                                         )}
                                         {selectedUser.phoneNumber && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Téléphone</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.phoneNumber}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.phoneNumber}</p>
                                             </div>
                                         )}
                                         {selectedUser.gender && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Sexe</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.gender}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.gender}</p>
                                             </div>
                                         )}
                                         {selectedUser.nationality && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Nationalité</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.nationality}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.nationality}</p>
                                             </div>
                                         )}
                                         {selectedUser.maritalStatus && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">État civil</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.maritalStatus}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.maritalStatus}</p>
                                             </div>
                                         )}
                                         {selectedUser.desiredAcademicYear && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Année académique souhaitée</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.desiredAcademicYear}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.desiredAcademicYear}</p>
                                             </div>
                                         )}
                                         {selectedUser.intendedFieldOfStudy && (
-                                            <div className="bg-gray-50 p-3 rounded-lg">
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Domaine d'étude prévu</label>
-                                                <p className="mt-1 text-sm text-gray-900">{selectedUser.intendedFieldOfStudy}</p>
+                                                <p className="mt-1 text-sm text-gray-900 font-medium">{selectedUser.intendedFieldOfStudy}</p>
                                             </div>
                                         )}
-                                    </>
-                                )}
-                                
-                                {selectedUser.enrollmentIds && selectedUser.enrollmentIds.length > 0 && (
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">ID des inscriptions</label>
-                                        <p className="mt-1 text-sm text-gray-900">
-                                            {selectedUser.enrollmentIds.join(', ')}
-                                        </p>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+                            
+                            {selectedUser.enrollmentIds && selectedUser.enrollmentIds.length > 0 && (
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">Inscriptions</h4>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">ID des inscriptions</label>
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            {selectedUser.enrollmentIds.map((id, index) => (
+                                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {id}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex justify-end mt-6 pt-4 border-t">
+                        
+                        <div className="flex justify-end mt-8 pt-4 border-t border-gray-200">
                             <button
                                 onClick={closeDetailsModal}
-                                className="px-4 py-2 bg-[#101957] text-white rounded-md hover:bg-[#1a2685] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#101957]"
+                                className="px-6 py-2 bg-[#101957] text-white rounded-lg hover:bg-[#1a2685] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#101957] shadow-md hover:shadow-lg"
                             >
                                 Fermer
                             </button>
@@ -482,7 +563,8 @@ const UserManagement = () => {
 
             <div className="w-full h-1 bg-[#101957] my-8"></div>
             
-            <div className="flex flex-wrap items-center gap-4">
+            {/* Added padding (mb-6) between filters and table */}
+            <div className="flex flex-wrap items-center gap-4 mb-6">
                 <input
                     type="text"
                     placeholder="Rechercher par nom ou email..."
@@ -548,18 +630,39 @@ const UserManagement = () => {
                                             >
                                                 Détails
                                             </button>
-                                            <button 
-                                                onClick={() => handleModifyPassword(user.id)} 
-                                                className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
-                                            >
-                                                Modifier MDP
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDeleteUser(user.id)} 
-                                                className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
-                                            >
-                                                Supprimer
-                                            </button>
+                                            {parseInt(user.id) !== parseInt(currentUserId) ? (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleToggleStatus(user.id)} 
+                                                        className={`py-1 px-3 rounded-md text-white text-sm transition-colors ${
+                                                            user.enabled 
+                                                                ? 'bg-blue-500 hover:bg-blue-600' 
+                                                                : 'bg-blue-500 hover:bg-blue-600'
+                                                        }`}
+                                                    >
+                                                        {user.enabled ? 'Désactiver' : 'Activer'}
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleModifyPassword(user.id)} 
+                                                        className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
+                                                    >
+                                                        Modifier MDP
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDeleteUser(user.id)} 
+                                                        className="py-1 px-3 rounded-md bg-red-500 text-white text-sm hover:bg-red-600 transition-colors"
+                                                    >
+                                                        Supprimer
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => handleModifyPassword(user.id)} 
+                                                    className="py-1 px-3 rounded-md bg-green-500 text-white text-sm hover:bg-green-600 transition-colors"
+                                                >
+                                                    Modifier MDP
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))

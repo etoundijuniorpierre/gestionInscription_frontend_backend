@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/common/Button';
-import api from '../services/api';
+import { registerUser } from '../services/userService';
 import toast from 'react-hot-toast';
-
-const pxToRem = (px) => `${(px / 16).toFixed(2)}rem`;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -43,17 +41,8 @@ const RegisterPage = () => {
       return;
     }
 
-    // Display the registration data being sent
-    const registrationData = {
-      firstname: firstName,
-      lastname: lastName,
-      email: email,
-      password: password,
-      roleName: 'STUDENT',
-    };
-
     try {
-      const response = await api.post('/auth/signup', {
+      const response = await registerUser({
         firstname: firstName,
         lastname: lastName,
         email: email,
@@ -61,7 +50,7 @@ const RegisterPage = () => {
         roleName: 'STUDENT',
       });
 
-      console.log('Registration response:', response.data);
+      console.log('Registration response:', response);
       
       navigate('/verify-email', { state: { email: email } });
     } catch (err) {

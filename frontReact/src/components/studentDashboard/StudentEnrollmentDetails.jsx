@@ -39,7 +39,10 @@ const DetailField = ({ label, value }) => (
 );
 
 const DocumentItem = ({ document }) => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    
     const handleDownload = async () => {
+        setIsDownloading(true);
         try {
             const blob = await downloadDocumentById(document.id);
             const url = window.URL.createObjectURL(blob);
@@ -50,9 +53,19 @@ const DocumentItem = ({ document }) => {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            toast.success('Document téléchargé avec succès!');
         } catch (error) {
             console.error('Error downloading document:', error);
-            toast.error('Échec du téléchargement. Veuillez réessayer.');
+            // Check if it's a network error or if the file doesn't exist
+            if (error.response && error.response.status === 404) {
+                toast.error('Document non trouvé. Il peut avoir été supprimé.');
+            } else if (error.code === 'ERR_NETWORK') {
+                toast.error('Problème de connexion. Veuillez vérifier votre réseau.');
+            } else {
+                toast.error('Échec du téléchargement. Veuillez réessayer.');
+            }
+        } finally {
+            setIsDownloading(false);
         }
     };
 
@@ -62,9 +75,10 @@ const DocumentItem = ({ document }) => {
                 <label className="block text-sm font-medium text-gray-700">{document.name}</label>
                 <button
                     onClick={handleDownload}
-                    className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded hover:bg-blue-200"
+                    disabled={isDownloading}
+                    className={`px-3 py-1 text-xs font-medium rounded ${isDownloading ? 'bg-gray-300 text-gray-500' : 'text-blue-700 bg-blue-100 hover:bg-blue-200'}`}
                 >
-                    Télécharger
+                    {isDownloading ? 'Téléchargement...' : 'Télécharger'}
                 </button>
             </div>
             <div className="grid grid-cols-2 gap-2">

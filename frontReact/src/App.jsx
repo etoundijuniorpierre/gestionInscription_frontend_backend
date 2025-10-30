@@ -11,6 +11,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import CourseDetail from './pages/CourseDetail';
 import PaymentPage from './pages/PaymentPage';
+import PaymentSuccess from './pages/PaymentSuccess';
 import ProgramManagement from './components/adminDashboard/ProgramManagement';
 import ProgramForm from './components/adminDashboard/ProgramForm';
 import ModuleManagement from './components/adminDashboard/ModuleManagement';
@@ -33,12 +34,12 @@ import StudentHelp from './components/studentDashboard/StudentHelp';
 import MyEnrollments from './components/studentDashboard/MyEnrollments';
 import MyPayments from './components/studentDashboard/MyPayments';
 import StudentEnrollmentDetailsStudent from './components/studentDashboard/StudentEnrollmentDetails';
+import StudentCourseDetail from './components/studentDashboard/StudentCourseDetail';
+import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboardLayout from './components/adminDashboard/AdminDashboardLayout';
+import AdminStatistics from './components/adminDashboard/AdminStatistics';
 import AdminFAQ from './components/adminDashboard/AdminFAQ';
 import AdminHelp from './components/adminDashboard/AdminHelp';
-import ProtectedRoute from './components/ProtectedRoute';
-import StudentCourseDetail from './components/studentDashboard/StudentCourseDetail';
-import './App.css';
 
 // This layout component will render the header and a larger footer
 const AppLayoutWithLargeFooter = () => (
@@ -113,10 +114,11 @@ function App() {
                     <Route path="verify-email" element={<VerifyEmailPage />} />
                     <Route path="courses/:courseName" element={<CourseDetail />} />
                     <Route path="payment" element={<PaymentPage />} />
+                    <Route path="payment/success" element={<PaymentSuccess />} />
                 </Route>
                 
                 {/* Student Dashboard Routes */}
-                <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['STUDENT', 'USER']}><StudentDashboardLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<ProtectedRoute allowedRoles={['STUDENT']}><StudentDashboardLayout /></ProtectedRoute>}>
                     <Route index element={<StudentDashboardContent />} />
                     <Route path="courses/:courseName" element={<StudentCourseDetail />} />
                     <Route path="step1" element={<Step1PersonalInfo />} />
@@ -129,15 +131,16 @@ function App() {
                     <Route path="my-enrollments" element={<MyEnrollments />} />
                     <Route path="my-enrollments/:enrollmentId" element={<StudentEnrollmentDetailsStudent />} />
                     <Route path="my-payments" element={<MyPayments />} />
-                    <Route path="messages" element={<div>Messagerie pour étudiant</div>} />
+                    <Route path="messages" element={<StudentHelp />} />
                     <Route path="settings" element={<div>Paramètres pour étudiant</div>} />
                     <Route path="faq" element={<StudentFAQ />} />
                     <Route path="help" element={<StudentHelp />} />
                 </Route>
                 
                 {/* Admin Dashboard Routes */}
-                <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['ADMIN', 'ROLE_ADMIN']}><AdminDashboardLayout /></ProtectedRoute>}>
+                <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboardLayout /></ProtectedRoute>}>
                     <Route index element={<AdminDashboardContent />} />
+                    <Route path="statistics" element={<AdminStatistics />} />
                     <Route path="enrollment-management" element={<StudentEnrollmentManagement onViewDetails={handleViewDetails} />} />
                     <Route path="enrollment-management/:enrollmentId" element={<StudentEnrollmentDetails onBack={handleBack} />} />
                     <Route path="program-management" element={<ProgramManagement />} />

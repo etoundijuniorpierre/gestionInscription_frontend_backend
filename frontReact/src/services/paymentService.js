@@ -1,36 +1,88 @@
 import api from './api';
 
 const PAYMENTS_URL = '/api/v1/payments'; // Base path for payment endpoints (full path required)
+const ENROLLMENTS_URL = '/api/v1/enrollments'; // Base path for enrollment endpoints
 
 /**
- * Calls the backend to create a Stripe payment session.
+ * Calls the backend to create a Flutterwave payment session for registration fee.
  * @param {object} paymentDetails - The data to send in the request body.
- * @param {number} paymentDetails.amount - The amount to pay (e.g., in cents).
  * @param {number} paymentDetails.enrollmentId - The ID of the enrollment to pay for.
- * @returns {Promise<{sessionId: string}>} A promise that resolves with the session ID.
+ * @param {string} paymentDetails.redirectUrl - The URL to redirect to after payment.
+ * @returns {Promise<{link: string}>} A promise that resolves with the payment link.
  */
-export const createCheckoutSession = async (paymentDetails) => {
+export const createRegistrationFeePaymentLink = async (paymentDetails) => {
   try {
-    // Use the imported 'api' instance to make the POST request.
-    // The paymentDetails object is automatically sent as the JSON request body.
-    const response = await api.post(`${PAYMENTS_URL}/create-session`, paymentDetails);
+    console.log('Creating Flutterwave payment link for registration fee with payment details:', paymentDetails);
+    const response = await api.post(`${PAYMENTS_URL}/initiate/registration-fee`, paymentDetails);
+    console.log('Flutterwave registration fee payment link response:', response.data);
 
-    // With axios, the response data is directly in the `data` property
     return response.data;
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    console.error("Error creating Flutterwave registration fee payment link:", error);
     throw error; // Propagate the error for the component to handle
   }
 };
 
 /**
- * Handles Stripe webhook events.
+ * Calls the backend to create a Flutterwave payment session for program payment.
+ * @param {object} paymentDetails - The data to send in the request body.
+ * @param {number} paymentDetails.enrollmentId - The ID of the enrollment to pay for.
+ * @param {string} paymentDetails.redirectUrl - The URL to redirect to after payment.
+ * @returns {Promise<{link: string}>} A promise that resolves with the payment link.
+ */
+export const createProgramPaymentLink = async (paymentDetails) => {
+  try {
+    console.log('Creating Flutterwave payment link for program payment with payment details:', paymentDetails);
+    const response = await api.post(`${PAYMENTS_URL}/initiate/program-payment`, paymentDetails);
+    console.log('Flutterwave program payment link response:', response.data);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating Flutterwave program payment link:", error);
+    throw error; // Propagate the error for the component to handle
+  }
+};
+
+/**
+ * Initiates payment for a specific enrollment using Flutterwave.
+ * This function determines which payment type to use based on enrollment status.
+ * @param {number} enrollmentId - The ID of the enrollment to initiate payment for.
+ * @param {string} paymentType - The type of payment ('REGISTRATION_FEE' or 'PROGRAM_PAYMENT').
+ * @returns {Promise<{link: string}>} A promise that resolves with the payment link.
+ */
+export const initiateEnrollmentPayment = async (enrollmentId, paymentType = 'REGISTRATION_FEE') => {
+  try {
+    console.log(`Initiating Flutterwave ${paymentType} payment for enrollment ID:`, enrollmentId);
+    // Use the frontend URL from environment variables
+    const redirectUrl = window.location.origin + "/payment/success";
+    
+    let response;
+    if (paymentType === 'REGISTRATION_FEE') {
+      response = await api.post(`${PAYMENTS_URL}/initiate/registration-fee`, { enrollmentId, redirectUrl });
+    } else if (paymentType === 'PROGRAM_PAYMENT') {
+      response = await api.post(`${PAYMENTS_URL}/initiate/program-payment`, { enrollmentId, redirectUrl });
+    } else {
+      throw new Error(`Invalid payment type: ${paymentType}`);
+    }
+    
+    console.log('Initiate payment response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error initiating payment for enrollment ${enrollmentId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Handles Flutterwave webhook events.
  * @param {object} payload - The webhook payload data.
  * @returns {Promise} A promise that resolves with the webhook response.
  */
 export const handleWebhook = async (payload) => {
   try {
+    console.log('Handling webhook with payload:', payload);
     const response = await api.post(`${PAYMENTS_URL}/webhook`, payload);
+    console.log('Webhook response:', response.data);
     return response.data;
   } catch (error) {
     console.error("Error handling webhook:", error);
@@ -44,25 +96,12 @@ export const handleWebhook = async (payload) => {
  */
 export const getUserPayments = async () => {
   try {
+    console.log('Fetching user payments');
     const response = await api.get(`${PAYMENTS_URL}/my-payments`);
+    console.log('User payments response:', response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching user payments:", error);
-    throw error;
-  }
-};
-
-/**
- * Initiates payment for a specific enrollment.
- * @param {number} enrollmentId - The ID of the enrollment to initiate payment for.
- * @returns {Promise<{sessionId: string}>} A promise that resolves with the session ID.
- */
-export const initiateEnrollmentPayment = async (enrollmentId) => {
-  try {
-    const response = await api.post(`/enrollments/${enrollmentId}/initiate-payment`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error initiating payment for enrollment ${enrollmentId}:`, error);
     throw error;
   }
 };

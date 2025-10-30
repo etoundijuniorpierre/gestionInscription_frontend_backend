@@ -1,6 +1,6 @@
 import api from './api';
 
-const ENROLLMENTS_URL = '/enrollments'; // Base path for enrollment endpoints
+const ENROLLMENTS_URL = '/api/v1/enrollments'; // Base path for enrollment endpoints
 
 /**
  * Service function to get the latest enrollment for the authenticated student.
@@ -27,6 +27,34 @@ export const getMyEnrollments = async () => {
     return response.data;
   } catch (error) {
     console.error('Error in getMyEnrollments:', error);
+    throw error;
+  }
+};
+
+/**
+ * Service function to get all unpaid enrollments for the current user.
+ * @returns {Promise} A promise that resolves to the list of unpaid enrollments.
+ */
+export const getMyUnpaidEnrollments = async () => {
+  try {
+    const response = await api.get(`${ENROLLMENTS_URL}/my-unpaid-enrollments`);
+    return response.data;
+  } catch (error) {
+    console.error('Error in getMyUnpaidEnrollments:', error);
+    throw error;
+  }
+};
+
+/**
+ * Service function to get all unpaid programs for the current user.
+ * @returns {Promise} A promise that resolves to the list of unpaid programs.
+ */
+export const getMyUnpaidPrograms = async () => {
+  try {
+    const response = await api.get(`${ENROLLMENTS_URL}/my-unpaid-programs`);
+    return response.data;
+  } catch (error) {
+    console.error('Error in getMyUnpaidPrograms:', error);
     throw error;
   }
 };
@@ -83,6 +111,33 @@ export const submitEnrollmentForm = async (formData, documents) => {
       console.error('Network error details:', {
         baseURL: api.defaults.baseURL,
         url: ENROLLMENTS_URL,
+        message: error.message,
+        stack: error.stack
+      });
+    }
+
+    throw error;
+  }
+};
+
+/**
+ * Service function to cancel an enrollment if no payments have been made.
+ * This allows students to cancel their enrollment before making any payments.
+ * @param {number} enrollmentId The ID of the enrollment to cancel.
+ * @returns {Promise} A promise that resolves to the cancellation result.
+ */
+export const cancelEnrollment = async (enrollmentId) => {
+  try {
+    const response = await api.delete(`${ENROLLMENTS_URL}/${enrollmentId}/cancel`);
+    return response.data;
+  } catch (error) {
+    console.error('Error in cancelEnrollment:', error);
+
+    // Enhanced error logging
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network error details:', {
+        baseURL: api.defaults.baseURL,
+        url: `${ENROLLMENTS_URL}/${enrollmentId}/cancel`,
         message: error.message,
         stack: error.stack
       });

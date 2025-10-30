@@ -17,7 +17,7 @@ const StepProgressChart = () => {
             try {
                 // Fetch all enrollments
                 const response = await getAllEnrollments();
-                const enrollments = response.data;
+                const enrollments = response.data || []; // Ensure enrollments is an array
                 
                 // Count enrollments by step completed
                 const stepCount = {
@@ -56,6 +56,7 @@ const StepProgressChart = () => {
                 setStepData(stepCount);
                 setLoading(false);
             } catch (err) {
+                console.error('Error fetching step progress data:', err);
                 setError(err);
                 setLoading(false);
             }
@@ -66,14 +67,11 @@ const StepProgressChart = () => {
 
     if (loading) {
         return (
-            <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-                <div
-                    className="p-4 rounded-t-[0.53rem]"
-                    style={{ backgroundColor: '#1019574D' }}
-                >
-                    <h4 className="text-[#101957] font-semibold text-[1.5rem]">Progression des Étapes</h4>
+            <div className="bg-white rounded-lg shadow h-full flex flex-col">
+                <div className="bg-[#1019574D] rounded-t-lg p-3">
+                    <h4 className="text-[#101957] font-semibold text-sm">Progression des Étapes</h4>
                 </div>
-                <div className="p-6 flex-grow flex items-center justify-center">
+                <div className="p-4 flex-grow flex items-center justify-center">
                     Chargement...
                 </div>
             </div>
@@ -82,14 +80,11 @@ const StepProgressChart = () => {
 
     if (error) {
         return (
-            <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-                <div
-                    className="p-4 rounded-t-[0.53rem]"
-                    style={{ backgroundColor: '#1019574D' }}
-                >
-                    <h4 className="text-[#101957] font-semibold text-[1.5rem]">Progression des Étapes</h4>
+            <div className="bg-white rounded-lg shadow h-full flex flex-col">
+                <div className="bg-[#1019574D] rounded-t-lg p-3">
+                    <h4 className="text-[#101957] font-semibold text-sm">Progression des Étapes</h4>
                 </div>
-                <div className="p-6 flex-grow flex items-center justify-center">
+                <div className="p-4 flex-grow flex items-center justify-center">
                     Erreur: {error.message}
                 </div>
             </div>
@@ -100,18 +95,15 @@ const StepProgressChart = () => {
     const total = stepData.step1 + stepData.step2 + stepData.step3 + stepData.step4 + stepData.step5;
     
     return (
-        <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-            <div
-                className="p-4 rounded-t-[0.53rem]"
-                style={{ backgroundColor: '#1019574D' }}
-            >
+        <div className="bg-white rounded-lg shadow h-full flex flex-col">
+            <div className="bg-[#1019574D] rounded-t-lg p-3">
                 <h4 className="text-[#101957] font-semibold text-sm">Progression des Étapes</h4>
             </div>
-            <div className="p-6 flex-grow">
-                <div className="space-y-4">
+            <div className="p-3 flex-grow overflow-hidden">
+                <div className="space-y-3 h-full flex flex-col justify-between">
                     <div>
-                        <div className="flex justify-between text-[#333333] text-sm">
-                            <span>Étape 1 - Informations personnelles</span>
+                        <div className="flex justify-between text-[#333333] text-xs">
+                            <span className="truncate">Étape 1 - Perso.</span>
                             <span>{stepData.step1} ({total > 0 ? Math.round((stepData.step1 / total) * 100) : 0}%)</span>
                         </div>
                         <div className="w-full bg-[#E0E0E0] h-2 rounded-full mt-1">
@@ -122,8 +114,8 @@ const StepProgressChart = () => {
                         </div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-[#333333] text-sm">
-                            <span>Étape 2 - Informations académiques</span>
+                        <div className="flex justify-between text-[#333333] text-xs">
+                            <span className="truncate">Étape 2 - Académ.</span>
                             <span>{stepData.step2} ({total > 0 ? Math.round((stepData.step2 / total) * 100) : 0}%)</span>
                         </div>
                         <div className="w-full bg-[#E0E0E0] h-2 rounded-full mt-1">
@@ -134,8 +126,8 @@ const StepProgressChart = () => {
                         </div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-[#333333] text-sm">
-                            <span>Étape 3 - Documents</span>
+                        <div className="flex justify-between text-[#333333] text-xs">
+                            <span className="truncate">Étape 3 - Docs</span>
                             <span>{stepData.step3} ({total > 0 ? Math.round((stepData.step3 / total) * 100) : 0}%)</span>
                         </div>
                         <div className="w-full bg-[#E0E0E0] h-2 rounded-full mt-1">
@@ -146,8 +138,8 @@ const StepProgressChart = () => {
                         </div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-[#333333] text-sm">
-                            <span>Étape 4 - Révision</span>
+                        <div className="flex justify-between text-[#333333] text-xs">
+                            <span className="truncate">Étape 4 - Rév.</span>
                             <span>{stepData.step4} ({total > 0 ? Math.round((stepData.step4 / total) * 100) : 0}%)</span>
                         </div>
                         <div className="w-full bg-[#E0E0E0] h-2 rounded-full mt-1">
@@ -158,8 +150,8 @@ const StepProgressChart = () => {
                         </div>
                     </div>
                     <div>
-                        <div className="flex justify-between text-[#333333] text-sm">
-                            <span>Étape 5 - Soumission</span>
+                        <div className="flex justify-between text-[#333333] text-xs">
+                            <span className="truncate">Étape 5 - Soum.</span>
                             <span>{stepData.step5} ({total > 0 ? Math.round((stepData.step5 / total) * 100) : 0}%)</span>
                         </div>
                         <div className="w-full bg-[#E0E0E0] h-2 rounded-full mt-1">
@@ -169,9 +161,9 @@ const StepProgressChart = () => {
                             ></div>
                         </div>
                     </div>
-                </div>
-                <div className="mt-4 text-center text-sm font-bold">
-                    Total: {total} inscriptions
+                    <div className="text-center text-xs font-bold mt-2">
+                        Total: {total} inscriptions
+                    </div>
                 </div>
             </div>
         </div>

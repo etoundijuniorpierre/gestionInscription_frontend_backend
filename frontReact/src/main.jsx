@@ -8,7 +8,7 @@ import { UserProvider } from './contexts/UserContext';
 // Force console log to verify logging is working
 console.log("=== APPLICATION STARTUP ===");
 console.log("Current time:", new Date().toISOString());
-console.log("Environment:", process.env.NODE_ENV);
+console.log("Environment:", import.meta.env.MODE);
 
 // Simple debug function that also shows on screen
 const debugLog = (message) => {
@@ -77,7 +77,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 debugLog("Loading Stripe");
 // add stripe public key
-const stripePromise = loadStripe("pk_test_51RwRkpB8xDJAlUH6I0mr0d1tUnziR40lB3cEXXs0nCz6vz1YK7cyIwyztMPqcY67XY6c9oRNOlkEUzQx0inRHRti00nH3MJoI8");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_51RwRkpB8xDJAlUH6I0mr0d1tUnziR40lB3cEXXs0nCz6vz1YK7cyIwyztMPqcY67XY6c9oRNOlkEUzQx0inRHRti00nH3MJoI8");
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

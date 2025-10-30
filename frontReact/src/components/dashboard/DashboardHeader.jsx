@@ -3,15 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { UserContext } from '../../contexts/UserContext';
 import { useAuth } from '../../hooks/useAuth';
-import api from '../../services/api';
+import { getNotifications, markAllAsRead, deleteNotification } from '../../services/notificationService.jsx';
+import NotificationDropdown from './NotificationDropdown';
+import './DashboardHeader.css';
 
-const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) => {
+const DashboardHeader = ({ pageTitle: customPageTitle }) => {
     const { user, setUser } = useContext(UserContext);
-    const { isAuthenticated, userRole } = useAuth();
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     useEffect(() => {
@@ -23,14 +24,14 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
                 const lastName = decodedToken.lastname || '';
                 
                 const fullName = (firstName && lastName) ? `${firstName} ${lastName}` : decodedToken.sub;
-                setUser({ ...user, fullName });
+                setUser({ ...user, name: fullName, fullName });
 
                 if (firstName && lastName) {
-                    setUser({ ...user, initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() });
+                    setUser({ ...user, name: fullName, fullName, initials: `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() });
                 } else if (firstName) {
-                    setUser({ ...user, initials: firstName.charAt(0).toUpperCase() });
+                    setUser({ ...user, name: fullName, fullName, initials: firstName.charAt(0).toUpperCase() });
                 } else {
-                    setUser({ ...user, initials: '' });
+                    setUser({ ...user, name: fullName, fullName, initials: '' });
                 }
             } catch (error) {
                 console.error("Failed to decode token:", error);
@@ -42,8 +43,7 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
         const fetchNotifications = async () => {
             if (isAuthenticated) {
                 try {
-                    const response = await api.get('/api/v1/notifications');
-                    const notifications = response.data;
+                    const notifications = await getNotifications();
                     setNotifications(notifications);
                     // Count unread notifications (backend now provides isRead field)
                     const count = notifications.filter(n => !n.isRead).length;
@@ -57,10 +57,25 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
         fetchNotifications();
     }, [isAuthenticated]);
 
-    const markAllAsRead = async () => {
+    // Add click outside handler to close notifications
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const bellIcon = document.querySelector('.bell-icon-container');
+            if (isNotificationsOpen && bellIcon && !bellIcon.contains(event.target)) {
+                setIsNotificationsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isNotificationsOpen]);
+
+    const handleMarkAllAsRead = async () => {
         if (isAuthenticated) {
             try {
-                await api.post('/api/v1/notifications/mark-all-as-read');
+                await markAllAsRead();
                 // Update local state to mark all as read
                 setNotifications(notifications.map(n => ({ ...n, isRead: true })));
                 setUnreadCount(0);
@@ -70,9 +85,26 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
         }
     };
 
+    const handleDeleteNotification = async (notificationId) => {
+        try {
+            await deleteNotification(notificationId);
+            // Update local state to remove the notification
+            const updatedNotifications = notifications.filter(n => n.id !== notificationId);
+            setNotifications(updatedNotifications);
+            // Update unread count
+            const count = updatedNotifications.filter(n => !n.isRead).length;
+            setUnreadCount(count);
+        } catch (error) {
+            console.error("Failed to delete notification:", error);
+        }
+    };
+
     const handleBellClick = () => {
         setIsNotificationsOpen(!isNotificationsOpen);
-        markAllAsRead();
+        // Only mark as read when opening the dropdown
+        if (!isNotificationsOpen) {
+            handleMarkAllAsRead();
+        }
     };
 
     const pageTitles = {
@@ -117,23 +149,31 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
             </div>
 
             <div className="flex items-center space-x-4">
-                <button
-                    onClick={handleBellClick}
-                    className="flex items-center justify-center relative transition-colors"
-                    style={{
-                        width: '4.06rem',
-                        height: '4.06rem',
-                        borderRadius: '1.84rem',
-                        padding: '0.5rem',
-                    }}
-                >
-                    <img src={BellIcon} alt="Notifications" className="w-full h-full object-contain" />
-                    {unreadCount > 0 && (
-                        <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                            {unreadCount}
-                        </span>
-                    )}
-                </button>
+                <div className="relative bell-icon-container">
+                    <button
+                        onClick={handleBellClick}
+                        className="flex items-center justify-center relative transition-colors"
+                        style={{
+                            width: '4.06rem',
+                            height: '4.06rem',
+                            borderRadius: '1.84rem',
+                            padding: '0.5rem',
+                        }}
+                    >
+                        <img src={BellIcon} alt="Notifications" className="w-full h-full object-contain" />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </button>
+                    <NotificationDropdown 
+                        notifications={notifications}
+                        isOpen={isNotificationsOpen}
+                        onMarkAllAsRead={handleMarkAllAsRead}
+                        onDeleteNotification={handleDeleteNotification}
+                    />
+                </div>
 
                 <div className="flex items-center">
                     <div
@@ -158,7 +198,7 @@ const DashboardHeader = ({ variant = 'default', pageTitle: customPageTitle }) =>
                                 color: '#333333',
                             }}
                         >
-                            {user?.fullName || 'Utilisateur'}
+                            {user?.name || 'Utilisateur'}
                         </p>
                     </div>
                 </div>

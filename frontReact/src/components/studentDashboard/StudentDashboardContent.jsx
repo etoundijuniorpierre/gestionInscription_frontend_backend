@@ -115,6 +115,7 @@ const StudentDashboardContent = () => {
                 currentStep: 5, // Final step
                 personalInfo: {
                     firstName: formData.prenom,
+                    lastName: formData.nom,  // Add the missing lastName field
                     gender: formData.sexe,
                     dateOfBirth: formData.dateNaissance,
                     nationality: formData.nationalite

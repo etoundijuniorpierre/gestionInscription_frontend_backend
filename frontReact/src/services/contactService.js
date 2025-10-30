@@ -1,22 +1,22 @@
 import api from './api';
 
-const CONTACT_URL = '/contact'; // Base path for contact endpoints
+const CONTACT_URL = '/api/v1/contact';
 
 /**
- * Service function to submit a contact form.
- * @param {object} contactData The contact form data.
- * @param {string} contactData.name The name of the person contacting.
- * @param {string} contactData.email The email of the person contacting.
- * @param {string} contactData.subject The subject of the message.
- * @param {string} contactData.message The message content.
- * @returns {Promise} A promise that resolves when the contact form is submitted.
+ * Service function to send a contact message from student to admin
+ * @param {Object} contactData - The contact form data
+ * @param {string} contactData.name - The sender's name
+ * @param {string} contactData.email - The sender's email
+ * @param {string} contactData.subject - Message subject
+ * @param {string} contactData.message - Message content
+ * @returns {Promise} A promise that resolves to the response
  */
-export const submitContactForm = async (contactData) => {
+export const sendContactMessage = async (contactData) => {
   try {
     const response = await api.post(CONTACT_URL, contactData);
     return response.data;
   } catch (error) {
-    console.error('Error in submitContactForm:', error);
+    console.error('Error sending contact message:', error);
     throw error;
   }
 };

@@ -39,11 +39,11 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
     const collectData = () => {
         return {
             // Map frontend field names to backend field names
-            nom: lastName,
-            prenom: firstName,
-            sexe: gender,
-            dateNaissance: dateOfBirth,
-            nationalite: nationality,
+            lastName: lastName,
+            firstName: firstName,
+            gender: gender,
+            dateOfBirth: dateOfBirth,
+            nationality: nationality,
             typePieceIdentite: typePieceIdentite
         };
     };
@@ -69,18 +69,6 @@ const Step1PersonalInfo = ({ initialData = {}, onSaveAndNext, onSave }) => {
     const handleNextClick = () => {
         if (validateForm()) {
             onSaveAndNext(collectData());
-        }
-    };
-
-    // Get the document label based on the selected identity document type
-    const getIdentityDocumentLabel = () => {
-        switch (typePieceIdentite) {
-            case 'Passport':
-                return 'Photocopie Passport';
-            case 'Permis de conduire':
-                return 'Photocopie Permis de conduire';
-            default:
-                return 'Photocopie CNI';
         }
     };
 

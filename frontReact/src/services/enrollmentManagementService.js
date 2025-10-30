@@ -1,6 +1,6 @@
 import api from './api';
 
-const ENROLLMENTS_URL = '/enrollments'; // Base path for enrollment endpoints
+const ENROLLMENTS_URL = '/api/v1/enrollments'; // Base path for enrollment endpoints
 
 /**
  * Service function to get all enrollments from the backend.
@@ -47,44 +47,8 @@ export const getEnrollmentsByProgramId = async (programId) => {
   }
 };
 
-/**
- * Service function to get enrollments by academic year.
- * NOTE: This endpoint does not exist in the backend API.
- * Use getAllEnrollments() and filter client-side if needed.
- * @deprecated This endpoint is not implemented in the backend
- * @param {string} academicYear The academic year.
- * @returns {Promise} A promise that resolves to the list of enrollments.
- */
-export const getEnrollmentsByAcademicYear = async (academicYear) => {
-  console.warn('getEnrollmentsByAcademicYear endpoint does not exist. Use getAllEnrollments() and filter client-side.');
-  throw new Error('This endpoint does not exist in the backend API. Use getAllEnrollments() and filter client-side.');
-};
 
-/**
- * Service function to get enrollments by program ID and academic year.
- * NOTE: This endpoint does not exist in the backend API.
- * Use getEnrollmentsByProgramId() and filter client-side if needed.
- * @deprecated This endpoint is not implemented in the backend
- * @param {number} programId The ID of the program.
- * @param {string} academicYear The academic year.
- * @returns {Promise} A promise that resolves to the list of enrollments.
- */
-export const getEnrollmentsByProgramAndYear = async (programId, academicYear) => {
-  console.warn('getEnrollmentsByProgramAndYear endpoint does not exist. Use getEnrollmentsByProgramId() and filter client-side.');
-  throw new Error('This endpoint does not exist in the backend API. Use getEnrollmentsByProgramId() and filter client-side.');
-};
 
-/**
- * Service function to get available academic years.
- * NOTE: This endpoint does not exist in the backend API.
- * Calculate academic years client-side from enrollment data if needed.
- * @deprecated This endpoint is not implemented in the backend
- * @returns {Promise} A promise that resolves to the list of academic years.
- */
-export const getAvailableAcademicYears = async () => {
-  console.warn('getAvailableAcademicYears endpoint does not exist. Calculate academic years client-side from enrollment data.');
-  throw new Error('This endpoint does not exist in the backend API. Calculate academic years client-side from enrollment data.');
-};
 
 /**
  * Service function to get all non-approved enrollments from the backend.
@@ -101,30 +65,7 @@ export const getAllNonApprovedEnrollments = async () => {
   }
 };
 
-/**
- * Service function to update an enrollment status.
- * Note: This endpoint does not exist. Use approveEnrollment, rejectEnrollment, or requestEnrollmentCorrections instead.
- * @param {number} id The ID of the enrollment to update.
- * @param {object} statusData The status update data.
- * @returns {Promise} A promise that resolves to the updated enrollment object.
- */
-export const updateEnrollmentStatus = async (id, statusData) => {
-  console.warn('updateEnrollmentStatus is deprecated. Use approveEnrollment, rejectEnrollment, or requestEnrollmentCorrections instead.');
-  throw new Error('This endpoint does not exist. Use approveEnrollment, rejectEnrollment, or requestEnrollmentCorrections instead.');
-};
 
-/**
- * Service function to update a document status.
- * Note: This endpoint does not exist. Use requestEnrollmentCorrections to request document corrections.
- * @param {number} enrollmentId The ID of the enrollment.
- * @param {string} documentType The type of document.
- * @param {object} statusData The status update data.
- * @returns {Promise} A promise that resolves to the updated document object.
- */
-export const updateDocumentStatus = async (enrollmentId, documentType, statusData) => {
-  console.warn('updateDocumentStatus is deprecated. Use requestEnrollmentCorrections instead.');
-  throw new Error('This endpoint does not exist. Use requestEnrollmentCorrections instead.');
-};
 
 /**
  * Service function to approve a specific enrollment.

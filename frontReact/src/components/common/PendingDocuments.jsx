@@ -2,36 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { getAllEnrollments } from '../../services/enrollmentManagementService';
 
 const DocumentDetails = ({ doc }) => (
-    <div
-        className="flex flex-col rounded-[0.5rem]"
-        style={{
-            gap: '0.25rem',
-            padding: '0.75rem 0.5rem',
-            backgroundColor: '#F8F8F8',
-            fontFamily: 'Roboto, sans-serif'
-        }}
-    >
-        <p style={{ fontWeight: 500, fontSize: '1.2rem', lineHeight: '1.5rem', letterSpacing: '0.046875rem', color: '#000000' }}>
-            <span style={{ fontWeight: 700 }}>Nom de l’étudiant:</span> {doc.studentName}
+    <div className="flex flex-col rounded bg-gray-100 p-2 h-full">
+        <p className="font-medium text-xs text-gray-800 truncate">
+            <span className="font-bold">Étudiant:</span> {doc.studentName}
         </p>
-        <p style={{ fontWeight: 500, fontSize: '1.2rem', lineHeight: '1.5rem', letterSpacing: '0.046875rem', color: '#000000' }}>
-            <span style={{ fontWeight: 700 }}>Type de document:</span> {doc.documentType}
+        <p className="font-medium text-xs text-gray-800 truncate">
+            <span className="font-bold">Document:</span> {doc.documentType}
         </p>
-        <p style={{ fontWeight: 500, fontSize: '1.2rem', lineHeight: '1.5rem', letterSpacing: '0.046875rem', color: '#000000' }}>
-            <span style={{ fontWeight: 700 }}>Date du téléchargement:</span> {doc.date}
+        <p className="font-medium text-xs text-gray-800 truncate">
+            <span className="font-bold">Date:</span> {doc.date}
         </p>
         <a 
             href="#" 
-            className="self-end" 
-            style={{
-                fontWeight: 600,
-                fontSize: '1.05rem',
-                lineHeight: '1.5rem',
-                letterSpacing: '0.046875rem',
-                color: '#F96567'
-            }}
+            className="self-end text-xs font-semibold text-red-500 mt-1"
         >
-            Voir les détails
+            Voir détails
         </a>
     </div>
 );
@@ -46,14 +31,14 @@ const PendingDocuments = () => {
             try {
                 // Fetch all enrollments
                 const response = await getAllEnrollments();
-                const enrollments = response.data;
+                const enrollments = response.data || []; // Ensure enrollments is an array
                 
                 // Filter enrollments with pending documents
                 // Note: enrollment.student does not exist in EnrollmentDtoResponse
                 // Using generic student name until proper user data is available
                 const pendingDocs = enrollments
                     .filter(enrollment => enrollment.status === 'PENDING' || enrollment.status === 'IN_PROGRESS')
-                    .slice(0, 5) // Limit to first 5 for display
+                    .slice(0, 2) // Limit to first 2 for display
                     .map(enrollment => ({
                         studentName: `Étudiant #${enrollment.studentId}`,
                         documentType: 'Document à valider',
@@ -63,6 +48,7 @@ const PendingDocuments = () => {
                 setDocuments(pendingDocs);
                 setLoading(false);
             } catch (err) {
+                console.error('Error fetching pending documents:', err);
                 setError(err);
                 setLoading(false);
             }
@@ -73,14 +59,11 @@ const PendingDocuments = () => {
 
     if (loading) {
         return (
-            <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-                <div
-                    className="p-4 rounded-t-[0.53rem]"
-                    style={{ backgroundColor: '#1019574D' }}
-                >
-                    <h4 className="text-[#101957] font-semibold text-[1.5rem]">Documents en Attente de Traitement</h4>
+            <div className="bg-white rounded-lg shadow h-full flex flex-col">
+                <div className="bg-[#1019574D] rounded-t-lg p-3">
+                    <h4 className="text-[#101957] font-semibold text-sm">Documents en Attente</h4>
                 </div>
-                <div className="p-6 flex-grow flex items-center justify-center">
+                <div className="p-4 flex-grow flex items-center justify-center">
                     Chargement...
                 </div>
             </div>
@@ -89,14 +72,11 @@ const PendingDocuments = () => {
 
     if (error) {
         return (
-            <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-                <div
-                    className="p-4 rounded-t-[0.53rem]"
-                    style={{ backgroundColor: '#1019574D' }}
-                >
-                    <h4 className="text-[#101957] font-semibold text-[1.5rem]">Documents en Attente de Traitement</h4>
+            <div className="bg-white rounded-lg shadow h-full flex flex-col">
+                <div className="bg-[#1019574D] rounded-t-lg p-3">
+                    <h4 className="text-[#101957] font-semibold text-sm">Documents en Attente</h4>
                 </div>
-                <div className="p-6 flex-grow flex items-center justify-center">
+                <div className="p-4 flex-grow flex items-center justify-center">
                     Erreur: {error.message}
                 </div>
             </div>
@@ -104,34 +84,19 @@ const PendingDocuments = () => {
     }
 
     return (
-        <div className="bg-[#FFFFFF] rounded-[0.53rem] shadow h-full flex flex-col">
-            <div
-                className="p-4 rounded-t-[0.53rem]"
-                style={{ backgroundColor: '#1019574D' }}
-            >
-                <h4 className="text-[#101957] font-semibold text-sm">Documents en Attente de Traitement</h4>
+        <div className="bg-white rounded-lg shadow h-full flex flex-col">
+            <div className="bg-[#1019574D] rounded-t-lg p-3">
+                <h4 className="text-[#101957] font-semibold text-sm">Documents en Attente</h4>
             </div>
-            <div className="p-6 flex-grow flex flex-col overflow-y-auto">
-                <p 
-                    className="mb-4 text-center text-sm"
-                    style={{
-                        fontFamily: 'Roboto, sans-serif',
-                        fontWeight: 500,
-                        lineHeight: '1.5rem',
-                        letterSpacing: '0.046875rem',
-                        color: '#999999'
-                    }}
-                >
-                    Documents à Valider Manuellement
-                </p>
-                <div className="space-y-4">
+            <div className="p-3 flex-grow overflow-hidden">
+                <div className="space-y-2 h-full">
                     {documents.length > 0 ? (
                         documents.map((doc, index) => (
                             <DocumentDetails key={index} doc={doc} />
                         ))
                     ) : (
-                        <div className="text-center text-gray-500">
-                            Aucun document en attente de traitement
+                        <div className="text-center text-gray-500 text-xs h-full flex items-center justify-center">
+                            Aucun document en attente
                         </div>
                     )}
                 </div>

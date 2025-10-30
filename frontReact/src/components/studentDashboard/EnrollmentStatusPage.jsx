@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStatusDetails } from '../../utils/enrollmentStatusUtils';
 
-const StatusCard = ({ title, message, status, onAction, actionLabel, actionColor }) => {
+const StatusCard = ({ title, message, status, onAction, actionLabel, actionColor, programName }) => {
     const statusColors = {
         'PENDING': 'bg-yellow-100 border-yellow-500 text-yellow-700',
         'APPROVED': 'bg-green-100 border-green-500 text-green-700',
@@ -15,7 +15,10 @@ const StatusCard = ({ title, message, status, onAction, actionLabel, actionColor
     return (
         <div className={`p-6 border-l-4 rounded-lg shadow-md max-w-2xl mx-auto my-10 ${statusClasses}`}>
             <h2 className="text-2xl font-bold mb-3">{title}</h2>
-            <p className="text-lg">{message}</p>
+            <div className="bg-white/50 rounded-lg p-3 mb-4">
+                <p className="font-medium text-gray-800">Formation: <span className="font-normal">{programName || 'Non spécifiée'}</span></p>
+            </div>
+            <p className="text-lg mb-4">{message}</p>
             {onAction && (
                 <button
                     onClick={onAction}
@@ -54,9 +57,12 @@ const EnrollmentStatusPage = ({ enrollment }) => {
         navigate('/dashboard/my-payments');
     };
 
-    // Get status details using the utility function
-    const statusDetails = getStatusDetails(enrollment.status);
-    
+    // Get status details for default case
+    const statusDetails = getStatusDetails(enrollment.status, enrollment.paymentType, enrollment.programName);
+    let message = typeof statusDetails.message === 'function' 
+        ? statusDetails.message(enrollment.rejectionReason) 
+        : statusDetails.message;
+
     switch (enrollment.status) {
         case 'PENDING':
         case 'IN_PROGRESS':
@@ -65,6 +71,7 @@ const EnrollmentStatusPage = ({ enrollment }) => {
                     title="Demande d'inscription en attente"
                     message="Votre demande d'inscription est en cours d'examen par notre équipe administrative. Nous vous notifierons dès qu'une décision sera prise."
                     status="PENDING"
+                    programName={enrollment.programName}
                 />
             );
         case 'APPROVED':
@@ -76,6 +83,7 @@ const EnrollmentStatusPage = ({ enrollment }) => {
                     onAction={handlePayment}
                     actionLabel="Procéder au paiement"
                     actionColor="bg-green-600 hover:bg-green-700"
+                    programName={enrollment.programName}
                 />
             );
         case 'CORRECTIONS_REQUIRED':
@@ -87,6 +95,7 @@ const EnrollmentStatusPage = ({ enrollment }) => {
                     onAction={handleGoToCorrections}
                     actionLabel="Aller aux corrections"
                     actionColor="bg-orange-600 hover:bg-orange-700"
+                    programName={enrollment.programName}
                 />
             );
         case 'REJECTED':
@@ -98,14 +107,17 @@ const EnrollmentStatusPage = ({ enrollment }) => {
                     onAction={handleRestart}
                     actionLabel="Recommencer"
                     actionColor="bg-red-600 hover:bg-red-700"
+                    programName={enrollment.programName}
                 />
             );
         default:
             return (
-                <div className="text-center p-10">
-                    <h2 className="text-2xl font-bold text-gray-700">Statut inconnu</h2>
-                    <p className="text-gray-500 mt-2">Veuillez contacter le support pour plus d'informations.</p>
-                </div>
+                <StatusCard
+                    title={statusDetails.text}
+                    message={message}
+                    status={enrollment.status}
+                    programName={enrollment.programName}
+                />
             );
     }
 };

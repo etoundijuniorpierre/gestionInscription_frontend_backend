@@ -117,7 +117,7 @@ const Step2Documents = ({ initialData = {}, identityDocumentType = 'CNI', onSave
                 timeout: 30000, // 30 second timeout
             };
             
-            const response = await api.post('/images/upload', formData, config);
+            const response = await api.post('/api/v1/images/upload', formData, config);
             
             // Update state with the response
             setDocuments(prevDocs => ({

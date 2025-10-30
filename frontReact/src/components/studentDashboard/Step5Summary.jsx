@@ -86,13 +86,6 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
         return formData.specialization || 'Non spécifié';
     };
 
-    // Format the internship availability value for display
-    const getInternshipAvailabilityDisplay = () => {
-        if (availableForInternship === true) return 'Oui';
-        if (availableForInternship === false) return 'Non';
-        return 'Non spécifié';
-    };
-
     // Get the document label based on the selected identity document type
     const getIdentityDocumentLabel = () => {
         switch (formData.typePieceIdentite) {
@@ -128,11 +121,11 @@ const Step5Summary = ({ formData, onPrevious, onFinish, course }) => {
                     Informations Personnelles
                 </h3>
                 <div className="grid grid-cols-2 gap-x-[1.28rem] gap-y-[1.28rem]">
-                    <SummaryField label="Nom" value={formData.nom} />
-                    <SummaryField label="Prénom" value={formData.prenom} />
-                    <SummaryField label="Sexe" value={formData.sexe} />
-                    <SummaryField label="Date de naissance" value={formData.dateNaissance} />
-                    <SummaryField label="Nationalité" value={formData.nationalite} />
+                    <SummaryField label="Nom" value={formData.lastName} />
+                    <SummaryField label="Prénom" value={formData.firstName} />
+                    <SummaryField label="Sexe" value={formData.gender} />
+                    <SummaryField label="Date de naissance" value={formData.dateOfBirth} />
+                    <SummaryField label="Nationalité" value={formData.nationality} />
                     <SummaryField label="Type de pièce d'identité" value={formData.typePieceIdentite} />
                 </div>
 

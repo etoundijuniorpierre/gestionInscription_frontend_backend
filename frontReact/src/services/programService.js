@@ -1,6 +1,6 @@
 import api from './api';
 
-const PROGRAMS_URL = '/programs'; // Base path for program endpoints
+const PROGRAMS_URL = '/api/v1/programs'; // Base path for program endpoints
 
 /**
  * Service function to get all programs from the backend.
@@ -8,7 +8,7 @@ const PROGRAMS_URL = '/programs'; // Base path for program endpoints
  */
 export const getAllPrograms = async () => {
   try {
-    const response = await api.get(PROGRAMS_URL);
+    const response = await api.get(`${PROGRAMS_URL}/all`);
     return response.data;
   } catch (error) {
     console.error('Error in getAllPrograms:', error);

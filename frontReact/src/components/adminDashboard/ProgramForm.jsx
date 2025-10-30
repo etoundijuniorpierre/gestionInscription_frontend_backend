@@ -31,16 +31,16 @@ const ProgramForm = () => {
             const response = await getProgramById(id);
             // Map the response data to formData structure
             setFormData({
-                programName: response.data.programName || '',
-                programCode: response.data.programCode || '',
-                description: response.data.description || '',
-                registrationFee: response.data.registrationFee || '',
-                maxCapacity: response.data.maxCapacity || '',
-                registrationStartDate: response.data.registrationStartDate || '',
-                registrationEndDate: response.data.registrationEndDate || '',
-                image: response.data.image || '',
-                duration: response.data.duration || '',
-                price: response.data.price || ''
+                programName: response.programName || '',
+                programCode: response.programCode || '',
+                description: response.description || '',
+                registrationFee: response.registrationFee || '',
+                maxCapacity: response.maxCapacity || '',
+                registrationStartDate: response.registrationStartDate || '',
+                registrationEndDate: response.registrationEndDate || '',
+                image: response.image || '',
+                duration: response.duration || '',
+                price: response.price || ''
             });
         } catch (err) {
             console.error('Error fetching program data:', err);

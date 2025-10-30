@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllEnrollments, getAvailableAcademicYears } from '../../services/enrollmentManagementService';
+import { getAllEnrollments, getAllNonApprovedEnrollments } from '../../services/enrollmentManagementService';
+import { getAllPrograms } from '../../services/programService';
 import { mapApiStatusToDisplay } from '../../utils/enrollmentStatusUtils';
 
 const StudentEnrollmentManagement = ({ onViewDetails }) => {
@@ -12,32 +13,33 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState(null);
     const [selectedMajor, setSelectedMajor] = useState(null);
-    const [selectedAcademicYear, setSelectedAcademicYear] = useState(null);
     const [enrollmentData, setEnrollmentData] = useState([]);
+    const [allProgramNames, setAllProgramNames] = useState([]); // New state for all program names
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [academicYears, setAcademicYears] = useState([]);
     const [notification, setNotification] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [modalData, setModalData] = useState({});
+    const [activeTab, setActiveTab] = useState('all'); // New state for tabs
 
     // Add the missing state for filtered enrollments
     const [filteredEnrollments, setFilteredEnrollments] = useState([]);
 
     useEffect(() => {
         fetchEnrollments();
-        fetchAcademicYears();
-    }, []);
+        fetchAllPrograms(); // Fetch all programs for the filter
+    }, [activeTab]); // Add activeTab as dependency
 
     useEffect(() => {
         // Apply filters
         let result = enrollmentData;
         
-        if (selectedStatus) {
+        if (selectedStatus && selectedStatus !== "") {
             result = result.filter(enrollment => mapApiStatusToDisplay(enrollment.status) === selectedStatus);
         }
         
-        if (selectedMajor) {
+        // Fix: Only apply program filter if a specific program is selected (not "Toutes les formations")
+        if (selectedMajor && selectedMajor !== "Toutes les formations") {
             result = result.filter(enrollment => enrollment.programName === selectedMajor);
         }
         
@@ -49,7 +51,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         setFilteredEnrollments(result);
         setTotalPages(Math.ceil(result.length / 10)); // Update total pages based on filtered results
         setCurrentPage(1); // Reset to first page when filters change
-    }, [enrollmentData, selectedStatus, selectedMajor, selectedAcademicYear]);
+    }, [enrollmentData, selectedStatus, selectedMajor]);
 
     // Calculate current enrollments for pagination
     const currentEnrollments = filteredEnrollments.slice(
@@ -60,8 +62,19 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
     const fetchEnrollments = async () => {
         try {
             setLoading(true);
-            const response = await getAllEnrollments();
-            console.log('Enrollments data received:', response); // Debug log
+            let response;
+            
+            // Fetch enrollments based on active tab
+            if (activeTab === 'pending') {
+                // Use the non-approved endpoint for pending validation enrollments
+                response = await getAllNonApprovedEnrollments();
+                console.log('Non-approved enrollments data received:', response); // Debug log
+            } else {
+                // Use the all enrollments endpoint to get all enrollments
+                response = await getAllEnrollments();
+                console.log('All enrollments data received:', response); // Debug log
+            }
+            
             setEnrollmentData(response);
             setFilteredEnrollments(response); // Initialize filtered enrollments
             setTotalPages(Math.ceil(response.length / 10)); // Assuming 10 items per page
@@ -98,12 +111,16 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         }
     };
 
-    const fetchAcademicYears = async () => {
+    // New function to fetch all programs for the filter
+    const fetchAllPrograms = async () => {
         try {
-            const response = await getAvailableAcademicYears();
-            setAcademicYears(response);
+            const programs = await getAllPrograms();
+            // Extract program names and filter out any null/undefined values
+            const programNames = [...new Set(programs.map(program => program.programName))].filter(name => name);
+            setAllProgramNames(programNames);
         } catch (err) {
-            console.error('Error fetching academic years:', err);
+            console.error('Error fetching all programs:', err);
+            // Even if we can't fetch all programs, we can still use the ones from enrollments
         }
     };
 
@@ -191,6 +208,13 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
         );
     }
 
+    // Get unique program names from enrollments (fallback if allProgramNames is empty)
+    const uniqueProgramNames = allProgramNames.length > 0 ? allProgramNames : 
+        [...new Set(enrollmentData.map(enrollment => enrollment.programName))].filter(name => name);
+    
+    // Get unique statuses for the filter dropdown
+    const uniqueStatuses = [...new Set(enrollmentData.map(enrollment => mapApiStatusToDisplay(enrollment.status)))].filter(status => status);
+
     return (
         <div className="p-8">
             {/* Notification display */}
@@ -226,112 +250,96 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                 </div>
             )}
             
-            {/* Top Section with Title, Hamburger Menu, and Search Bar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Gestion des Inscriptions</h2>
                     <p className="text-gray-600 mt-1">Gérez les inscriptions des étudiants</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                    {/* Hamburger Menu for Dropdowns */}
-                    <div className="relative">
-                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-gray-700 flex items-center border border-gray-300 rounded-md">
-                            <div className="flex flex-col items-center justify-center space-y-1">
-                                <span className="block h-0.5 w-6 bg-gray-600"></span>
-                                <span className="block h-0.5 w-6 bg-gray-600"></span>
-                                <span className="block h-0.5 w-6 bg-gray-600"></span>
-                            </div>
-                            <div className="ml-2 flex flex-wrap gap-1">
-                                {selectedStatus && <span className="px-2 py-0.5 bg-gray-200 rounded-full text-xs font-semibold">{selectedStatus}</span>}
-                                {selectedMajor && <span className="px-2 py-0.5 bg-gray-200 rounded-full text-xs font-semibold">{selectedMajor}</span>}
-                                {selectedAcademicYear && <span className="px-2 py-0.5 bg-gray-200 rounded-full text-xs font-semibold">{selectedAcademicYear}</span>}
-                            </div>
-                        </button>
-                        {isMenuOpen && (
-                            <div className="absolute top-0 left-full mt-0 ml-2 w-48 bg-[#999999] rounded-md shadow-lg py-1 z-20">
-                                <ul className="space-y-1">
-                                    <li className="relative">
-                                        <button onClick={() => setActiveDropdown(activeDropdown === 'statut' ? null : 'statut')} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Statut</button>
-                                        {activeDropdown === 'statut' && (
-                                            <div className="absolute left-full top-0 mt-0 ml-2 w-48 bg-[#999999] rounded-md shadow-lg py-1 z-30">
-                                                <button onClick={() => { setSelectedStatus(null); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Tous</button>
-                                                <button onClick={() => { setSelectedStatus('Soumis'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Soumis</button>
-                                                <button onClick={() => { setSelectedStatus('Validé'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Validé</button>
-                                                <button onClick={() => { setSelectedStatus('Refusé'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Refusé</button>
-                                                <button onClick={() => { setSelectedStatus('Corrections requises'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Corrections requises</button>
-                                            </div>
-                                        )}
-                                    </li>
-                                    <li className="relative">
-                                        <button onClick={() => setActiveDropdown(activeDropdown === 'formation' ? null : 'formation')} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Formation</button>
-                                        {activeDropdown === 'formation' && (
-                                            <div className="absolute left-full top-0 mt-0 ml-2 w-48 bg-[#999999] rounded-md shadow-lg py-1 z-30">
-                                                <button onClick={() => { setSelectedMajor(null); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Tous</button>
-                                                <button onClick={() => { setSelectedMajor('Génie Logiciel'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Génie Logiciel</button>
-                                                <button onClick={() => { setSelectedMajor('Cybersécurité'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Cybersécurité</button>
-                                                <button onClick={() => { setSelectedMajor('Science des Données'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Science des Données</button>
-                                                <button onClick={() => { setSelectedMajor('Intelligence Artificielle'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Intelligence Artificielle</button>
-                                                <button onClick={() => { setSelectedMajor('Génie Électrique'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Génie Électrique</button>
-                                                <button onClick={() => { setSelectedMajor('Génie Civil'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Génie Civil</button>
-                                                <button onClick={() => { setSelectedMajor('Biologie'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Biologie</button>
-                                                <button onClick={() => { setSelectedMajor('Chimie'); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Chimie</button>
-                                            </div>
-                                        )}
-                                    </li>
-                                    <li className="relative">
-                                        <button onClick={() => setActiveDropdown(activeDropdown === 'annee' ? null : 'annee')} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Année Académique</button>
-                                        {activeDropdown === 'annee' && (
-                                            <div className="absolute left-full top-0 mt-0 ml-2 w-48 bg-[#999999] rounded-md shadow-lg py-1 z-30">
-                                                <button onClick={() => { setSelectedAcademicYear(null); setIsMenuOpen(false); setActiveDropdown(null); }} className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]">Tous</button>
-                                                {academicYears.map(year => (
-                                                    <button 
-                                                        key={year} 
-                                                        onClick={() => { setSelectedAcademicYear(year); setIsMenuOpen(false); setActiveDropdown(null); }} 
-                                                        className="block w-full text-left px-4 py-2 text-white hover:bg-[#666666]"
-                                                    >
-                                                        {year}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </li>
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                    {/* Search Bar */}
-                    <input
-                        type="text"
-                        placeholder="Rechercher"
-                        className="p-2 rounded-md border border-gray-300 w-full md:w-96"
-                    />
+                    <div className="h-10 w-64 bg-gray-200 rounded"></div>
                 </div>
             </div>
 
-            {/* Thick Horizontal Line */}
             <div className="w-full h-1 bg-[#101957] my-8"></div>
 
-            {/* Action Buttons */}
-            {selectedEnrollments.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                    <button
-                        className={`${actionButtonStyle} text-[#101957] border-[#101957] bg-white hover:bg-[#101957] hover:text-white`}
-                    >
-                        Activer
-                    </button>
-                    <button
-                        className={`${actionButtonStyle} text-[#101957] border-[#101957] bg-white hover:bg-[#101957] hover:text-white`}
-                    >
-                        Suspendre
-                    </button>
-                    <button
-                        className={`${actionButtonStyle} text-[#FF3838] border-[#FF3838] bg-white hover:bg-[#FF3838] hover:text-white`}
-                    >
-                        Supprimer
-                    </button>
+            {/* Tab Navigation */}
+            <div className="mb-6">
+                <div className="border-b border-gray-200">
+                    <nav className="-mb-px flex space-x-8">
+                        <button
+                            onClick={() => {
+                                setActiveTab('all');
+                                setCurrentPage(1); // Reset to first page when changing tabs
+                            }}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                                activeTab === 'all'
+                                    ? 'border-[#101957] text-[#101957]'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                        >
+                            Toutes les inscriptions
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('pending');
+                                setCurrentPage(1); // Reset to first page when changing tabs
+                            }}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                                activeTab === 'pending'
+                                    ? 'border-[#101957] text-[#101957]'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                        >
+                            Inscriptions en attente de validation
+                        </button>
+                    </nav>
                 </div>
-            )}
-            
+            </div>
+
+            {/* Filter Section */}
+            <div className="mb-6 flex flex-wrap gap-4">
+                {/* Only show status filter on "Toutes les inscriptions" tab */}
+                {activeTab === 'all' && (
+                    <div className="relative">
+                        <select
+                            value={selectedStatus || ''}
+                            onChange={(e) => setSelectedStatus(e.target.value || null)}
+                            className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-blue-500"
+                        >
+                            <option value="">Tous les statuts</option>
+                            {/* Populate with unique status values from the data */}
+                            {uniqueStatuses.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                            </svg>
+                        </div>
+                    </div>
+                )}
+                
+                <div className="relative">
+                    <select
+                        value={selectedMajor || 'Toutes les formations'}
+                        onChange={(e) => setSelectedMajor(e.target.value || null)}
+                        className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-blue-500"
+                    >
+                        <option value="Toutes les formations">Toutes les formations</option>
+                        {/* Populate with unique program names */}
+                        {uniqueProgramNames.map(programName => (
+                            <option key={programName} value={programName}>{programName}</option>
+                        ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
             {/* Main Table Section */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="overflow-x-auto">
@@ -365,7 +373,7 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                                             className="w-4 h-4"
                                         />
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{enrollment.id}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 font-medium">{enrollment.id}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                                         {enrollment.personalInfo ? `${enrollment.personalInfo.firstName} ${enrollment.personalInfo.lastName}` : 'N/A'}
                                     </td>
@@ -375,7 +383,21 @@ const StudentEnrollmentManagement = ({ onViewDetails }) => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
                                         {enrollment.submissionDate ? new Date(enrollment.submissionDate).toLocaleString('fr-FR') : 'N/A'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">{mapApiStatusToDisplay(enrollment.status)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            enrollment.status === 'PENDING_VALIDATION' ? 'bg-yellow-100 text-yellow-800' :
+                                            enrollment.status === 'APPROVED' ? 'bg-blue-100 text-blue-800' :
+                                            enrollment.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                            enrollment.status === 'ENROLLED' ? 'bg-green-100 text-green-800' :
+                                            enrollment.status === 'CANCELLED' ? 'bg-gray-100 text-gray-800' :
+                                            enrollment.status === 'CORRECTIONS_REQUIRED' ? 'bg-purple-100 text-purple-800' :
+                                            enrollment.status === 'PENDING_PAYMENT' ? 'bg-orange-100 text-orange-800' :
+                                            enrollment.status === 'PENDING_PROGRAM_PAYMENT' ? 'bg-indigo-100 text-indigo-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {mapApiStatusToDisplay(enrollment.status)}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <button
                                             onClick={() => onViewDetails(enrollment)}
