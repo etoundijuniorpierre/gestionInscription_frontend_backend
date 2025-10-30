@@ -1,11 +1,11 @@
 package com.team48.inscriptionscolaire.user;
 
-import com.team48.inscriptionscolaire.student.Student;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -24,39 +24,28 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
-    public User createUser(UserRequestDto userRequestDto) {
-        // This would typically be used for admin creation of users
-        // For simplicity, we're not implementing full creation logic here
-        throw new UnsupportedOperationException("User creation should be done through the authentication service");
-    }
-
     public User updateUser(Integer id, UserRequestDto userRequestDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
-        
+
         user.setFirstname(userRequestDto.getFirstname());
         user.setLastname(userRequestDto.getLastname());
         user.setEmail(userRequestDto.getEmail());
-        
+
         // Direct mapping: true = enabled/active, false = disabled/inactive
         user.setStatus(userRequestDto.isEnabled());
-        
+
         return userRepository.save(user);
     }
 
-    /**
-     * Toggle a user's enabled status
-     * @param id The ID of the user to toggle
-     * @return The updated user
-     */
     public User toggleUserStatus(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
-        
+
         // Direct mapping: true = enabled/active, false = disabled/inactive
         // Toggle the status without inversion - true becomes false, false becomes true
         user.setStatus(!user.isStatus());
-        
+
         return userRepository.save(user);
     }
 
@@ -70,7 +59,7 @@ public class UserService {
     public void changePassword(PasswordChangeRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + request.getUserId()));
-        
+
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
@@ -80,12 +69,12 @@ public class UserService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
-        
+
         // Verify current password
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Current password is incorrect");
         }
-        
+
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }

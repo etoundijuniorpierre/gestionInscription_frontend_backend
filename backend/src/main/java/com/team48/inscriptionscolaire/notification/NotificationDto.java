@@ -1,6 +1,7 @@
 package com.team48.inscriptionscolaire.notification;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data

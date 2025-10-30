@@ -1,4 +1,5 @@
 package com.team48.inscriptionscolaire.statistics;
+
 import com.team48.inscriptionscolaire.document.Document;
 import com.team48.inscriptionscolaire.document.DocumentRepository;
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
@@ -19,25 +20,25 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class StatisticsService {
-    
+
     private final StatisticsRepository statisticsRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final DocumentRepository documentRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
-    
+
     public StatisticsDto getStatistics() {
         StatisticsDto stats = new StatisticsDto();
-        
+
         // Static statistics
         stats.setTotalEnrollments(statisticsRepository.getTotalEnrollments());
         stats.setValidatedEnrollments(statisticsRepository.getValidatedEnrollments());
         stats.setPendingEnrollments(statisticsRepository.getPendingEnrollments());
         stats.setNewAccountsLast24h(statisticsRepository.getNewAccountsSince(LocalDateTime.now().minusDays(1)));
-        
+
         // Real-time statistics (simplified for now)
         stats.setConnectedAccounts((long) statisticsRepository.getAllUsers().size());
-        
+
         // Last validated document
         List<Document> lastDocuments = statisticsRepository.getLastValidatedDocument();
         if (!lastDocuments.isEmpty()) {
@@ -47,7 +48,7 @@ public class StatisticsService {
             docDto.setName(lastDoc.getName());
             docDto.setDocumentType(lastDoc.getDocumentType());
             docDto.setValidationDate(lastDoc.getValidationDate());
-            
+
             // Get student and program names if available
             if (lastDoc.getEnrollment() != null) {
                 Enrollment enrollment = lastDoc.getEnrollment();
@@ -58,17 +59,17 @@ public class StatisticsService {
                     docDto.setProgramName(enrollment.getProgram().getProgramName());
                 }
             }
-            
+
             stats.setLastValidatedDocument(docDto);
         }
-        
+
         // Last enrollment
         List<Enrollment> lastEnrollments = statisticsRepository.getLastEnrollment();
         if (!lastEnrollments.isEmpty()) {
             Enrollment lastEnroll = lastEnrollments.get(0);
             LastEnrollmentDto enrollDto = new LastEnrollmentDto();
             enrollDto.setId(lastEnroll.getId());
-            
+
             // Get student and program names if available
             if (lastEnroll.getStudent() != null) {
                 enrollDto.setStudentName(lastEnroll.getStudent().getFirstname() + " " + lastEnroll.getStudent().getLastname());
@@ -76,12 +77,12 @@ public class StatisticsService {
             if (lastEnroll.getProgram() != null) {
                 enrollDto.setProgramName(lastEnroll.getProgram().getProgramName());
             }
-            
+
             enrollDto.setSubmissionDate(lastEnroll.getSubmissionDate());
             enrollDto.setStatus(lastEnroll.getStatus().name());
             stats.setLastEnrollment(enrollDto);
         }
-        
+
         // Last payment
         List<Payment> lastPayments = paymentRepository.findLastPayment();
         if (!lastPayments.isEmpty()) {
@@ -92,21 +93,18 @@ public class StatisticsService {
             paymentDto.setCurrency(lastPayment.getCurrency());
             paymentDto.setPaymentDate(lastPayment.getPaymentDate());
             paymentDto.setEnrollmentId(lastPayment.getEnrollment().getId());
-            
+
             // Get student name if available
             if (lastPayment.getEnrollment() != null && lastPayment.getEnrollment().getStudent() != null) {
                 paymentDto.setStudentName(lastPayment.getEnrollment().getStudent().getFirstname() + " " + lastPayment.getEnrollment().getStudent().getLastname());
             }
-            
+
             stats.setLastPayment(paymentDto);
         }
-        
+
         return stats;
     }
-    
-    /**
-     * Get all requested statistics
-     */
+
     public Map<String, Object> getAllStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -128,9 +126,6 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * Detailed candidature statistics
-     */
     public Map<String, Object> getCandidatureStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -158,9 +153,6 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * Detailed inscription statistics (paid programs)
-     */
     public Map<String, Object> getInscriptionStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -177,9 +169,6 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * New accounts created in the last 24 hours
-     */
     public Map<String, Object> getNouveauxComptes() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -189,15 +178,12 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * Enrollments by program using more efficient database queries
-     */
     public Map<String, Object> getInscriptionsParFormation() {
         Map<String, Object> stats = new HashMap<>();
 
         // Using a custom query to get enrollments by program directly from database
         List<Object[]> results = paymentRepository.findCompletedProgramPaymentsGroupedByProgram();
-        
+
         Map<String, Long> parFormation = new HashMap<>();
         for (Object[] result : results) {
             String programName = (String) result[0];
@@ -210,9 +196,6 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * Real-time statistics (last 24 hours)
-     */
     public Map<String, Object> getTempsReelStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
@@ -233,9 +216,6 @@ public class StatisticsService {
         return stats;
     }
 
-    /**
-     * Utility method to get statistics of a specific type
-     */
     public Map<String, Object> getStatisticsByType(String type) {
         switch (type.toLowerCase()) {
             case "candidatures":

@@ -79,12 +79,10 @@ public class EnrollmentService {
                     Enrollment newEnrollment = new Enrollment();
                     newEnrollment.setStudent(student);
                     newEnrollment.setProgram(program);
-                    newEnrollment.setStatus(StatusSubmission.PENDING_PAYMENT); // Set initial status to PENDING_PAYMENT
+                    newEnrollment.setStatus(StatusSubmission.PENDING_PAYMENT);
                     return newEnrollment;
                 });
 
-        // submissionDate is set when enrollment is first created and equals createdDate
-        // Do not modify it here to maintain synchronization
 
         updatePersonalInfo(enrollment, dto.getPersonalInfo());
         updateAcademicInfo(enrollment, dto.getAcademicInfo());
@@ -107,35 +105,18 @@ public class EnrollmentService {
                 log.info("Draft enrollment notification sent successfully");
             } catch (Exception e) {
                 log.error("Failed to send draft enrollment notification: {}", e.getMessage(), e);
-                // Don't fail the enrollment process if notification fails
             }
         }
 
         return savedEnrollment;
     }
 
-    /**
-     * Check if student has conflicting enrollments (programs that start on the same date)
-     *
-     * @param studentId The student ID
-     * @param startDate The start date of the program being enrolled in
-     * @param programId The program ID being enrolled in (to exclude self)
-     * @return true if there's a conflict, false otherwise
-     */
     private boolean hasConflictingEnrollment(Integer studentId, LocalDate startDate, Integer programId) {
         return enrollmentRepository.countByStudentIdAndProgramStartDate(studentId, startDate) > 0;
     }
 
-    /**
-     * Check if student has conflicting enrollments based on schedule
-     *
-     * @param studentId  The student ID
-     * @param newProgram The program being enrolled in
-     * @return true if there's a schedule conflict, false otherwise
-     */
     private boolean hasScheduleConflict(Integer studentId, Program newProgram) {
         try {
-            // Get all active enrollments for the student
             List<Enrollment> activeEnrollments = enrollmentRepository.findByStudentId(studentId)
                     .stream()
                     .filter(e -> e.getStatus() == StatusSubmission.SUBMITTED ||
@@ -146,16 +127,13 @@ public class EnrollmentService {
 
             log.debug("Found {} active enrollments for student {}", activeEnrollments.size(), studentId);
 
-            // Check each active enrollment for schedule conflicts
             for (Enrollment enrollment : activeEnrollments) {
                 Program existingProgram = enrollment.getProgram();
 
-                // Skip if it's the same program
                 if (existingProgram.getId().equals(newProgram.getId())) {
                     continue;
                 }
 
-                // Check if both programs have schedule information
                 if (newProgram.getCourseDays() == null || existingProgram.getCourseDays() == null ||
                         newProgram.getStartTime() == null || existingProgram.getStartTime() == null ||
                         newProgram.getEndTime() == null || existingProgram.getEndTime() == null) {
@@ -164,7 +142,6 @@ public class EnrollmentService {
                     continue;
                 }
 
-                // Check if the programs overlap in time
                 if (hasTimeOverlap(newProgram, existingProgram)) {
                     log.warn("Schedule conflict detected between {} and {} for student {}",
                             newProgram.getProgramName(), existingProgram.getProgramName(), studentId);
@@ -175,40 +152,28 @@ public class EnrollmentService {
             return false;
         } catch (Exception e) {
             log.error("Error checking schedule conflicts for student {}: {}", studentId, e.getMessage(), e);
-            // Return false to not block enrollment if there's an error in conflict checking
             return false;
         }
     }
 
-    /**
-     * Check if two programs have overlapping schedules
-     *
-     * @param program1 First program
-     * @param program2 Second program
-     * @return true if there's a time overlap, false otherwise
-     */
     private boolean hasTimeOverlap(Program program1, Program program2) {
         try {
-            // Check if they have any common course days
-            boolean hasCommonDay = program1.getCourseDays().stream()
+                boolean hasCommonDay = program1.getCourseDays().stream()
                     .anyMatch(day -> program2.getCourseDays().contains(day));
 
             if (!hasCommonDay) {
                 return false;
             }
 
-            // Check if the time slots overlap
             LocalTime start1 = program1.getStartTime();
             LocalTime end1 = program1.getEndTime();
             LocalTime start2 = program2.getStartTime();
             LocalTime end2 = program2.getEndTime();
 
-            // Time overlap condition: (StartA < EndB) and (StartB < EndA)
             return start1.isBefore(end2) && start2.isBefore(end1);
         } catch (Exception e) {
             log.error("Error checking time overlap between {} and {}: {}",
                     program1.getProgramName(), program2.getProgramName(), e.getMessage(), e);
-            // Return false if there's an error in overlap checking
             return false;
         }
     }
@@ -246,7 +211,7 @@ public class EnrollmentService {
                 if (documentName != null && documentName.contains(".")) {
                     document.setDocumentType(FilenameUtils.getBaseName(documentName));
                 }
-                document.setValidationStatus(ValidationStatus.PENDING); // New documents are pending
+                document.setValidationStatus(ValidationStatus.PENDING);
                 newDocuments.add(document);
             }
             if (enrollment.getDocuments() == null) {
@@ -267,34 +232,21 @@ public class EnrollmentService {
         if (personalInfoDto == null) {
             personalInfoDto = new PersonalInfoDto();
         }
-        
+
         PersonalInfo personalInfo = enrollment.getPersonalInfo() != null ? enrollment.getPersonalInfo() : new PersonalInfo();
-        
-        // Debug logging to see what data we're working with
-        System.out.println("DEBUG: Updating personal info for enrollment ID: " + enrollment.getId());
-        System.out.println("DEBUG: DTO firstName: " + personalInfoDto.getFirstName());
-        System.out.println("DEBUG: DTO lastName: " + personalInfoDto.getLastName());
-        System.out.println("DEBUG: Enrollment has student: " + (enrollment.getStudent() != null));
-        
-        // If firstName is missing in the DTO, try to get it from the student's user data
+
         if (personalInfoDto.getFirstName() == null || personalInfoDto.getFirstName().isEmpty()) {
             if (enrollment.getStudent() != null && enrollment.getStudent().getFirstname() != null) {
-                System.out.println("DEBUG: Setting firstName from student data: " + enrollment.getStudent().getFirstname());
                 personalInfoDto.setFirstName(enrollment.getStudent().getFirstname());
             }
         }
-        
-        // If lastName is missing in the DTO, try to get it from the student's user data
+
         if (personalInfoDto.getLastName() == null || personalInfoDto.getLastName().isEmpty()) {
             if (enrollment.getStudent() != null && enrollment.getStudent().getLastname() != null) {
-                System.out.println("DEBUG: Setting lastName from student data: " + enrollment.getStudent().getLastname());
                 personalInfoDto.setLastName(enrollment.getStudent().getLastname());
             }
         }
-        
-        System.out.println("DEBUG: Final DTO firstName: " + personalInfoDto.getFirstName());
-        System.out.println("DEBUG: Final DTO lastName: " + personalInfoDto.getLastName());
-        
+
         personalInfo.setFirstName(personalInfoDto.getFirstName());
         personalInfo.setLastName(personalInfoDto.getLastName());
         personalInfo.setNationality(personalInfoDto.getNationality());
@@ -386,7 +338,6 @@ public class EnrollmentService {
         return enrollmentRepository.findByProgramId(programId);
     }
 
-    // New methods to get all enrollments and non-approved enrollments
     public List<Enrollment> getAllEnrollments() {
         return enrollmentRepository.findAll();
     }
@@ -407,11 +358,11 @@ public class EnrollmentService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow();
         Student student = (Student) user;
-        
+
         return enrollmentRepository.findByStudentId(student.getId())
                 .stream()
-                .filter(enrollment -> enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT || 
-                                     enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT)
+                .filter(enrollment -> enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT ||
+                        enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT)
                 .collect(Collectors.toList());
     }
 
@@ -419,33 +370,24 @@ public class EnrollmentService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow();
         Student student = (Student) user;
-        
+
         return enrollmentRepository.findByStudentId(student.getId())
                 .stream()
-                .filter(enrollment -> enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT || 
-                                     enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT)
+                .filter(enrollment -> enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT ||
+                        enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT)
                 .map(Enrollment::getProgram)
                 .collect(Collectors.toList());
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // New methods for admin actions and student dashboard
-    // -------------------------------------------------------------------------------------------------
-
-    /**
-     * Admin action: Approve an enrollment.
-     */
     @Transactional
     public Enrollment approveEnrollment(Integer enrollmentId) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found"));
 
-        // Check if payment has been made before approving
         if (enrollment.getPayment() == null || !"SUCCESSFUL".equals(enrollment.getPayment().getStatus())) {
             throw new IllegalStateException("Enrollment payment must be completed before approval.");
         }
 
-        // Ensure all documents are approved
         enrollment.getDocuments().forEach(doc -> doc.setValidationStatus(ValidationStatus.VALIDATED));
 
         enrollment.setStatus(StatusSubmission.PENDING_PROGRAM_PAYMENT);
@@ -460,9 +402,6 @@ public class EnrollmentService {
         return enrollment;
     }
 
-    /**
-     * Admin action: Request corrections for specific documents or information.
-     */
     @Transactional
     public Enrollment requestCorrections(Integer enrollmentId, List<DocumentCorrectionDto> corrections) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
@@ -471,12 +410,11 @@ public class EnrollmentService {
         enrollment.setStatus(StatusSubmission.CORRECTIONS_REQUIRED);
         enrollmentRepository.save(enrollment);
 
-        // Update validation status and add rejection reasons to specific documents
         if (corrections != null && !corrections.isEmpty()) {
             corrections.forEach(correction -> documentRepository.findById(correction.getDocumentId())
                     .ifPresent(doc -> {
                         doc.setRejectionReason(correction.getReason());
-                        doc.setValidationStatus(ValidationStatus.REJECTED); // Mark as rejected for student to see
+                        doc.setValidationStatus(ValidationStatus.REJECTED);
                         documentRepository.save(doc);
                     }));
         }
@@ -487,15 +425,11 @@ public class EnrollmentService {
         return enrollment;
     }
 
-    /**
-     * Admin action: Fully reject an enrollment.
-     */
     @Transactional
     public Enrollment rejectEnrollment(Integer enrollmentId, String rejectionReason) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found"));
 
-        // Check if payment has been made before rejecting
         if (enrollment.getPayment() == null || !"SUCCESSFUL".equals(enrollment.getPayment().getStatus())) {
             throw new IllegalStateException("Enrollment payment must be completed before rejection.");
         }
@@ -504,19 +438,17 @@ public class EnrollmentService {
         enrollment.setRejectionReason(rejectionReason);
         enrollmentRepository.save(enrollment);
 
-        // Send notification to student
         String notificationMessage = "Votre demande d'inscription a été rejetée. Veuillez consulter votre email pour connaître la raison du rejet.";
         notificationService.sendPrivateNotification(enrollment.getStudent().getUsername(), notificationMessage);
 
-        // Send email to student with rejection reason
         try {
             String studentName = enrollment.getStudent().getFirstname() + " " + enrollment.getStudent().getLastname();
             String programName = enrollment.getProgram().getProgramName();
             emailService.sendEnrollmentRejectionEmail(
-                enrollment.getStudent().getEmail(), 
-                studentName, 
-                programName, 
-                rejectionReason
+                    enrollment.getStudent().getEmail(),
+                    studentName,
+                    programName,
+                    rejectionReason
             );
         } catch (MessagingException e) {
             log.error("Failed to send rejection email to student: {}", e.getMessage(), e);
@@ -525,10 +457,6 @@ public class EnrollmentService {
         return enrollment;
     }
 
-    /**
-     * Get the most recent enrollment for the current student.
-     * This is what the student dashboard will call on load.
-     */
     public Enrollment getMyLatestEnrollment() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
@@ -562,22 +490,10 @@ public class EnrollmentService {
         }
     }
 
-    /**
-     * Check if an enrollment has a completed payment
-     *
-     * @param enrollment The enrollment to check
-     * @return true if payment is completed, false otherwise
-     */
     public boolean isEnrollmentPaid(Enrollment enrollment) {
         return enrollment.getPayment() != null && "SUCCESSFUL".equals(enrollment.getPayment().getStatus());
     }
 
-    /**
-     * Update enrollment status when payment is completed
-     *
-     * @param enrollmentId The enrollment ID
-     * @param paymentType  The type of payment completed
-     */
     @Transactional
     public void updateEnrollmentStatusAfterPayment(Integer enrollmentId, PaymentType paymentType) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
@@ -589,12 +505,12 @@ public class EnrollmentService {
         } else if (paymentType == PaymentType.PROGRAM_PAYMENT) {
             // Program payment completed - enrollment is fully approved and student is considered enrolled
             enrollment.setStatus(StatusSubmission.ENROLLED);
-            
+
             // Update student status to INSCRIT
             Student student = enrollment.getStudent();
             student.setStatus(StudentStatus.ENROLLED);
             userRepository.save(student);
-            
+
             // Send enrollment confirmation email to student
             try {
                 String studentName = student.getFirstname() + " " + student.getLastname();
@@ -604,38 +520,32 @@ public class EnrollmentService {
                 Set<String> courseDays = enrollment.getProgram().getCourseDays();
                 LocalTime startTime = enrollment.getProgram().getStartTime();
                 LocalTime endTime = enrollment.getProgram().getEndTime();
-                
+
                 // Get program modules
                 List<String> modules = enrollment.getProgram().getLearnModules().stream()
                         .map(module -> module.getModuleName())
                         .toList();
-                
+
                 emailService.sendEnrollmentConfirmationEmail(
-                    student.getEmail(),
-                    studentName,
-                    programName,
-                    startDate,
-                    endDate,
-                    courseDays,
-                    startTime,
-                    endTime,
-                    modules
+                        student.getEmail(),
+                        studentName,
+                        programName,
+                        startDate,
+                        endDate,
+                        courseDays,
+                        startTime,
+                        endTime,
+                        modules
                 );
             } catch (MessagingException e) {
                 log.error("Failed to send enrollment confirmation email to student: {}", e.getMessage(), e);
             }
         }
-        
+
         enrollmentRepository.save(enrollment);
     }
 
-    /**
-     * Cancel an enrollment if no payments have been made
-     * This allows students to cancel their enrollment before making any payments
-     *
-     * @param enrollmentId The enrollment ID to cancel
-     * @throws IllegalStateException if enrollment has existing payments or is not found
-     */
+
     @Transactional
     public void cancelEnrollmentIfNoPayment(Integer enrollmentId) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)

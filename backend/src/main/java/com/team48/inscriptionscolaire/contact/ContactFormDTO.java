@@ -1,8 +1,8 @@
 package com.team48.inscriptionscolaire.contact;
 
-import lombok.Data;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
 @Data
 public class ContactFormDTO {

@@ -50,14 +50,14 @@ public class ProgramMapper {
         dto.setLastModifiedDate(program.getLastModifiedDate());
         // Set enrollment status
         dto.setEnrollmentOpen(program.isEnrollmentOpen());
-        
+
         // Set schedule properties
         dto.setHoursPerDay(program.getHoursPerDay());
         dto.setDaysPerWeek(program.getDaysPerWeek());
         dto.setCourseDays(program.getCourseDays());
         dto.setStartTime(program.getStartTime());
         dto.setEndTime(program.getEndTime());
-        
+
         // Map learn modules
         if (program.getLearnModules() != null) {
             List<ProgramResponseDTO.LearnModuleDTO> learnModuleDTOs = program.getLearnModules().stream()
@@ -72,14 +72,15 @@ public class ProgramMapper {
                     .collect(Collectors.toList());
             dto.setLearnModules(learnModuleDTOs);
         }
-        
+
         String imagePath = "/assets/images/" + program.getProgramCode() + ".png";
         dto.setImage(imagePath);
         return dto;
     }
-    
+
     /**
      * Create program response DTO with proper enrollment status calculation
+     *
      * @param program The program entity to convert
      * @return ProgramResponseDTO with calculated enrollment status
      */
@@ -92,9 +93,10 @@ public class ProgramMapper {
 
         return dto;
     }
-    
+
     /**
      * Calculate if enrollment is open considering business rules
+     *
      * @param program The program to check enrollment status for
      * @return true if enrollment is open, false otherwise
      */
@@ -102,9 +104,9 @@ public class ProgramMapper {
         // 1. Check if enrollment period is open (basic check)
         LocalDate today = LocalDate.now();
         boolean isInEnrollmentPeriod = program.getRegistrationStartDate() != null &&
-                                     program.getRegistrationEndDate() != null &&
-                                     !today.isBefore(program.getRegistrationStartDate()) &&
-                                     !today.isAfter(program.getRegistrationEndDate());
+                program.getRegistrationEndDate() != null &&
+                !today.isBefore(program.getRegistrationStartDate()) &&
+                !today.isAfter(program.getRegistrationEndDate());
 
         if (!isInEnrollmentPeriod) {
             return false;
@@ -117,7 +119,7 @@ public class ProgramMapper {
         // For now, return the period-based status
         return true;
     }
-    
+
     public static LearnModule toLearnModuleEntity(Program program, ProgramRequestDTO.LearnModuleDTO dto) {
         return LearnModule.builder()
                 .program(program)

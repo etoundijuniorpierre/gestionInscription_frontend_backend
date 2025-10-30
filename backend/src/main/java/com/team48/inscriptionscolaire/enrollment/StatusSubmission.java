@@ -1,9 +1,5 @@
 package com.team48.inscriptionscolaire.enrollment;
 
-/**
- * Statuts pour les candidatures (Enrollment)
- * Workflow: DRAFT → SUBMITTED → PENDING_PAYMENT → PENDING_VALIDATION → APPROVED/REJECTED
- */
 public enum StatusSubmission {
     // Brouillon - candidature en cours de remplissage
     DRAFT,

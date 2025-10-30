@@ -3,7 +3,7 @@ package com.team48.inscriptionscolaire.learnModule;
 import com.team48.inscriptionscolaire.program.Program;
 
 public class LearnModuleMapper {
-    
+
     public static LearnModule toEntity(LearnModuleDTO dto, Program program) {
         return LearnModule.builder()
                 .id(dto.getId())
@@ -13,7 +13,7 @@ public class LearnModuleMapper {
                 .program(program)
                 .build();
     }
-    
+
     public static LearnModuleDTO toDto(LearnModule learnModule) {
         LearnModuleDTO dto = new LearnModuleDTO();
         dto.setId(learnModule.getId());

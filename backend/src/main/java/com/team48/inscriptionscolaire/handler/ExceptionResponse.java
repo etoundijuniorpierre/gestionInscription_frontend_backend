@@ -9,7 +9,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY) //only include non-empty attributes
 public class ExceptionResponse {
     private Integer businessErrorCode;

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContactController {
 
     private final ContactService contactService;
+
     @PostMapping
     public ResponseEntity<Void> sendEmail(@RequestBody ContactFormDTO dto) {
         contactService.sendContactForm(dto);

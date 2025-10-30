@@ -25,29 +25,10 @@ public class FlutterwaveService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Create a payment (checkout) and return the payment link (checkout URL).
-     *
-     * @param email       customer email
-     * @param amount      amount in XAF (or any currency you choose)
-     * @param redirectUrl redirect URL after payment
-     * @return checkout link
-     * @throws IOException on network / parsing error
-     */
     public String createPaymentLink(String email, Double amount, String redirectUrl) throws IOException {
         return createPaymentLink(email, amount, redirectUrl, "enr-" + UUID.randomUUID().toString());
     }
 
-    /**
-     * Create a payment (checkout) and return the payment link (checkout URL).
-     *
-     * @param email       customer email
-     * @param amount      amount in XAF (or any currency you choose)
-     * @param redirectUrl redirect URL after payment
-     * @param txRef       transaction reference
-     * @return checkout link
-     * @throws IOException on network / parsing error
-     */
     public String createPaymentLink(String email, Double amount, String redirectUrl, String txRef) throws IOException {
         String endpoint = apiUrl + "/payments";
         URL url = new URL(endpoint);
@@ -64,18 +45,18 @@ public class FlutterwaveService {
         payloadNode.put("currency", "XAF");
         payloadNode.put("redirect_url", redirectUrl);
         payloadNode.put("payment_options", "card, mobilemoney");
-        
+
         // Create customer object
         ObjectNode customerNode = objectMapper.createObjectNode();
         customerNode.put("email", email);
         payloadNode.set("customer", customerNode);
-        
+
         // Create customizations object
         ObjectNode customizationsNode = objectMapper.createObjectNode();
         customizationsNode.put("title", "Paiement inscription");
         customizationsNode.put("description", "Frais d'inscription");
         payloadNode.set("customizations", customizationsNode);
-        
+
         String payload = objectMapper.writeValueAsString(payloadNode);
 
         try (OutputStream os = conn.getOutputStream()) {
@@ -99,14 +80,6 @@ public class FlutterwaveService {
         }
     }
 
-    /**
-     * Verify a transaction by transaction id (id returned by Flutterwave) or verify by tx_ref.
-     * Example uses GET /transactions/{id}/verify
-     *
-     * @param transactionId transaction id from webhook payload (data.id)
-     * @return JsonNode response
-     * @throws IOException on network / parsing error
-     */
     public JsonNode verifyTransactionById(String transactionId) throws IOException {
         String endpoint = apiUrl + "/transactions/" + transactionId + "/verify";
         URL url = new URL(endpoint);

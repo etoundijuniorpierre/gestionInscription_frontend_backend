@@ -3,7 +3,10 @@ package com.team48.inscriptionscolaire.student;
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
 import com.team48.inscriptionscolaire.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.List;
 public class Student extends User {
     @Enumerated(EnumType.STRING)
     private StudentStatus status = StudentStatus.NOT_ENROLLED;
-    
+
     @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollmentList;
 }

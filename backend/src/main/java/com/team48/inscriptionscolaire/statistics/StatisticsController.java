@@ -14,9 +14,6 @@ public class StatisticsController {
 
     private final StatisticsService statisticsService;
 
-    /**
-     * Récupère toutes les statistiques détaillées
-     */
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getAllStatistics() {
@@ -24,9 +21,6 @@ public class StatisticsController {
         return ResponseEntity.ok(statistics);
     }
 
-    /**
-     * Récupère les statistiques par type
-     */
     @GetMapping("/{type}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getStatisticsByType(@PathVariable String type) {
@@ -34,9 +28,6 @@ public class StatisticsController {
         return ResponseEntity.ok(statistics);
     }
 
-    /**
-     * Récupère uniquement les statistiques des candidatures
-     */
     @GetMapping("/candidatures")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getCandidatureStatistics() {
@@ -44,9 +35,6 @@ public class StatisticsController {
         return ResponseEntity.ok(statistics);
     }
 
-    /**
-     * Récupère uniquement les statistiques des inscriptions
-     */
     @GetMapping("/inscriptions")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getInscriptionStatistics() {
@@ -54,9 +42,6 @@ public class StatisticsController {
         return ResponseEntity.ok(statistics);
     }
 
-    /**
-     * Récupère les statistiques temps réel (24h)
-     */
     @GetMapping("/temps-reel")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getTempsReelStatistics() {

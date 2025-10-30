@@ -20,7 +20,7 @@ public class BeansConfig {
     private final UserDetailsService userDetailService;
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailService);
         authProvider.setPasswordEncoder(passwordEncoder());
@@ -34,12 +34,12 @@ public class BeansConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuditorAware<Integer> auditorAware(){
+    public AuditorAware<Integer> auditorAware() {
         return new ApplicationAuditedAware();
     }
 }

@@ -19,10 +19,7 @@ public class ProgramService {
         }
         Program program = ProgramMapper.toEntity(dto);
         
-        // Handle learn modules if provided
         if (dto.getLearnModules() != null) {
-            // For now, we're not implementing learn module creation in this method
-            // This would be extended in a more complete implementation
         }
         
         return programRepository.save(program);

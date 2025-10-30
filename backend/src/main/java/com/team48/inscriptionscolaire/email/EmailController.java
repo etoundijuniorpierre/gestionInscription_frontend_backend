@@ -20,9 +20,6 @@ public class EmailController {
     private final EmailService emailService;
     private final UserRepository userRepository;
 
-    /**
-     * Get all students for email selection
-     */
     @GetMapping("/students")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<StudentSummaryDto>> getStudents() {
@@ -44,9 +41,6 @@ public class EmailController {
         return ResponseEntity.ok(studentDtos);
     }
 
-    /**
-     * Send email to a student
-     */
     @PostMapping("/send")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> sendEmail(@RequestBody EmailRequestDto emailRequest) {
@@ -61,51 +55,51 @@ public class EmailController {
 
     private String buildEmailTemplate(String content) {
         return """
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f4f4f4;
-                        padding: 20px;
-                        color: #333333;
-                    }
-                    .container {
-                        background-color: #ffffff;
-                        padding: 30px;
-                        border-radius: 8px;
-                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                        max-width: 600px;
-                        margin: auto;
-                    }
-                    h2 {
-                        color: #101957;
-                    }
-                    .content {
-                        margin-top: 20px;
-                        line-height: 1.6;
-                    }
-                    .footer {
-                        margin-top: 30px;
-                        padding-top: 20px;
-                        border-top: 1px solid #eee;
-                        font-size: 12px;
-                        color: #666;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h2>Message de l'administration</h2>
-                    <div class="content">
-                        %s
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #f4f4f4;
+                            padding: 20px;
+                            color: #333333;
+                        }
+                        .container {
+                            background-color: #ffffff;
+                            padding: 30px;
+                            border-radius: 8px;
+                            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                            max-width: 600px;
+                            margin: auto;
+                        }
+                        h2 {
+                            color: #101957;
+                        }
+                        .content {
+                            margin-top: 20px;
+                            line-height: 1.6;
+                        }
+                        .footer {
+                            margin-top: 30px;
+                            padding-top: 20px;
+                            border-top: 1px solid #eee;
+                            font-size: 12px;
+                            color: #666;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Message de l'administration</h2>
+                        <div class="content">
+                            %s
+                        </div>
+                        <div class="footer">
+                            <p>Cordialement,<br>L'équipe d'administration</p>
+                        </div>
                     </div>
-                    <div class="footer">
-                        <p>Cordialement,<br>L'équipe d'administration</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """.formatted(content.replace("\n", "<br>"));
+                </body>
+                </html>
+                """.formatted(content.replace("\n", "<br>"));
     }
 }

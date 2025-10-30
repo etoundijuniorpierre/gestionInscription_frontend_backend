@@ -12,10 +12,10 @@ public interface TokenRepository extends JpaRepository<Token, Integer> {
     Optional<Token> findByTokenHash(String tokenHash);
 
     @Query(value = """
-          select t from Token t inner join User u
-          on t.user.id = u.id
-          where u.id = :id and (t.expired = false or t.revoked = false)
-          """)
+            select t from Token t inner join User u
+            on t.user.id = u.id
+            where u.id = :id and (t.expired = false or t.revoked = false)
+            """)
         // La ligne suivante est la plus importante : elle DOIT retourner List<Token>
     List<Token> findAllValidTokenByUser(Integer id);
 

@@ -59,7 +59,6 @@ public class DocumentController {
     }
 
 
-    
     // New endpoint to download document file by ID
     @GetMapping("/document/{id}/download")
     @Operation(

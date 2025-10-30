@@ -22,11 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-import java.time.LocalDate;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -73,6 +73,7 @@ public class AuthenticationService {
         // Implémentez une logique de génération de code interne
         return "ADM-" + new SecureRandom().nextInt(1000, 9999);
     }
+
     //it will generate a new token
     private void sendValidationEmail(User user) throws MessagingException {
         String newToken = generateAndSaveActivationToken(user);
@@ -108,7 +109,7 @@ public class AuthenticationService {
         String characters = "0123456789";
         StringBuilder codeBuilder = new StringBuilder();
         SecureRandom secureRandom = new SecureRandom();
-        for (int i = 0; i < length; i++){
+        for (int i = 0; i < length; i++) {
             int randomIndex = secureRandom.nextInt(characters.length());
             codeBuilder.append(characters.charAt(randomIndex));
 
@@ -125,16 +126,16 @@ public class AuthenticationService {
                         request.getPassword()
                 )
         );
-        
+
         // Find the user
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         // Check if user is enabled (active)
         if (!user.isEnabled()) {
             throw new DisabledException("User account is disabled. Please contact administrator.");
         }
-        
+
         // Generate JWT token
         String jwtToken = jwtService.generateToken(user);
 
@@ -168,9 +169,6 @@ public class AuthenticationService {
         }
     }
 
-    /**
-     * Génère un hash SHA-256 du token pour la recherche sécurisée
-     */
     private String hashToken(String token) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
@@ -210,7 +208,7 @@ public class AuthenticationService {
             throw new RuntimeException("Token hash mismatch");
         }
 
-        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())){
+        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             sendValidationEmail(savedToken.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
         }
@@ -236,22 +234,17 @@ public class AuthenticationService {
         // If the user doesn't exist, we do nothing to prevent user enumeration attacks.
     }
 
-    /**
-     * Renvoie un nouveau code d'activation à l'utilisateur.
-     * @param email L'adresse email de l'utilisateur.
-     * @throws MessagingException Si l'envoi de l'email échoue.
-     */
     public void resendActivationCode(String email) throws MessagingException {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            
+
             // Vérifier si le compte est déjà activé
             if (user.isStatus()) {
                 throw new RuntimeException("Account is already activated");
             }
-            
+
             // Révoquer tous les anciens tokens d'activation de l'utilisateur
             java.util.List<Token> oldTokens = tokenRepository.findAllValidTokenByUser(user.getId());
             oldTokens.forEach(token -> {
@@ -259,17 +252,13 @@ public class AuthenticationService {
                 token.setRevoked(true);
             });
             tokenRepository.saveAll(oldTokens);
-            
+
             // Envoyer un nouveau code d'activation
             sendValidationEmail(user);
         }
         // Si l'utilisateur n'existe pas, ne rien faire pour éviter l’énumération des utilisateurs
     }
-    
-    /**
-     * Gère la déconnexion en révoquant le token JWT fourni.
-     * @param request La requête HTTP contenant l'en-tête d'autorisation.
-     */
+
     public void logout(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwt;

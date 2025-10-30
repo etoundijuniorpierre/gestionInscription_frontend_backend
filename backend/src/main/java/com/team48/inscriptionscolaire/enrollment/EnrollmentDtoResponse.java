@@ -1,10 +1,8 @@
 package com.team48.inscriptionscolaire.enrollment;
 
-import com.team48.inscriptionscolaire.document.Document;
 import com.team48.inscriptionscolaire.document.DocumentDto;
 import com.team48.inscriptionscolaire.program.ProgramResponseDTO;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;

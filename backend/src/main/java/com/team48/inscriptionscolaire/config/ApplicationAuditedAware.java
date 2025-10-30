@@ -1,7 +1,6 @@
 package com.team48.inscriptionscolaire.config;
 
 
-
 import com.team48.inscriptionscolaire.user.User;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -16,7 +15,7 @@ public class ApplicationAuditedAware implements AuditorAware<Integer> {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null ||
-        authentication instanceof AnonymousAuthenticationToken){
+                authentication instanceof AnonymousAuthenticationToken) {
             return Optional.empty();
         }
         User userPrincipal = (User) authentication.getPrincipal();

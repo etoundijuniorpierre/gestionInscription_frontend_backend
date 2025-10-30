@@ -1,6 +1,7 @@
 package com.team48.inscriptionscolaire.admin;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,8 +15,6 @@ public class AdminResponseDto {
     private String roleName;
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
-    
-    // New fields added to User class
     private LocalDate dateOfBirth;
     private String address;
     private String phoneNumber;

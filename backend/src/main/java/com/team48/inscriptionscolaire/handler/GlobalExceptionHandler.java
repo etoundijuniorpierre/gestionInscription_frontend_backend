@@ -3,7 +3,6 @@ package com.team48.inscriptionscolaire.handler;
 
 import com.team48.inscriptionscolaire.exception.OperationNotPermitException;
 import jakarta.mail.MessagingException;
-import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashSet;
 import java.util.Set;
 
-
 import static com.team48.inscriptionscolaire.handler.BusinessErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
 
@@ -23,7 +21,7 @@ import static org.springframework.http.HttpStatus.*;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(LockedException.class)
-    public ResponseEntity<ExceptionResponse> handleException(LockedException exp){
+    public ResponseEntity<ExceptionResponse> handleException(LockedException exp) {
 
 
         return ResponseEntity
@@ -36,8 +34,9 @@ public class GlobalExceptionHandler {
                                 .build()
                 );
     }
+
     @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<ExceptionResponse> handleException(DisabledException exp){
+    public ResponseEntity<ExceptionResponse> handleException(DisabledException exp) {
 
 
         return ResponseEntity
@@ -52,7 +51,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ExceptionResponse> handleException(BadCredentialsException exp){
+    public ResponseEntity<ExceptionResponse> handleException(BadCredentialsException exp) {
 
 
         return ResponseEntity
@@ -67,7 +66,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MessagingException.class)
-    public ResponseEntity<ExceptionResponse> handleException(MessagingException exp){
+    public ResponseEntity<ExceptionResponse> handleException(MessagingException exp) {
 
 
         return ResponseEntity
@@ -80,7 +79,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleException(MethodArgumentNotValidException exp){
+    public ResponseEntity<ExceptionResponse> handleException(MethodArgumentNotValidException exp) {
         Set<String> errors = new HashSet<>();
         exp.getBindingResult().getAllErrors()
                 .forEach(error -> {
@@ -98,17 +97,17 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleException(Exception exp){
+    public ResponseEntity<ExceptionResponse> handleException(Exception exp) {
 
         //log the exception
         exp.printStackTrace();
-        
+
         // Check if this is a client abort exception (connection closed by client)
         if (exp instanceof org.apache.catalina.connector.ClientAbortException) {
             // Don't send a response as the client has already disconnected
             return null;
         }
-        
+
         return ResponseEntity
                 .status(INTERNAL_SERVER_ERROR)
                 .body(
@@ -120,7 +119,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(OperationNotPermitException.class)
-    public ResponseEntity<ExceptionResponse> handleException(OperationNotPermitException exp){
+    public ResponseEntity<ExceptionResponse> handleException(OperationNotPermitException exp) {
 
         //log the exception
         exp.printStackTrace();

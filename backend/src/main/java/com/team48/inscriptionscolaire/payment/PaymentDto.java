@@ -1,6 +1,7 @@
 package com.team48.inscriptionscolaire.payment;
 
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -15,7 +16,7 @@ public class PaymentDto {
     private Integer enrollmentId;
     private String enrollmentName; // Program name from enrollment
     private String paymentType; // REGISTRATION_FEE or PROGRAM_PAYMENT
-    
+
     // BaseEntity audit fields
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;

@@ -22,9 +22,9 @@ public class AuthenticationController {
     private final AuthenticationService service;
     private final UserService userService;
 
-    @PostMapping( "/signup")
+    @PostMapping("/signup")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> register (
+    public ResponseEntity<?> register(
             @RequestBody @Valid RegistrationRequest request
     ) throws MessagingException {
         service.register(request);
@@ -35,7 +35,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody @Valid AuthenticationRequest request
-    ){
+    ) {
 
         return ResponseEntity.ok(service.authenticate(request));
     }

@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -271,340 +273,340 @@ public class DatabaseInitializer implements CommandLineRunner {
         switch (program.getProgramCode()) {
             case "BCHN": // Blockchain
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Introduction à la Blockchain")
-                        .moduleDescription("Compréhension des concepts fondamentaux de la technologie blockchain, son histoire et ses applications.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Cryptographie et Sécurité")
-                        .moduleDescription("Étude des principes cryptographiques sous-jacents à la blockchain, hachage, signatures numériques.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Smart Contracts")
-                        .moduleDescription("Développement et déploiement de smart contracts sur la plateforme Ethereum.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Applications Décentralisées")
-                        .moduleDescription("Conception et développement d'applications décentralisées (DApps).")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Introduction à la Blockchain")
+                                .moduleDescription("Compréhension des concepts fondamentaux de la technologie blockchain, son histoire et ses applications.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Cryptographie et Sécurité")
+                                .moduleDescription("Étude des principes cryptographiques sous-jacents à la blockchain, hachage, signatures numériques.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Smart Contracts")
+                                .moduleDescription("Développement et déploiement de smart contracts sur la plateforme Ethereum.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Applications Décentralisées")
+                                .moduleDescription("Conception et développement d'applications décentralisées (DApps).")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "CCLD": // Cloud Computing
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Fondamentaux du Cloud Computing")
-                        .moduleDescription("Introduction aux concepts du cloud computing, modèles de service et déploiement.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Architecture des Systèmes Distribués")
-                        .moduleDescription("Conception d'architectures distribuées évolutives et résilientes.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Conteneurisation avec Docker")
-                        .moduleDescription("Maîtrise de Docker pour le déploiement d'applications conteneurisées.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Orchestration avec Kubernetes")
-                        .moduleDescription("Gestion d'environnements conteneurisés avec Kubernetes.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Fondamentaux du Cloud Computing")
+                                .moduleDescription("Introduction aux concepts du cloud computing, modèles de service et déploiement.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Architecture des Systèmes Distribués")
+                                .moduleDescription("Conception d'architectures distribuées évolutives et résilientes.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Conteneurisation avec Docker")
+                                .moduleDescription("Maîtrise de Docker pour le déploiement d'applications conteneurisées.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Orchestration avec Kubernetes")
+                                .moduleDescription("Gestion d'environnements conteneurisés avec Kubernetes.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "CDIG": // Communication Digitale
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Stratégies de Communication Digitale")
-                        .moduleDescription("Élaboration de stratégies de communication efficaces pour les plateformes numériques.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Création de Contenu Digital")
-                        .moduleDescription("Production de contenu engageant pour les réseaux sociaux et sites web.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Gestion de Communauté")
-                        .moduleDescription("Animation et modération de communautés en ligne.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Analyse d'Audience")
-                        .moduleDescription("Mesure et analyse de la performance des campagnes digitales.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Stratégies de Communication Digitale")
+                                .moduleDescription("Élaboration de stratégies de communication efficaces pour les plateformes numériques.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Création de Contenu Digital")
+                                .moduleDescription("Production de contenu engageant pour les réseaux sociaux et sites web.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Gestion de Communauté")
+                                .moduleDescription("Animation et modération de communautés en ligne.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Analyse d'Audience")
+                                .moduleDescription("Mesure et analyse de la performance des campagnes digitales.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "CYBS": // Cybersécurité
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Fondamentaux de la Cybersécurité")
-                        .moduleDescription("Principes de base de la sécurité informatique et menaces courantes.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Cryptographie Appliquée")
-                        .moduleDescription("Techniques de chiffrement et de protection des données.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Gestion des Risques et Conformité")
-                        .moduleDescription("Identification des risques et mise en œuvre de mesures de protection.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Réponse aux Incidents de Sécurité")
-                        .moduleDescription("Procédures de détection, analyse et réponse aux cyberattaques.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Fondamentaux de la Cybersécurité")
+                                .moduleDescription("Principes de base de la sécurité informatique et menaces courantes.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Cryptographie Appliquée")
+                                .moduleDescription("Techniques de chiffrement et de protection des données.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Gestion des Risques et Conformité")
+                                .moduleDescription("Identification des risques et mise en œuvre de mesures de protection.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Réponse aux Incidents de Sécurité")
+                                .moduleDescription("Procédures de détection, analyse et réponse aux cyberattaques.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "DWEB": // Développement Web
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Fondamentaux du Développement Web")
-                        .moduleDescription("HTML, CSS, JavaScript et frameworks front-end modernes.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Développement Back-End")
-                        .moduleDescription("Création d'API RESTful avec Node.js et bases de données.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Bases de Données et ORM")
-                        .moduleDescription("Conception et manipulation de bases de données relationnelles et NoSQL.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Déploiement et DevOps")
-                        .moduleDescription("Mise en production d'applications web et bonnes pratiques DevOps.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Fondamentaux du Développement Web")
+                                .moduleDescription("HTML, CSS, JavaScript et frameworks front-end modernes.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Développement Back-End")
+                                .moduleDescription("Création d'API RESTful avec Node.js et bases de données.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Bases de Données et ORM")
+                                .moduleDescription("Conception et manipulation de bases de données relationnelles et NoSQL.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Déploiement et DevOps")
+                                .moduleDescription("Mise en production d'applications web et bonnes pratiques DevOps.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "DGRH": // Design Graphique
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Principes Fondamentaux du Design")
-                        .moduleDescription("Théorie des couleurs, typographie, composition et esthétique visuelle.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Logiciels de Design Professionnels")
-                        .moduleDescription("Maîtrise d'Adobe Creative Suite (Photoshop, Illustrator, InDesign).")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Branding et Identité Visuelle")
-                        .moduleDescription("Création d'identités de marque cohérentes et mémorables.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Portfolio et Présentation Professionnelle")
-                        .moduleDescription("Préparation d'un portfolio professionnel et techniques de présentation.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Principes Fondamentaux du Design")
+                                .moduleDescription("Théorie des couleurs, typographie, composition et esthétique visuelle.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Logiciels de Design Professionnels")
+                                .moduleDescription("Maîtrise d'Adobe Creative Suite (Photoshop, Illustrator, InDesign).")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Branding et Identité Visuelle")
+                                .moduleDescription("Création d'identités de marque cohérentes et mémorables.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Portfolio et Présentation Professionnelle")
+                                .moduleDescription("Préparation d'un portfolio professionnel et techniques de présentation.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "GLOG": // Génie Logiciel
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Principes de l'Ingénierie Logicielle")
-                        .moduleDescription("Cycle de vie du développement logiciel et méthodologies Agile.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Architecture Logicielle")
-                        .moduleDescription("Conception d'architectures logicielles modulaires et évolutives.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Développement Agile")
-                        .moduleDescription("Pratiques Agile et Scrum pour le développement itératif et incrémental.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Tests et Maintenance")
-                        .moduleDescription("Mise en œuvre de tests automatisés et maintenance des applications.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Principes de l'Ingénierie Logicielle")
+                                .moduleDescription("Cycle de vie du développement logiciel et méthodologies Agile.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Architecture Logicielle")
+                                .moduleDescription("Conception d'architectures logicielles modulaires et évolutives.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Développement Agile")
+                                .moduleDescription("Pratiques Agile et Scrum pour le développement itératif et incrémental.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Tests et Maintenance")
+                                .moduleDescription("Mise en œuvre de tests automatisés et maintenance des applications.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "GPJT": // Gestion de Projet
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Fondamentaux de la Gestion de Projet")
-                        .moduleDescription("Principes de la gestion de projet, cycle de vie et parties prenantes.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Méthodologies Agile et Scrum")
-                        .moduleDescription("Approches Agile et framework Scrum pour la gestion de projets.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Gestion des Risques et Communication")
-                        .moduleDescription("Identification des risques et communication efficace dans les projets.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Leadership et Management d'Équipe")
-                        .moduleDescription("Techniques de leadership pour motiver et diriger des équipes.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Fondamentaux de la Gestion de Projet")
+                                .moduleDescription("Principes de la gestion de projet, cycle de vie et parties prenantes.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Méthodologies Agile et Scrum")
+                                .moduleDescription("Approches Agile et framework Scrum pour la gestion de projets.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Gestion des Risques et Communication")
+                                .moduleDescription("Identification des risques et communication efficace dans les projets.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Leadership et Management d'Équipe")
+                                .moduleDescription("Techniques de leadership pour motiver et diriger des équipes.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "IART": // Intelligence Artificielle
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Introduction à l'Intelligence Artificielle")
-                        .moduleDescription("Concepts fondamentaux de l'IA, machine learning et deep learning.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Réseaux de Neurones et Deep Learning")
-                        .moduleDescription("Architecture des réseaux de neurones et frameworks de deep learning.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Traitement du Langage Naturel")
-                        .moduleDescription("Techniques de traitement et analyse du langage humain par ordinateur.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Vision par Ordinateur")
-                        .moduleDescription("Reconnaissance d'images et analyse visuelle avec l'IA.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Introduction à l'Intelligence Artificielle")
+                                .moduleDescription("Concepts fondamentaux de l'IA, machine learning et deep learning.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Réseaux de Neurones et Deep Learning")
+                                .moduleDescription("Architecture des réseaux de neurones et frameworks de deep learning.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Traitement du Langage Naturel")
+                                .moduleDescription("Techniques de traitement et analyse du langage humain par ordinateur.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Vision par Ordinateur")
+                                .moduleDescription("Reconnaissance d'images et analyse visuelle avec l'IA.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "MADI": // Marketing Digital
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Fondamentaux du Marketing Digital")
-                        .moduleDescription("Principes du marketing en ligne et stratégies digitales.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("SEO et SEA")
-                        .moduleDescription("Optimisation pour les moteurs de recherche et publicité en ligne.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Marketing de Contenu")
-                        .moduleDescription("Création et distribution de contenu engageant pour les audiences.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Analyse de Données Marketing")
-                        .moduleDescription("Mesure, analyse et optimisation des performances marketing.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Fondamentaux du Marketing Digital")
+                                .moduleDescription("Principes du marketing en ligne et stratégies digitales.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("SEO et SEA")
+                                .moduleDescription("Optimisation pour les moteurs de recherche et publicité en ligne.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Marketing de Contenu")
+                                .moduleDescription("Création et distribution de contenu engageant pour les audiences.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Analyse de Données Marketing")
+                                .moduleDescription("Mesure, analyse et optimisation des performances marketing.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "SDAT": // Science des Données
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Introduction à la Science des Données")
-                        .moduleDescription("Concepts fondamentaux de l'analyse de données et statistiques.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Machine Learning")
-                        .moduleDescription("Algorithmes d'apprentissage automatique et modélisation prédictive.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Visualisation de Données")
-                        .moduleDescription("Techniques de visualisation pour communiquer les insights de données.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Big Data et Outils d'Analyse")
-                        .moduleDescription("Traitement de grands volumes de données avec des outils spécialisés.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Introduction à la Science des Données")
+                                .moduleDescription("Concepts fondamentaux de l'analyse de données et statistiques.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Machine Learning")
+                                .moduleDescription("Algorithmes d'apprentissage automatique et modélisation prédictive.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Visualisation de Données")
+                                .moduleDescription("Techniques de visualisation pour communiquer les insights de données.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Big Data et Outils d'Analyse")
+                                .moduleDescription("Traitement de grands volumes de données avec des outils spécialisés.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             case "SEIO": // Systèmes Embarqués
                 return Arrays.asList(
-                    LearnModule.builder()
-                        .moduleName("Architecture des Systèmes Embarqués")
-                        .moduleDescription("Composants matériels et logiciels des systèmes embarqués.")
-                        .moduleOrder(1)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Programmation Bas Niveau")
-                        .moduleDescription("Développement de logiciels pour microcontrôleurs et processeurs.")
-                        .moduleOrder(2)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Protocoles de Communication IoT")
-                        .moduleDescription("Protocoles de communication pour l'Internet des Objets.")
-                        .moduleOrder(3)
-                        .program(program)
-                        .build(),
-                    LearnModule.builder()
-                        .moduleName("Sécurité des Systèmes Connectés")
-                        .moduleDescription("Protection des dispositifs IoT contre les cybermenaces.")
-                        .moduleOrder(4)
-                        .program(program)
-                        .build()
+                        LearnModule.builder()
+                                .moduleName("Architecture des Systèmes Embarqués")
+                                .moduleDescription("Composants matériels et logiciels des systèmes embarqués.")
+                                .moduleOrder(1)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Programmation Bas Niveau")
+                                .moduleDescription("Développement de logiciels pour microcontrôleurs et processeurs.")
+                                .moduleOrder(2)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Protocoles de Communication IoT")
+                                .moduleDescription("Protocoles de communication pour l'Internet des Objets.")
+                                .moduleOrder(3)
+                                .program(program)
+                                .build(),
+                        LearnModule.builder()
+                                .moduleName("Sécurité des Systèmes Connectés")
+                                .moduleDescription("Protection des dispositifs IoT contre les cybermenaces.")
+                                .moduleOrder(4)
+                                .program(program)
+                                .build()
                 );
-                
+
             default:
                 return Arrays.asList();
         }

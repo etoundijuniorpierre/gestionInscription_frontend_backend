@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/modules")
 @RequiredArgsConstructor
 public class LearnModuleController {
-    
+
     private final LearnModuleService learnModuleService;
-    
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LearnModuleDTO> createModule(@RequestBody LearnModuleDTO dto) {
@@ -22,14 +22,14 @@ public class LearnModuleController {
         LearnModuleDTO response = LearnModuleMapper.toDto(module);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<LearnModuleDTO> getModuleById(@PathVariable Integer id) {
         LearnModule module = learnModuleService.getModuleById(id);
         LearnModuleDTO response = LearnModuleMapper.toDto(module);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/program/{programId}")
     public ResponseEntity<List<LearnModuleDTO>> getModulesByProgramId(@PathVariable Integer programId) {
         List<LearnModule> modules = learnModuleService.getModulesByProgramId(programId);
@@ -38,7 +38,7 @@ public class LearnModuleController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
-    
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LearnModuleDTO> updateModule(@PathVariable Integer id, @RequestBody LearnModuleDTO dto) {
@@ -46,14 +46,14 @@ public class LearnModuleController {
         LearnModuleDTO response = LearnModuleMapper.toDto(module);
         return ResponseEntity.ok(response);
     }
-    
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteModule(@PathVariable Integer id) {
         learnModuleService.deleteModule(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PostMapping("/program/{programId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LearnModuleDTO> addModuleToProgram(@PathVariable Integer programId, @RequestBody LearnModuleDTO dto) {

@@ -44,7 +44,7 @@ public class DocumentService {
         return repository.save(document);
     }
 
-    
+
     // New method to download document by ID
     public byte[] downloadDocumentById(Integer id) {
         Optional<Document> document = repository.findById(id);
@@ -68,7 +68,7 @@ public class DocumentService {
             throw new RuntimeException("Document not found with id: " + id);
         }
     }
-    
+
     // New method to validate document by ID
     public void validateDocumentById(Integer id) {
         Optional<Document> document = repository.findById(id);
@@ -81,7 +81,7 @@ public class DocumentService {
             throw new RuntimeException("Document not found with id: " + id);
         }
     }
-    
+
     // New method to reject document by ID
     public void rejectDocumentById(Integer id, String rejectionReason) {
         Optional<Document> document = repository.findById(id);

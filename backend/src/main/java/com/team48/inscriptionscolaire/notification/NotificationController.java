@@ -11,25 +11,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/notifications")
 public class NotificationController {
-    
+
     @Autowired
     private NotificationService notificationService;
-    
+
     @Autowired
     private NotificationMapper notificationMapper;
-    
+
     // WebSocket endpoint for real-time notifications (existing functionality)
     @MessageMapping("/notify")
     @SendTo("/topic/notifications")
     public Notification sendNotification(Notification notification) throws Exception {
         return new Notification("New notification: " + notification.getContent());
     }
-    
-    // REST endpoints for CRUD operations
-    
-    /**
-     * Get all notifications for the current user
-     */
+
     @GetMapping("/all")
     public ResponseEntity<List<NotificationDto>> getNotifications() {
         List<Notification> notifications = notificationService.getNotificationsForCurrentUser();
@@ -38,10 +33,8 @@ public class NotificationController {
                 .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
-    
-    /**
-     * Get a specific notification by ID
-     */
+
+
     @GetMapping("/{id}")
     public ResponseEntity<NotificationDto> getNotification(@PathVariable Integer id) {
         Notification notification = notificationService.getNotificationById(id);
@@ -51,19 +44,15 @@ public class NotificationController {
         NotificationDto dto = notificationMapper.toDto(notification);
         return ResponseEntity.ok(dto);
     }
-    
-    /**
-     * Mark all notifications as read
-     */
+
+
     @PostMapping("/mark-all-as-read")
     public ResponseEntity<Void> markAllAsRead() {
         notificationService.markAllAsReadForCurrentUser();
         return ResponseEntity.ok().build();
     }
-    
-    /**
-     * Delete a notification
-     */
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Integer id) {
         boolean deleted = notificationService.deleteNotification(id);
@@ -72,10 +61,8 @@ public class NotificationController {
         }
         return ResponseEntity.ok().build();
     }
-    
-    /**
-     * Get count of unread notifications for the current user
-     */
+
+
     @GetMapping("/unread-count")
     public ResponseEntity<Long> getUnreadNotificationsCount() {
         long count = notificationService.getUnreadNotificationsCountForCurrentUser();

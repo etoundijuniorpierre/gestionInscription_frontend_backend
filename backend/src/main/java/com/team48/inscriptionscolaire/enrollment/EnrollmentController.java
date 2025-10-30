@@ -1,25 +1,23 @@
 package com.team48.inscriptionscolaire.enrollment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.team48.inscriptionscolaire.document.DocumentDto;
-import com.team48.inscriptionscolaire.enrollment.EnrollmentMapper;
 import com.team48.inscriptionscolaire.program.Program;
 import com.team48.inscriptionscolaire.program.ProgramMapper;
 import com.team48.inscriptionscolaire.program.ProgramResponseDTO;
+import com.team48.inscriptionscolaire.student.Student;
+import com.team48.inscriptionscolaire.user.User;
+import com.team48.inscriptionscolaire.user.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import com.team48.inscriptionscolaire.student.Student;
-import com.team48.inscriptionscolaire.user.User;
-import com.team48.inscriptionscolaire.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.access.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +34,7 @@ public class EnrollmentController {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
 
-    /**
-     * Unified endpoint to handle all steps of the enrollment form, including data and documents.
-     */
+
     @Operation(summary = "Submit or update enrollment form data and documents")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Enrollment created or updated successfully",
@@ -100,7 +96,6 @@ public class EnrollmentController {
         return enrollment != null ? convertToDto(enrollment) : null;
     }
 
-    // Admin endpoints for getting all enrollments
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all enrollments", description = "Retrieve all enrollments. Accessible only by admins.")
@@ -146,7 +141,6 @@ public class EnrollmentController {
                 .collect(Collectors.toList());
     }
 
-    // Admin endpoints (kept as is)
     @GetMapping("/program/{programId}")
     @PreAuthorize("hasRole('ADMIN')")
     public List<EnrollmentDtoResponse> getEnrollmentsByProgram(@PathVariable Integer programId) {
@@ -156,7 +150,6 @@ public class EnrollmentController {
                 .collect(Collectors.toList());
     }
 
-    // FIX: Changed from 'validateEnrollment' to 'approveEnrollment' to match the EnrollmentService
     @PatchMapping("/{enrollmentId}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public EnrollmentDtoResponse approveEnrollment(@PathVariable Integer enrollmentId) {
@@ -191,43 +184,25 @@ public class EnrollmentController {
             @ApiResponse(responseCode = "400", description = "Enrollment not ready for payment")
     })
     public ResponseEntity<String> initiatePayment(@PathVariable Integer enrollmentId) throws Exception {
-        // Debug logs for authentication troubleshooting
-        System.out.println("=== INITIATE PAYMENT DEBUG ===");
-        System.out.println("Enrollment ID: " + enrollmentId);
-
-        // Get the current user
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("Authenticated user email: " + email);
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
         Student student = (Student) user;
-        System.out.println("Student ID: " + student.getId());
-        System.out.println("Student role: " + student.getRole());
 
-        // Get enrollment and verify it belongs to the current student
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + enrollmentId));
-        System.out.println("Found enrollment with status: " + enrollment.getStatus());
 
-        // Verify that the enrollment belongs to the current student
         if (!enrollment.getStudent().getId().equals(student.getId())) {
-            System.out.println("Access denied: enrollment student ID " + enrollment.getStudent().getId() + " != authenticated student ID " + student.getId());
             throw new AccessDeniedException("You can only initiate payment for your own enrollments");
         }
 
-        // Check if enrollment is in the correct status for payment and update accordingly
         if (enrollment.getStatus() == StatusSubmission.SUBMITTED) {
-            // First payment - registration fee
             enrollment.setStatus(StatusSubmission.PENDING_PAYMENT);
             enrollmentRepository.save(enrollment);
-            System.out.println("Updated enrollment status to PENDING_PAYMENT for registration fee");
         } else if (enrollment.getStatus() == StatusSubmission.PENDING_VALIDATION) {
-            // Second payment - program payment (after admin approval)
             enrollment.setStatus(StatusSubmission.PENDING_PROGRAM_PAYMENT);
             enrollmentRepository.save(enrollment);
-            System.out.println("Updated enrollment status to PENDING_PROGRAM_PAYMENT for program payment");
-        } else if (enrollment.getStatus() != StatusSubmission.PENDING_PAYMENT && 
-                   enrollment.getStatus() != StatusSubmission.PENDING_PROGRAM_PAYMENT) {
-            System.out.println("Invalid enrollment status for payment: " + enrollment.getStatus());
+        } else if (enrollment.getStatus() != StatusSubmission.PENDING_PAYMENT &&
+                enrollment.getStatus() != StatusSubmission.PENDING_PROGRAM_PAYMENT) {
             throw new IllegalStateException("Enrollment must be in SUBMITTED or PENDING_VALIDATION status to initiate payment.");
         }
 
@@ -265,7 +240,7 @@ public class EnrollmentController {
     @DeleteMapping("/{enrollmentId}/cancel")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Cancel enrollment", description = "Cancel an enrollment if no payments have been made")
-    public ResponseEntity<String> cancelEnrollment (@PathVariable Integer enrollmentId){
+    public ResponseEntity<String> cancelEnrollment(@PathVariable Integer enrollmentId) {
         try {
             enrollmentService.cancelEnrollmentIfNoPayment(enrollmentId);
             return ResponseEntity.ok("Enrollment cancelled successfully");

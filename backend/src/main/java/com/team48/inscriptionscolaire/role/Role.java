@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-
 import java.util.List;
 
 @Getter
@@ -16,7 +15,7 @@ import java.util.List;
 @Entity
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-public class  Role {
+public class Role {
 
     @Id
     @GeneratedValue
@@ -28,12 +27,4 @@ public class  Role {
     @JsonIgnore //ignore the serialization of this entity
     private List<User> user;
 
-
-
-   /* @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdDate;
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime lastModifiedDate;*/
 }

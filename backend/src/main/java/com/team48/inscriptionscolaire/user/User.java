@@ -1,10 +1,10 @@
 package com.team48.inscriptionscolaire.user;
 
-import com.team48.inscriptionscolaire.common.BaseEntity;
-import com.team48.inscriptionscolaire.notification.Notification;
 import com.team48.inscriptionscolaire.role.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,14 +13,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 
 @Data
-@NoArgsConstructor 
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @SuperBuilder
@@ -53,7 +51,7 @@ public class User extends BaseEntity implements UserDetails, Principal {
     public boolean isStatus() {
         return this.status;
     }
-    
+
     public void setStatus(boolean status) {
         this.status = status;
     }
@@ -98,7 +96,7 @@ public class User extends BaseEntity implements UserDetails, Principal {
         return this.email;
     }
 
-    public String fullName(){
+    public String fullName() {
         return firstname + " " + lastname;
     }
 

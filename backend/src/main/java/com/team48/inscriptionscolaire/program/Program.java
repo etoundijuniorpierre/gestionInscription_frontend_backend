@@ -1,7 +1,7 @@
 package com.team48.inscriptionscolaire.program;
 
-import com.team48.inscriptionscolaire.common.BaseEntity;
 import com.team48.inscriptionscolaire.learnModule.LearnModule;
+import com.team48.inscriptionscolaire.user.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -88,22 +88,4 @@ public class Program extends BaseEntity {
                 !today.isAfter(registrationEndDate);
     }
 
-    /**
-     * Check if enrollment is open for a specific student, considering schedule conflicts
-     *
-     * @param studentId The ID of the student
-     * @return true if enrollment is open for this student, false otherwise
-     */
-    public boolean isEnrollmentOpenForStudent(Integer studentId) {
-        // First check if enrollment period is open
-        if (!isEnrollmentOpen()) {
-            return false;
-        }
-
-        // TODO: Check for schedule conflicts with existing enrollments
-        // This would require injecting EnrollmentRepository and checking for conflicts
-        // For now, return the basic enrollment status
-
-        return true;
-    }
 }

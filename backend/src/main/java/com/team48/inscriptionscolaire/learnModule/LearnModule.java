@@ -1,6 +1,6 @@
 package com.team48.inscriptionscolaire.learnModule;
 
-import com.team48.inscriptionscolaire.common.BaseEntity;
+import com.team48.inscriptionscolaire.user.BaseEntity;
 import com.team48.inscriptionscolaire.program.Program;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

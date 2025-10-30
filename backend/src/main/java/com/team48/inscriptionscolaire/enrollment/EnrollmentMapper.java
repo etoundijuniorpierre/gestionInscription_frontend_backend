@@ -3,18 +3,17 @@ package com.team48.inscriptionscolaire.enrollment;
 import com.team48.inscriptionscolaire.document.DocumentDto;
 import com.team48.inscriptionscolaire.document.DocumentMapper;
 import com.team48.inscriptionscolaire.program.ProgramMapper;
-import com.team48.inscriptionscolaire.program.ProgramResponseDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EnrollmentMapper {
-    
+
     public static EnrollmentDtoResponse toDto(Enrollment enrollment) {
         if (enrollment == null) {
             return null;
         }
-        
+
         EnrollmentDtoResponse dto = new EnrollmentDtoResponse();
         dto.setId(enrollment.getId());
         dto.setStatus(enrollment.getStatus());
@@ -31,12 +30,12 @@ public class EnrollmentMapper {
             // Add full program data
             dto.setProgram(ProgramMapper.toDto(enrollment.getProgram()));
         }
-        
+
         // Set student information if available
         if (enrollment.getStudent() != null) {
             dto.setStudentId(enrollment.getStudent().getId());
         }
-        
+
         // Set payment type based on enrollment status
         // This helps the frontend determine which message to show
         if (enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT) {
@@ -46,13 +45,13 @@ public class EnrollmentMapper {
             // Since we can't determine this from the current status alone, we'll default to REGISTRATION_FEE
             // The frontend will need to determine the correct type based on context
             dto.setPaymentType("REGISTRATION_FEE");
-        } else if (enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT || 
-                   enrollment.getStatus() == StatusSubmission.APPROVED ||
-                   enrollment.getStatus() == StatusSubmission.ENROLLED) {
+        } else if (enrollment.getStatus() == StatusSubmission.PENDING_PROGRAM_PAYMENT ||
+                enrollment.getStatus() == StatusSubmission.APPROVED ||
+                enrollment.getStatus() == StatusSubmission.ENROLLED) {
             // If status is PENDING_PROGRAM_PAYMENT, APPROVED, or ENROLLED, it's for program payment
             dto.setPaymentType("PROGRAM_PAYMENT");
         }
-        
+
         // Map embedded objects
         if (enrollment.getPersonalInfo() != null) {
             PersonalInfoDto personalInfoDto = new PersonalInfoDto();
@@ -63,7 +62,7 @@ public class EnrollmentMapper {
             personalInfoDto.setDateOfBirth(enrollment.getPersonalInfo().getDateOfBirth());
             dto.setPersonalInfo(personalInfoDto);
         }
-        
+
         if (enrollment.getAcademicInfo() != null) {
             AcademicInfoDto academicInfoDto = new AcademicInfoDto();
             academicInfoDto.setLastInstitution(enrollment.getAcademicInfo().getLastInstitution());
@@ -74,7 +73,7 @@ public class EnrollmentMapper {
             academicInfoDto.setDiplomaObtained(enrollment.getAcademicInfo().getDiplomaObtained());
             dto.setAcademicInfo(academicInfoDto);
         }
-        
+
         if (enrollment.getContactDetails() != null) {
             ContactDetailsDto contactDetailsDto = new ContactDetailsDto();
             contactDetailsDto.setEmail(enrollment.getContactDetails().getEmail());
@@ -98,10 +97,10 @@ public class EnrollmentMapper {
                         .collect(Collectors.toList());
                 contactDetailsDto.setEmergencyContacts(emergencyContactDtos);
             }
-            
+
             dto.setContactDetails(contactDetailsDto);
         }
-        
+
         // Map documents if available
         if (enrollment.getDocuments() != null) {
             List<DocumentDto> documentDtos = enrollment.getDocuments().stream()
@@ -109,7 +108,7 @@ public class EnrollmentMapper {
                     .collect(Collectors.toList());
             dto.setDocuments(documentDtos);
         }
-        
+
         return dto;
     }
 }

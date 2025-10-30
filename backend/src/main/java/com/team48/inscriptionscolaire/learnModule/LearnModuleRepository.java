@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface LearnModuleRepository extends JpaRepository<LearnModule, Integer> {
     List<LearnModule> findByProgramId(Integer programId);
+
     List<LearnModule> findByProgramIdOrderByModuleOrder(Integer programId);
 }

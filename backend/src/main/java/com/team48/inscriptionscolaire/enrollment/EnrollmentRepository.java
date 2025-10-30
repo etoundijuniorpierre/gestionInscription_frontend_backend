@@ -1,6 +1,5 @@
 package com.team48.inscriptionscolaire.enrollment;
 
-import com.team48.inscriptionscolaire.program.Program;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +13,9 @@ import java.util.Optional;
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
 
     Optional<Enrollment> findById(Integer id);
+
     List<Enrollment> findByStudentId(Integer studentId);
+
     List<Enrollment> findByProgramId(Integer programId);
 
     // Get all enrollments
@@ -37,7 +38,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 
     // Custom query to find a student's enrollment status based on their ID.
     Optional<StatusSubmission> findStatusByStudentId(@Param("studentId") Integer studentId);
-    
+
     // Check if student has enrollments with programs that start on the same date
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.student.id = :studentId AND e.program.startDate = :startDate AND e.status IN (com.team48.inscriptionscolaire.enrollment.StatusSubmission.SUBMITTED, com.team48.inscriptionscolaire.enrollment.StatusSubmission.PENDING_PAYMENT, com.team48.inscriptionscolaire.enrollment.StatusSubmission.PENDING_VALIDATION, com.team48.inscriptionscolaire.enrollment.StatusSubmission.APPROVED)")
     long countByStudentIdAndProgramStartDate(@Param("studentId") Integer studentId, @Param("startDate") LocalDate startDate);

@@ -1,7 +1,7 @@
 package com.team48.inscriptionscolaire.document;
 
-import com.team48.inscriptionscolaire.common.BaseEntity;
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
+import com.team48.inscriptionscolaire.user.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;

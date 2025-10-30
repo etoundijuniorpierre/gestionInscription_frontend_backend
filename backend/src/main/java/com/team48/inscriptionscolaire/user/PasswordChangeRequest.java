@@ -8,7 +8,7 @@ import lombok.Data;
 public class PasswordChangeRequest {
     @NotNull(message = "User ID is mandatory")
     private Integer userId;
-    
+
     @NotBlank(message = "New password is mandatory")
     private String newPassword;
 }

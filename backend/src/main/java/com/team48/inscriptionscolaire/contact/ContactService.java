@@ -19,11 +19,11 @@ public class ContactService {
         message.setTo(recipientEmail);
         message.setSubject(dto.getSubject());
         message.setText(
-            "Nouveau message de contact\n\n" +
-            "De: " + dto.getName() + "\n" +
-            "Email: " + dto.getEmail() + "\n" +
-            "Sujet: " + dto.getSubject() + "\n\n" +
-            "Message:\n" + dto.getMessage()
+                "Nouveau message de contact\n\n" +
+                        "De: " + dto.getName() + "\n" +
+                        "Email: " + dto.getEmail() + "\n" +
+                        "Sujet: " + dto.getSubject() + "\n\n" +
+                        "Message:\n" + dto.getMessage()
         );
         mailSender.send(message);
     }
