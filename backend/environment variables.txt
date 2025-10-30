@@ -1,0 +1,2 @@
+environment variables : 
+SERVER_PORT=9090;DB_URL=jdbc:postgresql://localhost:5432/inscription_db;DB_USERNAME=postgres;DB_PASSWORD=root;MAIL_HOST=smtp.gmail.com;MAIL_PORT=587;MAIL_USERNAME=teamkf48inscription@gmail.com;MAIL_PASSWORD=njdd ruhm daiw iwld;JWT_SECRET=C003FA3DC88493379ABFCC2779594D1MYSECRETKEY1233ADMIN;JWT_EXPIRATION=3600000;FRONTEND_ACTIVATION_URL=http://localhost:5173/activate-account;ADMIN_EMAIL=teamkf48inscription@gmail.com;ADMIN_PASSWORD=Teamkf48inscription@@

@@ -78,6 +78,44 @@ Each functional area is separated into its own package:
 - **Mapping**: MapStruct for DTO mapping
 - **WebSocket**: Spring WebSocket for real-time notifications
 
+## 🗃️ Database Setup
+
+The application requires a PostgreSQL database. You can either let Hibernate create the schema automatically or import the provided database script.
+
+### Option 1: Automatic Schema Creation (Development)
+By default, Hibernate will automatically create the database schema when the application starts. This is controlled by the `spring.jpa.hibernate.ddl-auto` property in [application.properties](file:///c:/Users/etoun/Documents/pk48/inscription/soumettre/backend/src/main/resources/application.properties), which is set to `update`.
+
+### Option 2: Manual Database Import (Recommended for Production)
+
+If you prefer to manually create and import the database schema:
+
+1. **Create the database:**
+   ```sql
+   CREATE DATABASE inscription_db;
+   ```
+
+2. **Import the database schema and data:**
+   ```bash
+   # Navigate to the backend directory
+   cd backend
+   
+   # Import the database script
+   psql -U your_database_username -d inscription_db -f src/main/resources/db/inscription_db.sql
+   ```
+
+   On Windows:
+   ```cmd
+   psql -U your_database_username -d inscription_db -f src\main\resources\db\inscription_db.sql
+   ```
+
+3. **Configure your database credentials** in the environment variables as described in the Environment Configuration section.
+
+The database script includes:
+- All table definitions
+- Initial roles (STUDENT, ADMIN)
+- Sample programs with modules
+- Default admin user
+
 ## ⚙️ Environment Configuration
 
 This application uses environment variables for configuration through Spring's property resolution mechanism. Environment variables can be set in the system or passed as JVM arguments.
