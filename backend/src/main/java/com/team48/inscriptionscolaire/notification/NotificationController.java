@@ -30,7 +30,7 @@ public class NotificationController {
     /**
      * Get all notifications for the current user
      */
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<NotificationDto>> getNotifications() {
         List<Notification> notifications = notificationService.getNotificationsForCurrentUser();
         List<NotificationDto> dtos = notifications.stream()
@@ -71,5 +71,14 @@ public class NotificationController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().build();
+    }
+    
+    /**
+     * Get count of unread notifications for the current user
+     */
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadNotificationsCount() {
+        long count = notificationService.getUnreadNotificationsCountForCurrentUser();
+        return ResponseEntity.ok(count);
     }
 }

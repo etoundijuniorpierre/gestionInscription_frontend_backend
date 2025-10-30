@@ -3,6 +3,7 @@ package com.team48.inscriptionscolaire.handler;
 
 import com.team48.inscriptionscolaire.exception.OperationNotPermitException;
 import jakarta.mail.MessagingException;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -83,7 +84,7 @@ public class GlobalExceptionHandler {
         Set<String> errors = new HashSet<>();
         exp.getBindingResult().getAllErrors()
                 .forEach(error -> {
-                    var errorMessage = error.getDefaultMessage();
+                    String errorMessage = error.getDefaultMessage();
                     errors.add(errorMessage);
                 });
 
@@ -101,6 +102,13 @@ public class GlobalExceptionHandler {
 
         //log the exception
         exp.printStackTrace();
+        
+        // Check if this is a client abort exception (connection closed by client)
+        if (exp instanceof org.apache.catalina.connector.ClientAbortException) {
+            // Don't send a response as the client has already disconnected
+            return null;
+        }
+        
         return ResponseEntity
                 .status(INTERNAL_SERVER_ERROR)
                 .body(

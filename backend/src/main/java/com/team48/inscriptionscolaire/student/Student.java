@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -18,6 +17,9 @@ import java.util.List;
 @Table(name = "students")
 @DiscriminatorValue("STUDENT")
 public class Student extends User {
+    @Enumerated(EnumType.STRING)
+    private StudentStatus status = StudentStatus.NOT_ENROLLED;
+    
     @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollmentList;
 }

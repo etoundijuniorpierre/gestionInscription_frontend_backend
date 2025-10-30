@@ -1,6 +1,5 @@
 package com.team48.inscriptionscolaire.security;
 
-import io.swagger.v3.oas.models.PathItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -37,20 +37,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/auth/**",
-                                "/payment/**",
+                                "/api/v1/auth/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs/**",
-                                "/swagger-resources",
                                 "/swagger-resources/**",
-                                "/configuration/ui",
-                                "/configuration/security",
+                                "/configuration/**",
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html",
-                                "/api/v1/programs",
-                                "/programs/**",
-                                "/contact"
+                                "/api/v1/programs/**",
+                                "/api/v1/contact",
+                                "/api/v1/payments/webhook"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

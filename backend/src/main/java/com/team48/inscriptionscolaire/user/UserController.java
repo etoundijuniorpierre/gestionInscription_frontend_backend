@@ -12,25 +12,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Tag(name = "User Management", description = "CRUD operations for users and password management")
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
-
-    @Operation(summary = "Get all users", description = "Retrieve a list of all users. Accessible only by admins.")
+    
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    @GetMapping
+    @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -81,6 +79,21 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Toggle user status", description = "Enable or disable a user account. Accessible only by admins.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User status toggled successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @PatchMapping("/{id}/toggle-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponseDto> toggleUserStatus(@PathVariable Integer id) {
+        User user = userService.toggleUserStatus(id);
+        UserResponseDto userDto = userMapper.toUserResponseDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
     @Operation(summary = "Change user password (Admin)", description = "Change a user's password without knowing the old password. Accessible only by admins.")

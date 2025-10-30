@@ -7,6 +7,10 @@ public class DocumentUtils {
 
 
     public static byte[] compressImage(byte[] data) {
+        if (data == null || data.length == 0) {
+            return new byte[0];
+        }
+        
         Deflater deflater = new Deflater();
         deflater.setLevel(Deflater.BEST_COMPRESSION);
         deflater.setInput(data);
@@ -14,13 +18,17 @@ public class DocumentUtils {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
         byte[] tmp = new byte[4*1024];
-        while (!deflater.finished()) {
-            int size = deflater.deflate(tmp);
-            outputStream.write(tmp, 0, size);
-        }
         try {
-            outputStream.close();
-        } catch (Exception ignored) {
+            while (!deflater.finished()) {
+                int size = deflater.deflate(tmp);
+                outputStream.write(tmp, 0, size);
+            }
+        } finally {
+            try {
+                outputStream.close();
+                deflater.end();
+            } catch (Exception ignored) {
+            }
         }
         return outputStream.toByteArray();
     }
@@ -28,6 +36,10 @@ public class DocumentUtils {
 
 
     public static byte[] decompressImage(byte[] data) {
+        if (data == null || data.length == 0) {
+            return new byte[0];
+        }
+        
         Inflater inflater = new Inflater();
         inflater.setInput(data);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
@@ -37,10 +49,16 @@ public class DocumentUtils {
                 int count = inflater.inflate(tmp);
                 outputStream.write(tmp, 0, count);
             }
-            outputStream.close();
-        } catch (Exception ignored) {
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decompress document data: " + e.getMessage(), e);
+        } finally {
+            try {
+                outputStream.close();
+                inflater.end();
+            } catch (Exception ignored) {
+            }
         }
-        return outputStream.toByteArray();
     }
 
 }

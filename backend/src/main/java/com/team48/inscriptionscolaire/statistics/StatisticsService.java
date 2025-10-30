@@ -1,24 +1,30 @@
 package com.team48.inscriptionscolaire.statistics;
-
 import com.team48.inscriptionscolaire.document.Document;
+import com.team48.inscriptionscolaire.document.DocumentRepository;
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
-import com.team48.inscriptionscolaire.user.User;
+import com.team48.inscriptionscolaire.enrollment.EnrollmentRepository;
+import com.team48.inscriptionscolaire.enrollment.StatusSubmission;
 import com.team48.inscriptionscolaire.payment.Payment;
+import com.team48.inscriptionscolaire.payment.PaymentRepository;
+import com.team48.inscriptionscolaire.payment.PaymentType;
+import com.team48.inscriptionscolaire.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticsService {
     
     private final StatisticsRepository statisticsRepository;
-    private final com.team48.inscriptionscolaire.enrollment.EnrollmentRepository enrollmentRepository;
-    private final com.team48.inscriptionscolaire.document.DocumentRepository documentRepository;
-    private final com.team48.inscriptionscolaire.user.UserRepository userRepository;
-    private final com.team48.inscriptionscolaire.payment.PaymentRepository paymentRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final DocumentRepository documentRepository;
+    private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
     
     public StatisticsDto getStatistics() {
         StatisticsDto stats = new StatisticsDto();
@@ -77,7 +83,7 @@ public class StatisticsService {
         }
         
         // Last payment
-        List<Payment> lastPayments = statisticsRepository.getLastPayment();
+        List<Payment> lastPayments = paymentRepository.findLastPayment();
         if (!lastPayments.isEmpty()) {
             Payment lastPayment = lastPayments.get(0);
             LastPaymentDto paymentDto = new LastPaymentDto();
@@ -96,5 +102,154 @@ public class StatisticsService {
         }
         
         return stats;
+    }
+    
+    /**
+     * Get all requested statistics
+     */
+    public Map<String, Object> getAllStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Candidature statistics
+        stats.put("candidatures", getCandidatureStatistics());
+
+        // Inscription statistics
+        stats.put("inscriptions", getInscriptionStatistics());
+
+        // New accounts (24h)
+        stats.put("nouveauxComptes", getNouveauxComptes());
+
+        // Enrollments by program
+        stats.put("inscriptionsParFormation", getInscriptionsParFormation());
+
+        // Real-time statistics
+        stats.put("tempsReel", getTempsReelStatistics());
+
+        return stats;
+    }
+
+    /**
+     * Detailed candidature statistics
+     */
+    public Map<String, Object> getCandidatureStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Total candidatures (tous les statuts sauf DRAFT)
+        long candidaturesTotales = enrollmentRepository.count();
+        stats.put("total", candidaturesTotales);
+
+        // Candidatures pending payment
+        long enAttentePaiement = statisticsRepository.getEnrollmentsByStatus(StatusSubmission.PENDING_PAYMENT);
+        stats.put("enAttenteDePaiement", enAttentePaiement);
+
+        // Candidatures pending validation
+        long enAttenteValidation = statisticsRepository.getEnrollmentsByStatus(StatusSubmission.PENDING_VALIDATION);
+        stats.put("enAttenteDeValidation", enAttenteValidation);
+
+        // Distribution by status using database query instead of loading all entities
+        Map<String, Long> statutDistribution = new HashMap<>();
+        for (StatusSubmission status : StatusSubmission.values()) {
+            if (status != StatusSubmission.DRAFT) {
+                statutDistribution.put(status.toString(), statisticsRepository.getEnrollmentsByStatus(status));
+            }
+        }
+        stats.put("statuts", statutDistribution);
+
+        return stats;
+    }
+
+    /**
+     * Detailed inscription statistics (paid programs)
+     */
+    public Map<String, Object> getInscriptionStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Total inscriptions = completed program payments
+        long inscriptionsTotales = statisticsRepository.getPaymentsByStatusAndType("SUCCESSFUL", PaymentType.PROGRAM_PAYMENT);
+        stats.put("total", inscriptionsTotales);
+
+        // Inscriptions pending payment (approved candidatures but program not paid)
+        long approvedEnrollmentsCount = statisticsRepository.getEnrollmentsByStatus(StatusSubmission.APPROVED);
+        long completedProgramPaymentsCount = statisticsRepository.getPaymentsByStatusAndType("SUCCESSFUL", PaymentType.PROGRAM_PAYMENT);
+        long enAttentePaiementInscription = approvedEnrollmentsCount - completedProgramPaymentsCount;
+        stats.put("enAttenteDePaiement", Math.max(0, enAttentePaiementInscription));
+
+        return stats;
+    }
+
+    /**
+     * New accounts created in the last 24 hours
+     */
+    public Map<String, Object> getNouveauxComptes() {
+        Map<String, Object> stats = new HashMap<>();
+
+        long nouveauxEtudiants = statisticsRepository.getNewAccountsSince(LocalDateTime.now().minusHours(24));
+        stats.put("dernières24h", nouveauxEtudiants);
+
+        return stats;
+    }
+
+    /**
+     * Enrollments by program using more efficient database queries
+     */
+    public Map<String, Object> getInscriptionsParFormation() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Using a custom query to get enrollments by program directly from database
+        List<Object[]> results = paymentRepository.findCompletedProgramPaymentsGroupedByProgram();
+        
+        Map<String, Long> parFormation = new HashMap<>();
+        for (Object[] result : results) {
+            String programName = (String) result[0];
+            Long count = (Long) result[1];
+            parFormation.put(programName, count);
+        }
+
+        stats.put("parFormation", parFormation);
+
+        return stats;
+    }
+
+    /**
+     * Real-time statistics (last 24 hours)
+     */
+    public Map<String, Object> getTempsReelStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        LocalDateTime depuis24h = LocalDateTime.now().minusHours(24);
+
+        // New payments (all types)
+        long nouveauxPaiements = statisticsRepository.getPaymentsSince(depuis24h);
+        stats.put("nouveauxPaiements", nouveauxPaiements);
+
+        // New enrollments (paid programs) in last 24 hours
+        long nouvellesInscriptions = paymentRepository.findByStatusAndPaymentTypeAndCreatedDateAfter("SUCCESSFUL", PaymentType.PROGRAM_PAYMENT, depuis24h).size();
+        stats.put("nouvellesInscriptions", nouvellesInscriptions);
+
+        // New candidatures (created enrollments) in last 24 hours
+        long nouvellesCandidatures = statisticsRepository.getEnrollmentsSince(depuis24h);
+        stats.put("nouvellesCandidatures", nouvellesCandidatures);
+
+        return stats;
+    }
+
+    /**
+     * Utility method to get statistics of a specific type
+     */
+    public Map<String, Object> getStatisticsByType(String type) {
+        switch (type.toLowerCase()) {
+            case "candidatures":
+                return getCandidatureStatistics();
+            case "inscriptions":
+                return getInscriptionStatistics();
+            case "nouveauxcomptes":
+                return getNouveauxComptes();
+            case "parformation":
+                return getInscriptionsParFormation();
+            case "tempsreel":
+                return getTempsReelStatistics();
+            default:
+                return getAllStatistics();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.team48.inscriptionscolaire.document;
 
+import com.team48.inscriptionscolaire.enrollment.RejectionReasonDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,13 +11,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/images")
+@RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
 public class DocumentController {
 
@@ -57,56 +59,71 @@ public class DocumentController {
     }
 
 
-    //endpoint to download image
-    @GetMapping("/{fileName}")
-    public ResponseEntity<?> downloadImage (@PathVariable String fileName){
-        byte[] imageData = service.downloadImage(fileName);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.valueOf("image/png"))
-                .body(imageData);
-
-    }
     
-    // New endpoint to get document metadata by ID
-    @GetMapping("/document/{id}")
+    // New endpoint to download document file by ID
+    @GetMapping("/document/{id}/download")
     @Operation(
-            summary = "Get document by ID",
-            description = "Retrieve document metadata by its ID"
+            summary = "Download document file by ID",
+            description = "Download the actual document file by its ID"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Document retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = DocumentDto.class))),
+            @ApiResponse(responseCode = "200", description = "Document file downloaded successfully"),
             @ApiResponse(responseCode = "404", description = "Document not found")
     })
-    public ResponseEntity<DocumentDto> getDocumentById(@PathVariable Integer id) {
+    public ResponseEntity<?> downloadDocumentById(@PathVariable Integer id) {
         try {
+            byte[] documentData = service.downloadDocumentById(id);
             DocumentDto documentDto = service.getDocumentById(id);
-            return ResponseEntity.ok(documentDto);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(MediaType.parseMediaType(documentDto.getContentType()))
+                    .header("Content-Disposition", "attachment; filename=\"" + documentDto.getName() + "\"")
+                    .body(documentData);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
-    
-    // New endpoint to download document by ID
-    @GetMapping("/download/{id}")
+
+    // New endpoint to validate document by ID
+    @PatchMapping("/validate/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
-            summary = "Download document by ID",
-            description = "Download document file by its ID"
+            summary = "Validate document by ID",
+            description = "Validate document file by its ID"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Document downloaded successfully"),
-            @ApiResponse(responseCode = "404", description = "Document not found")
+            @ApiResponse(responseCode = "200", description = "Document validated successfully"),
+            @ApiResponse(responseCode = "404", description = "Document not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<byte[]> downloadDocumentById(@PathVariable Integer id) {
+    public ResponseEntity<String> validateDocumentById(@PathVariable Integer id) {
         try {
-            DocumentDto documentDto = service.getDocumentById(id);
-            byte[] documentData = service.downloadImage(documentDto.getName());
-            
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(documentDto.getContentType()))
-                    .header("Content-Disposition", "attachment; filename=\"" + documentDto.getName() + "\"")
-                    .body(documentData);
+            service.validateDocumentById(id);
+            return ResponseEntity.ok("Document validated successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // New endpoint to reject document by ID
+    @PatchMapping("/reject/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Reject document by ID",
+            description = "Reject document file by its ID with rejection reason"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Document rejected successfully"),
+            @ApiResponse(responseCode = "404", description = "Document not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
+    public ResponseEntity<String> rejectDocumentById(
+            @PathVariable Integer id,
+            @RequestBody RejectionReasonDto rejectionReasonDto) {
+        try {
+            service.rejectDocumentById(id, rejectionReasonDto.getRejectionReason());
+            return ResponseEntity.ok("Document rejected successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

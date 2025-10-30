@@ -64,6 +64,9 @@ public class Program extends BaseEntity {
     private LocalTime startTime; // Start time of classes each day
     private LocalTime endTime;   // End time of classes each day
 
+    @Enumerated(EnumType.STRING)
+    private ProgramStatus status; // Program status
+
     public LocalDate getEndDate() {
         if (startDate != null && duration > 0) {
             return startDate.plusMonths(duration);

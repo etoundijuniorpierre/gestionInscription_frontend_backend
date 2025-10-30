@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,16 +18,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    private final TokenRepository tokenRepository; // Assurez-vous d'injecter ceci
+    private final TokenRepository tokenRepository;
+
+    // Liste des endpoints publics
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/v1/auth",
+            "/api/v1/programs",
+            "/api/v1/contact",
+            "/v2/api-docs",
+            "/v3/api-docs",
+            "/swagger",
+            "/swagger-ui",
+            "/swagger-resources",
+            "/webjars"
+    };
 
     @Override
     protected void doFilterInternal(
@@ -35,54 +48,54 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        final String servletPath = request.getServletPath();
+        String path = request.getServletPath();
 
-        // MODIFICATION : Condition plus précise pour les chemins publics
-        if (
-                servletPath.equals("/auth/login") ||
-                servletPath.equals("/auth/signup") ||
-                servletPath.equals("/auth/activate-account") ||
-                servletPath.startsWith("/payment")
-        ) {
+        // 🔹 Si l'URL commence par un endpoint public → on ignore le filtre
+        if (isPublicEndpoint(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String authHeader = request.getHeader(AUTHORIZATION);
-        final String jwt;
-        final String userEmail;
-        if (authHeader == null || !authHeader.startsWith("Bearer ")){
-            filterChain.doFilter(request,response);
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7);
+
+        String jwt = authHeader.substring(7);
 
         try {
-            userEmail = jwtService.extractUsername(jwt);
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            String userEmail = jwtService.extractUsername(jwt);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-                // Vérification supplémentaire si le token est révoqué
-                var isTokenValidInDb = tokenRepository.findByToken(jwt)
+                boolean isTokenValidInDb = tokenRepository.findByToken(jwt)
                         .map(t -> !t.isExpired() && !t.isRevoked())
                         .orElse(false);
 
-                if (jwtService.isTokenValid(jwt, userDetails) && isTokenValidInDb){
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                if (jwtService.isTokenValid(jwt, userDetails) && isTokenValidInDb) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+
         } catch (ExpiredJwtException e) {
-            // Gérer le token expiré
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicEndpoint(String path) {
+        return Arrays.stream(PUBLIC_ENDPOINTS).anyMatch(path::startsWith);
     }
 }

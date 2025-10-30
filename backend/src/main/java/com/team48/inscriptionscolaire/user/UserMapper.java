@@ -1,6 +1,7 @@
 package com.team48.inscriptionscolaire.user;
 
 import com.team48.inscriptionscolaire.student.Student;
+import com.team48.inscriptionscolaire.student.StudentStatus;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,9 +15,8 @@ public class UserMapper {
         dto.setFirstname(user.getFirstname());
         dto.setLastname(user.getLastname());
         dto.setEmail(user.getEmail());
-        // accountLocked in DTO is the same as status in User entity (true = locked/disabled)
-        // Since isEnabled() returns !status, we need to invert it to get the status value
-        dto.setAccountLocked(!user.isEnabled());
+        // Direct mapping: true = enabled/active, false = disabled/inactive
+        dto.setAccountLocked(!user.isEnabled()); // accountLocked is the inverse of enabled
         dto.setEnabled(user.isEnabled());
         dto.setCreatedDate(user.getCreatedDate());
         dto.setLastModifiedDate(user.getLastModifiedDate());
@@ -43,6 +43,9 @@ public class UserMapper {
                         .collect(Collectors.toList());
                 dto.setEnrollmentIds(enrollmentIds);
             }
+            
+            // Set student status
+            dto.setStudentStatus(student.getStatus());
         }
         
         return dto;
@@ -58,11 +61,8 @@ public class UserMapper {
         user.setFirstname(userRequestDto.getFirstname());
         user.setLastname(userRequestDto.getLastname());
         user.setEmail(userRequestDto.getEmail());
-        // accountLocked in DTO is the same as status in User entity (true = locked/disabled)
-        // Since accountLocked is the inverse of isEnabled(), we need to invert it
-        user.setStatus(!userRequestDto.isAccountLocked());
-        // The isEnabled() method in User returns the inverse of status (true = enabled)
-        // This is handled by the UserDetails interface implementation
+        // Direct mapping: true = enabled/active, false = disabled/inactive
+        user.setStatus(userRequestDto.isEnabled());
         
         // New fields added to User class
         user.setDateOfBirth(userRequestDto.getDateOfBirth());

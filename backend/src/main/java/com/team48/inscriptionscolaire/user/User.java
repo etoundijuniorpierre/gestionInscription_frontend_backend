@@ -41,13 +41,22 @@ public class User extends BaseEntity implements UserDetails, Principal {
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;
 
-        private LocalDate dateOfBirth;
+    private LocalDate dateOfBirth;
     private String address;
     private String phoneNumber;
 
     private String gender;
 
     private String nationality;
+
+    // Explicit getter and setter for status field
+    public boolean isStatus() {
+        return this.status;
+    }
+    
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -81,7 +90,7 @@ public class User extends BaseEntity implements UserDetails, Principal {
 
     @Override
     public boolean isEnabled() {
-        return !this.status; // status represents disabled status, so we return the inverse
+        return this.status; // Direct mapping: true = enabled/active, false = disabled/inactive
     }
 
     @Override

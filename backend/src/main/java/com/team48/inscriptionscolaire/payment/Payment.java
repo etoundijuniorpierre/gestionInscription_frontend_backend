@@ -26,7 +26,7 @@ public class Payment extends BaseEntity {
     private String status;
     private LocalDateTime paymentDate;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enrollment_id")
     private Enrollment enrollment;
     

@@ -2,35 +2,39 @@ package com.team48.inscriptionscolaire.enrollment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.team48.inscriptionscolaire.document.DocumentDto;
-import com.team48.inscriptionscolaire.enrollment.StatusSubmission;
-import com.team48.inscriptionscolaire.stripe.PaymentRequestDto;
-import com.team48.inscriptionscolaire.stripe.PaymentResponseDto;
-import com.team48.inscriptionscolaire.stripe.PaymentService;
+import com.team48.inscriptionscolaire.enrollment.EnrollmentMapper;
+import com.team48.inscriptionscolaire.program.Program;
+import com.team48.inscriptionscolaire.program.ProgramMapper;
+import com.team48.inscriptionscolaire.program.ProgramResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
-import com.team48.inscriptionscolaire.enrollment.RejectionReasonDto;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.team48.inscriptionscolaire.student.Student;
+import com.team48.inscriptionscolaire.user.User;
+import com.team48.inscriptionscolaire.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/enrollments")
+@RequestMapping("/api/v1/enrollments")
 @RequiredArgsConstructor
 public class EnrollmentController {
     private final EnrollmentService enrollmentService;
-    private final PaymentService paymentService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
 
     /**
      * Unified endpoint to handle all steps of the enrollment form, including data and documents.
@@ -71,6 +75,24 @@ public class EnrollmentController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/my-unpaid-enrollments")
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<EnrollmentDtoResponse> getMyUnpaidEnrollments() {
+        List<Enrollment> enrollments = enrollmentService.getMyUnpaidEnrollments();
+        return enrollments.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/my-unpaid-programs")
+    @PreAuthorize("hasRole('STUDENT')")
+    public List<ProgramResponseDTO> getMyUnpaidPrograms() {
+        List<Program> programs = enrollmentService.getMyUnpaidPrograms();
+        return programs.stream()
+                .map(ProgramMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/my-latest")
     @PreAuthorize("hasRole('STUDENT')")
     public EnrollmentDtoResponse getMyLatestEnrollment() {
@@ -96,14 +118,29 @@ public class EnrollmentController {
 
     @GetMapping("/non-approved")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all non-approved enrollments", description = "Retrieve all non-approved enrollments. Accessible only by admins.")
+    @Operation(summary = "Get all paid enrollments pending validation", description = "Retrieve all paid enrollments that are pending admin validation. Accessible only by admins.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Non-approved enrollments retrieved successfully",
+            @ApiResponse(responseCode = "200", description = "Paid enrollments pending validation retrieved successfully",
                     content = @Content(schema = @Schema(implementation = EnrollmentDtoResponse.class))),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public List<EnrollmentDtoResponse> getAllNonApprovedEnrollments() {
-        List<Enrollment> enrollments = enrollmentService.getAllNonApprovedEnrollments();
+        List<Enrollment> enrollments = enrollmentService.getAllPaidEnrollmentsPendingValidation();
+        return enrollments.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/pending-payment")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all enrollments pending payment", description = "Retrieve all enrollments that are pending payment. Accessible only by admins.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Enrollments pending payment retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = EnrollmentDtoResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public List<EnrollmentDtoResponse> getAllPendingPaymentEnrollments() {
+        List<Enrollment> enrollments = enrollmentService.getAllPendingPaymentEnrollments();
         return enrollments.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -124,22 +161,6 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('ADMIN')")
     public EnrollmentDtoResponse approveEnrollment(@PathVariable Integer enrollmentId) {
         Enrollment enrollment = enrollmentService.approveEnrollment(enrollmentId);
-        return convertToDto(enrollment);
-    }
-
-    @PatchMapping("/{enrollmentId}/request-corrections")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Request corrections for an enrollment")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Corrections requested successfully",
-                    content = @Content(schema = @Schema(implementation = EnrollmentDtoResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Enrollment not found"),
-            @ApiResponse(responseCode = "403", description = "Access denied")
-    })
-    public EnrollmentDtoResponse requestCorrections(
-            @PathVariable Integer enrollmentId,
-            @RequestBody List<EnrollmentService.DocumentCorrectionDto> corrections) {
-        Enrollment enrollment = enrollmentService.requestCorrections(enrollmentId, corrections);
         return convertToDto(enrollment);
     }
 
@@ -164,124 +185,94 @@ public class EnrollmentController {
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Initiate payment for an enrollment")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Payment initiation successful",
-                    content = @Content(schema = @Schema(implementation = PaymentResponseDto.class))),
+            @ApiResponse(responseCode = "200", description = "Payment initiation successful"),
             @ApiResponse(responseCode = "404", description = "Enrollment not found"),
             @ApiResponse(responseCode = "403", description = "Access denied"),
             @ApiResponse(responseCode = "400", description = "Enrollment not ready for payment")
     })
-    public ResponseEntity<PaymentResponseDto> initiatePayment(@PathVariable Integer enrollmentId) throws Exception {
-        Enrollment enrollment = enrollmentService.getEnrollmentById(enrollmentId);
-        
-        // Check if enrollment is in the correct status for payment
-        if (enrollment.getStatus() != StatusSubmission.PENDING && enrollment.getStatus() != StatusSubmission.APPROVED) {
-            throw new IllegalStateException("Enrollment must be in PENDING or APPROVED status to initiate payment.");
+    public ResponseEntity<String> initiatePayment(@PathVariable Integer enrollmentId) throws Exception {
+        // Debug logs for authentication troubleshooting
+        System.out.println("=== INITIATE PAYMENT DEBUG ===");
+        System.out.println("Enrollment ID: " + enrollmentId);
+
+        // Get the current user
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("Authenticated user email: " + email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Student student = (Student) user;
+        System.out.println("Student ID: " + student.getId());
+        System.out.println("Student role: " + student.getRole());
+
+        // Get enrollment and verify it belongs to the current student
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found with id: " + enrollmentId));
+        System.out.println("Found enrollment with status: " + enrollment.getStatus());
+
+        // Verify that the enrollment belongs to the current student
+        if (!enrollment.getStudent().getId().equals(student.getId())) {
+            System.out.println("Access denied: enrollment student ID " + enrollment.getStudent().getId() + " != authenticated student ID " + student.getId());
+            throw new AccessDeniedException("You can only initiate payment for your own enrollments");
         }
-        
-        // Create payment request
-        PaymentRequestDto paymentRequest = new PaymentRequestDto();
-        paymentRequest.setEnrollmentId(enrollmentId);
-        
-        // Set amount based on payment type
-        if (enrollment.getStatus() == StatusSubmission.APPROVED) {
-            // Program payment (you'll need to determine the amount based on your business logic)
-            paymentRequest.setAmount(10000L); // Example: $100 in cents
+
+        // Check if enrollment is in the correct status for payment and update accordingly
+        if (enrollment.getStatus() == StatusSubmission.SUBMITTED) {
+            // First payment - registration fee
+            enrollment.setStatus(StatusSubmission.PENDING_PAYMENT);
+            enrollmentRepository.save(enrollment);
+            System.out.println("Updated enrollment status to PENDING_PAYMENT for registration fee");
+        } else if (enrollment.getStatus() == StatusSubmission.PENDING_VALIDATION) {
+            // Second payment - program payment (after admin approval)
+            enrollment.setStatus(StatusSubmission.PENDING_PROGRAM_PAYMENT);
+            enrollmentRepository.save(enrollment);
+            System.out.println("Updated enrollment status to PENDING_PROGRAM_PAYMENT for program payment");
+        } else if (enrollment.getStatus() != StatusSubmission.PENDING_PAYMENT && 
+                   enrollment.getStatus() != StatusSubmission.PENDING_PROGRAM_PAYMENT) {
+            System.out.println("Invalid enrollment status for payment: " + enrollment.getStatus());
+            throw new IllegalStateException("Enrollment must be in SUBMITTED or PENDING_VALIDATION status to initiate payment.");
+        }
+
+        // Return success message - frontend will call the appropriate Flutterwave payment endpoint separately
+        if (enrollment.getStatus() == StatusSubmission.PENDING_PAYMENT) {
+            return ResponseEntity.ok("Registration fee payment initiation successful. Please proceed with Flutterwave payment.");
         } else {
-            // Registration fee (you'll need to determine the amount based on your business logic)
-            paymentRequest.setAmount(5000L); // Example: $50 in cents
+            return ResponseEntity.ok("Program payment initiation successful. Please proceed with Flutterwave payment.");
         }
-        
-        // Create Stripe session
-        PaymentResponseDto response = paymentService.createStripeSession(paymentRequest);
-        return ResponseEntity.ok(response);
     }
-    
+
     private EnrollmentDtoResponse convertToDto(Enrollment enrollment) {
-        EnrollmentDtoResponse dto = new EnrollmentDtoResponse();
-        dto.setId(enrollment.getId());
-        dto.setStatus(enrollment.getStatus());
-        dto.setCreatedDate(enrollment.getCreatedDate());
-        dto.setSubmissionDate(enrollment.getSubmissionDate());
-        dto.setValidationDate(enrollment.getValidationDate());
-        dto.setCurrentStep(enrollment.getStepCompleted());
-        dto.setProgramId(enrollment.getProgram().getId());
-        dto.setStudentId(enrollment.getStudent().getId());
-        dto.setProgramName(enrollment.getProgram().getProgramName());
-        dto.setRejectionReason(enrollment.getRejectionReason()); // Include rejection reason
-        
-        // Personal Info
-        if (enrollment.getPersonalInfo() != null) {
-            PersonalInfo personalInfo = enrollment.getPersonalInfo();
-            PersonalInfoDto personalInfoDto = new PersonalInfoDto();
-            personalInfoDto.setFirstName(personalInfo.getFirstName());
-            personalInfoDto.setLastName(personalInfo.getLastName());
-            personalInfoDto.setNationality(personalInfo.getNationality());
-            personalInfoDto.setGender(personalInfo.getGender());
-            personalInfoDto.setDateOfBirth(personalInfo.getDateOfBirth());
-            dto.setPersonalInfo(personalInfoDto);
-        }
-        
-        // Academic Info
-        if (enrollment.getAcademicInfo() != null) {
-            AcademicInfo academicInfo = enrollment.getAcademicInfo();
-            AcademicInfoDto academicInfoDto = new AcademicInfoDto();
-            academicInfoDto.setLastInstitution(academicInfo.getLastInstitution());
-            academicInfoDto.setSpecialization(academicInfo.getSpecialization());
-            academicInfoDto.setAvailableForInternship(academicInfo.getAvailableForInternship());
-            academicInfoDto.setStartDate(academicInfo.getStartDate());
-            academicInfoDto.setEndDate(academicInfo.getEndDate());
-            academicInfoDto.setDiplomaObtained(academicInfo.getDiplomaObtained());
-            dto.setAcademicInfo(academicInfoDto);
-        }
-        
-        // Contact Details
-        if (enrollment.getContactDetails() != null) {
-            ContactDetails contactDetails = enrollment.getContactDetails();
-            ContactDetailsDto contactDetailsDto = new ContactDetailsDto();
-            contactDetailsDto.setEmail(contactDetails.getEmail());
-            contactDetailsDto.setPhoneNumber(contactDetails.getPhoneNumber());
-            contactDetailsDto.setCountryCode(contactDetails.getCountryCode());
-            contactDetailsDto.setCountry(contactDetails.getCountry());
-            contactDetailsDto.setRegion(contactDetails.getRegion());
-            contactDetailsDto.setCity(contactDetails.getCity());
-            contactDetailsDto.setAddress(contactDetails.getAddress());
-            
-            if (contactDetails.getEmergencyContacts() != null) {
-                List<EmergencyContactDto> emergencyContactDtos = contactDetails.getEmergencyContacts().stream()
-                        .map(this::mapEmergencyContactEntityToDto)
-                        .collect(Collectors.toList());
-                contactDetailsDto.setEmergencyContacts(emergencyContactDtos);
-            }
-            
-            dto.setContactDetails(contactDetailsDto);
-        }
-        
-        // Documents
-        if (enrollment.getDocuments() != null) {
-            List<DocumentDto> documentDtos = enrollment.getDocuments().stream()
-                    .map(doc -> {
-                        DocumentDto docDto = new DocumentDto();
-                        docDto.setId(doc.getId());
-                        docDto.setName(doc.getName());
-                        docDto.setDocumentType(doc.getDocumentType());
-                        docDto.setUploadDate(doc.getUploadDate());
-                        docDto.setValidationStatus(doc.getValidationStatus());
-                        docDto.setRejectionReason(doc.getRejectionReason());
-                        return docDto;
-                    })
-                    .collect(Collectors.toList());
-            dto.setDocuments(documentDtos);
-        }
-        
+        return EnrollmentMapper.toDto(enrollment);
+    }
+
+    /**
+     * Maps EmergencyContact entity to EmergencyContactDto
+     *
+     * @param emergencyContact the EmergencyContact entity
+     * @return the EmergencyContactDto
+     */
+    private EmergencyContactDto mapEmergencyContactEntityToDto(EmergencyContact emergencyContact) {
+        EmergencyContactDto dto = new EmergencyContactDto();
+        dto.setName(emergencyContact.getName());
+        dto.setPhone(emergencyContact.getPhone());
+        dto.setCountryCode(emergencyContact.getCountryCode());
+        dto.setRelationship(emergencyContact.getRelationship());
         return dto;
     }
-    
-    private EmergencyContactDto mapEmergencyContactEntityToDto(EmergencyContact entity) {
-        EmergencyContactDto dto = new EmergencyContactDto();
-        dto.setName(entity.getName());
-        dto.setPhone(entity.getPhone());
-        dto.setCountryCode(entity.getCountryCode());
-        dto.setRelationship(entity.getRelationship());
-        return dto;
+
+    /**
+     * Cancel an enrollment if no payments have been made
+     * Allows students to cancel their own enrollment before making any payments
+     */
+    @DeleteMapping("/{enrollmentId}/cancel")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Cancel enrollment", description = "Cancel an enrollment if no payments have been made")
+    public ResponseEntity<String> cancelEnrollment (@PathVariable Integer enrollmentId){
+        try {
+            enrollmentService.cancelEnrollmentIfNoPayment(enrollmentId);
+            return ResponseEntity.ok("Enrollment cancelled successfully");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

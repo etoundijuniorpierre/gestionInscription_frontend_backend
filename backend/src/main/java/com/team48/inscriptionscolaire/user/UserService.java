@@ -37,9 +37,25 @@ public class UserService {
         user.setFirstname(userRequestDto.getFirstname());
         user.setLastname(userRequestDto.getLastname());
         user.setEmail(userRequestDto.getEmail());
-        user.setStatus(userRequestDto.isAccountLocked());
-        // The isEnabled() method in User returns the inverse of status (true = enabled)
-        // This is handled by the UserDetails interface implementation
+        
+        // Direct mapping: true = enabled/active, false = disabled/inactive
+        user.setStatus(userRequestDto.isEnabled());
+        
+        return userRepository.save(user);
+    }
+
+    /**
+     * Toggle a user's enabled status
+     * @param id The ID of the user to toggle
+     * @return The updated user
+     */
+    public User toggleUserStatus(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        
+        // Direct mapping: true = enabled/active, false = disabled/inactive
+        // Toggle the status without inversion - true becomes false, false becomes true
+        user.setStatus(!user.isStatus());
         
         return userRepository.save(user);
     }

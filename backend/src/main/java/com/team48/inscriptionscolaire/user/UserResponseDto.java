@@ -1,6 +1,6 @@
 package com.team48.inscriptionscolaire.user;
 
-import com.team48.inscriptionscolaire.student.MaritalStatus;
+import com.team48.inscriptionscolaire.student.StudentStatus;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,4 +30,5 @@ public class UserResponseDto {
     
     // Only for student users
     private List<Integer> enrollmentIds;
+    private StudentStatus studentStatus;
 }

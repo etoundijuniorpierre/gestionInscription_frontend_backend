@@ -2,6 +2,7 @@ package com.team48.inscriptionscolaire.enrollment;
 
 import com.team48.inscriptionscolaire.document.Document;
 import com.team48.inscriptionscolaire.document.DocumentDto;
+import com.team48.inscriptionscolaire.program.ProgramResponseDTO;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,7 @@ public class EnrollmentDtoResponse {
     private Integer studentId;
     private String programName;
     private StatusSubmission status;
+    private String paymentType; // Added to distinguish between REGISTRATION_FEE and PROGRAM_PAYMENT
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
     private LocalDateTime submissionDate;
@@ -25,5 +27,5 @@ public class EnrollmentDtoResponse {
     private List<DocumentDto> documents;
     private ContactDetailsDto contactDetails;
     private String rejectionReason;
-    //private EnrollmentStepDto enrollmentStepDto;
+    private ProgramResponseDTO program; // Added program data
 }

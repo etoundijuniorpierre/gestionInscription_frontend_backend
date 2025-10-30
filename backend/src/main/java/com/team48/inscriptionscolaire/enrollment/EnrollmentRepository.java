@@ -20,8 +20,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     // Get all enrollments
     List<Enrollment> findAll();
 
+    // Get enrollments by status
+    List<Enrollment> findByStatus(StatusSubmission status);
+
     // Get all non-approved enrollments (not approved)
-    @Query("SELECT e FROM Enrollment e WHERE e.status != com.team48.inscriptionscolaire.enrollment.StatusSubmission.APPROVED")
+    @Query("SELECT e FROM Enrollment e WHERE e.status != com.team48.inscriptionscolaire.enrollment.StatusSubmission.APPROVED AND e.status != com.team48.inscriptionscolaire.enrollment.StatusSubmission.REJECTED")
     List<Enrollment> findAllNonApproved();
 
     // Finds a specific enrollment for a student and program.
@@ -36,6 +39,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     Optional<StatusSubmission> findStatusByStudentId(@Param("studentId") Integer studentId);
     
     // Check if student has enrollments with programs that start on the same date
-    @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.student.id = :studentId AND e.program.startDate = :startDate AND e.status IN (com.team48.inscriptionscolaire.enrollment.StatusSubmission.IN_PROGRESS, com.team48.inscriptionscolaire.enrollment.StatusSubmission.PENDING, com.team48.inscriptionscolaire.enrollment.StatusSubmission.APPROVED)")
+    @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.student.id = :studentId AND e.program.startDate = :startDate AND e.status IN (com.team48.inscriptionscolaire.enrollment.StatusSubmission.SUBMITTED, com.team48.inscriptionscolaire.enrollment.StatusSubmission.PENDING_PAYMENT, com.team48.inscriptionscolaire.enrollment.StatusSubmission.PENDING_VALIDATION, com.team48.inscriptionscolaire.enrollment.StatusSubmission.APPROVED)")
     long countByStudentIdAndProgramStartDate(@Param("studentId") Integer studentId, @Param("startDate") LocalDate startDate);
 }

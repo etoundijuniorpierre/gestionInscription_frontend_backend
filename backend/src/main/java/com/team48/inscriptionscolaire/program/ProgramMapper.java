@@ -2,6 +2,7 @@ package com.team48.inscriptionscolaire.program;
 
 import com.team48.inscriptionscolaire.learnModule.LearnModule;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,46 @@ public class ProgramMapper {
         String imagePath = "/assets/images/" + program.getProgramCode() + ".png";
         dto.setImage(imagePath);
         return dto;
+    }
+    
+    /**
+     * Create program response DTO with proper enrollment status calculation
+     * @param program The program entity to convert
+     * @return ProgramResponseDTO with calculated enrollment status
+     */
+    public static ProgramResponseDTO toDtoWithEnrollmentStatus(Program program) {
+        ProgramResponseDTO dto = toDto(program);
+
+        // Override enrollment status with proper logic
+        // For now, use the basic logic, but this should be enhanced to check for student conflicts
+        dto.setEnrollmentOpen(calculateEnrollmentStatus(program));
+
+        return dto;
+    }
+    
+    /**
+     * Calculate if enrollment is open considering business rules
+     * @param program The program to check enrollment status for
+     * @return true if enrollment is open, false otherwise
+     */
+    private static boolean calculateEnrollmentStatus(Program program) {
+        // 1. Check if enrollment period is open (basic check)
+        LocalDate today = LocalDate.now();
+        boolean isInEnrollmentPeriod = program.getRegistrationStartDate() != null &&
+                                     program.getRegistrationEndDate() != null &&
+                                     !today.isBefore(program.getRegistrationStartDate()) &&
+                                     !today.isAfter(program.getRegistrationEndDate());
+
+        if (!isInEnrollmentPeriod) {
+            return false;
+        }
+
+        // TODO: 2. Check for schedule conflicts (requires student context)
+        // TODO: 3. Check admin overrides
+        // TODO: 4. Check capacity limits
+
+        // For now, return the period-based status
+        return true;
     }
     
     public static LearnModule toLearnModuleEntity(Program program, ProgramRequestDTO.LearnModuleDTO dto) {

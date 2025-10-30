@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,7 +56,7 @@ public class AuthenticationService {
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .status(true) // accountLocked = true (locked until activation)
+                .status(false) // status = false means inactive until activation
                 .role(userRole)
                 .dateOfBirth(LocalDate.now()) // Valeur par défaut, à mettre à jour plus tard
                 .address("Tradex Emana") // Valeur par défaut
@@ -74,7 +75,7 @@ public class AuthenticationService {
     }
     //it will generate a new token
     private void sendValidationEmail(User user) throws MessagingException {
-        var newToken = generateAndSaveActivationToken(user);
+        String newToken = generateAndSaveActivationToken(user);
         //send email
         emailService.sendEmail(
                 user.getEmail(),
@@ -89,7 +90,7 @@ public class AuthenticationService {
     private String generateAndSaveActivationToken(User user) {
         //generate a token
         String generatedToken = generateActivationCode(6);
-        var token = Token.builder()
+        Token token = Token.builder()
                 .token(generatedToken)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
@@ -117,19 +118,29 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Authenticate the user with Spring Security
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(); // Assurez-vous que l'utilisateur est trouvé
-        var jwtToken = jwtService.generateToken(user);
+        
+        // Find the user
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if user is enabled (active)
+        if (!user.isEnabled()) {
+            throw new DisabledException("User account is disabled. Please contact administrator.");
+        }
+        
+        // Generate JWT token
+        String jwtToken = jwtService.generateToken(user);
 
-        // AJOUT : Révoquer tous les anciens tokens de l'utilisateur
+        // Revoke all old user tokens
         revokeAllUserTokens(user);
-        // AJOUT : Sauvegarder le nouveau token
+        // Save the new token
         saveUserToken(user, jwtToken);
 
         return AuthenticationResponse.builder()
@@ -144,7 +155,7 @@ public class AuthenticationService {
             // Créer un hash du token pour la recherche sécurisée
             String tokenHash = hashToken(jwtToken);
 
-            var token = Token.builder()
+            Token token = Token.builder()
                     .user(user)
                     .token(jwtToken) // Token complet pour la validation
                     .tokenHash(tokenHash) // Hash pour la recherche rapide
@@ -178,7 +189,7 @@ public class AuthenticationService {
 
     // AJOUT : Méthode pour révoquer les tokens
     private void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        java.util.List<Token> validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
         if (validUserTokens.isEmpty())
             return;
         validUserTokens.forEach(token -> {
@@ -204,20 +215,16 @@ public class AuthenticationService {
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
         }
 
-        var user = userRepository.findById(savedToken.getUser().getId())
+        User user = userRepository.findById(savedToken.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        // Set status to false to enable the user (status = false means enabled)
-        user.setStatus(false);
+        // Set status to true to enable the user (status = true means enabled/active)
+        user.setStatus(true);
         userRepository.save(user);
         //validate the token
         savedToken.setValidatedAt(LocalDateTime.now());
         tokenRepository.save(savedToken);
 
     }
-
-    // ===================================================================================
-    // ================= NOUVELLE MÉTHODE POUR LE MOT DE PASSE OUBLIÉ ===================
-    // ===================================================================================
 
     public void initiatePasswordReset(String email) throws MessagingException {
         Optional<User> userOptional = userRepository.findByEmail(email);
@@ -228,10 +235,6 @@ public class AuthenticationService {
         }
         // If the user doesn't exist, we do nothing to prevent user enumeration attacks.
     }
-
-    // ===================================================================================
-    // ================= MÉTHODE POUR RENVOYER LE CODE D'ACTIVATION ======================
-    // ===================================================================================
 
     /**
      * Renvoie un nouveau code d'activation à l'utilisateur.
@@ -245,12 +248,12 @@ public class AuthenticationService {
             User user = userOptional.get();
             
             // Vérifier si le compte est déjà activé
-            if (!user.isStatus()) {
+            if (user.isStatus()) {
                 throw new RuntimeException("Account is already activated");
             }
             
             // Révoquer tous les anciens tokens d'activation de l'utilisateur
-            var oldTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+            java.util.List<Token> oldTokens = tokenRepository.findAllValidTokenByUser(user.getId());
             oldTokens.forEach(token -> {
                 token.setExpired(true);
                 token.setRevoked(true);
@@ -260,13 +263,9 @@ public class AuthenticationService {
             // Envoyer un nouveau code d'activation
             sendValidationEmail(user);
         }
-        // Si l'utilisateur n'existe pas, ne rien faire pour éviter l'énumération des utilisateurs
+        // Si l'utilisateur n'existe pas, ne rien faire pour éviter l’énumération des utilisateurs
     }
-
-    // ===================================================================================
-    // ================= MÉTHODE DE DÉCONNEXION AJOUTÉE ===================================
-    // ===================================================================================
-
+    
     /**
      * Gère la déconnexion en révoquant le token JWT fourni.
      * @param request La requête HTTP contenant l'en-tête d'autorisation.
@@ -284,7 +283,7 @@ public class AuthenticationService {
         try {
             // Utiliser le hash du token pour la recherche
             String tokenHash = hashToken(jwt);
-            var storedToken = tokenRepository.findByTokenHash(tokenHash).orElse(null);
+            Token storedToken = tokenRepository.findByTokenHash(tokenHash).orElse(null);
 
             if (storedToken != null) {
                 // Vérifier que le token correspond exactement

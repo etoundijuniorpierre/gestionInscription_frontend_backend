@@ -107,11 +107,15 @@
             <version>${mapstruct.version}</version>
         </dependency>
 
+        <!-- Removed Stripe dependency as we're only using Flutterwave -->
+        <!-- 
         <dependency>
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
             <version>29.4.0</version>
         </dependency>
+        -->
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -129,6 +133,17 @@
             <version>2.5.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+            <!-- Tes autres dépendances... -->
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20231013</version>
+            </dependency>
     </dependencies>
 
     <build>

@@ -1,10 +1,12 @@
 package com.team48.inscriptionscolaire.payment;
 
 import com.team48.inscriptionscolaire.enrollment.Enrollment;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PaymentMapper {
     
-    public static Payment toEntity(PaymentDto dto) {
+    public static Payment toEntity(  PaymentDto dto) {
         if (dto == null) {
             return null;
         }
@@ -48,5 +50,28 @@ public class PaymentMapper {
         }
         
         return dto;
+    }
+    
+    /**
+     * Convert Payment entity to a frontend-friendly map format for the payment history display
+     * @param payment The payment entity to convert
+     * @return A map containing payment data for frontend display
+     */
+    public static Map<String, Object> toPaymentHistoryMap(Payment payment) {
+        Map<String, Object> paymentMap = new HashMap<>();
+        paymentMap.put("id", payment.getId());
+        paymentMap.put("amount", payment.getAmount());
+        paymentMap.put("currency", payment.getCurrency());
+        paymentMap.put("status", payment.getStatus());
+        paymentMap.put("paymentDate", payment.getPaymentDate());
+        paymentMap.put("paymentType", payment.getPaymentType());
+        
+        Enrollment enrollment = payment.getEnrollment();
+        if (enrollment != null) {
+            paymentMap.put("enrollmentId", enrollment.getId());
+            paymentMap.put("enrollmentName", enrollment.getProgram() != null ? enrollment.getProgram().getProgramName() : "N/A");
+        }
+        
+        return paymentMap;
     }
 }

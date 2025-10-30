@@ -32,40 +32,62 @@ public class NotificationService {
     }*/
 
     /**
-     * Envoie une notification privée à un utilisateur spécifique.
+     * Envoie une notification privée à un utilisateur spécifique et la persiste en base de données.
      * @param userId L'identifiant de l'utilisateur (doit correspondre à son nom d'utilisateur de connexion)
      * @param message Le contenu du message à envoyer
      */
+    @Transactional
     public void sendPrivateNotification(final String userId, final String message) {
         try {
-            Notification notification = new Notification(message);
-            messagingTemplate.convertAndSendToUser(userId, "/topic/private-notifications", notification);
-
+            // Find the user by email/username
+            Optional<User> userOptional = userRepository.findByEmail(userId);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                
+                // Create and persist the notification
+                Notification notification = new Notification();
+                notification.setContent(message);
+                notification.setUser(user);
+                notification.setRead(false);
+                notification = notificationRepository.save(notification);
+                
+                // Send via WebSocket
+                messagingTemplate.convertAndSendToUser(userId, "/topic/private-notifications", notification);
+            }
         } catch (Exception e) {
-
-            // Don't throw exception to avoid breaking the enrollment process
+            // Log the error but don't throw exception to avoid breaking the enrollment process
+            e.printStackTrace();
         }
     }
     
     /**
-     * Envoie une notification à tous les administrateurs.
+     * Envoie une notification à tous les administrateurs et les persiste en base de données.
      * @param message Le contenu du message à envoyer
      */
+    @Transactional
     public void sendNotificationToAdmins(final String message) {
         try {
             List<User> adminUsers = userRepository.findAdminUsers();
-            Notification notification = new Notification(message);
-
+            
             for (User admin : adminUsers) {
                 try {
+                    // Create and persist the notification for each admin
+                    Notification notification = new Notification();
+                    notification.setContent(message);
+                    notification.setUser(admin);
+                    notification.setRead(false);
+                    notification = notificationRepository.save(notification);
+                    
+                    // Send via WebSocket
                     messagingTemplate.convertAndSendToUser(admin.getUsername(), "/topic/private-notifications", notification);
-
                 } catch (Exception e) {
-
+                    // Log the error but continue with other admins
+                    e.printStackTrace();
                 }
             }
         } catch (Exception e) {
             // Don't throw exception to avoid breaking the enrollment process
+            e.printStackTrace();
         }
     }
     
@@ -113,6 +135,14 @@ public class NotificationService {
         }
         
         return false;
+    }
+    
+    /**
+     * Get count of unread notifications for the current user
+     */
+    public long getUnreadNotificationsCountForCurrentUser() {
+        User currentUser = getCurrentUser();
+        return notificationRepository.countByUserIdAndIsReadFalse(currentUser.getId());
     }
     
     /**

@@ -2,7 +2,6 @@ package com.team48.inscriptionscolaire.document;
 
 public enum ValidationStatus {
     PENDING,
-    APPROVED,
+    VALIDATED,
     REJECTED,
-    INVALID_FORMAT
 }

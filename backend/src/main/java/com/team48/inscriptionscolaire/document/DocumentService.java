@@ -44,30 +44,53 @@ public class DocumentService {
         return repository.save(document);
     }
 
-    //dowload the image from the db
-    public byte[] downloadImage(String fileName){
-        Optional<Document> dbDocument = repository.findByName(fileName);
-        // Utiliser .orElseThrow pour une meilleure gestion des erreurs si le document n'est pas trouvé
-        return dbDocument.map(doc -> DocumentUtils.decompressImage(doc.getFileData()))
-                .orElseThrow(() -> new RuntimeException("Document not found with name: " + fileName));
-    }
     
-    // New method to get document metadata by ID
+    // New method to download document by ID
+    public byte[] downloadDocumentById(Integer id) {
+        Optional<Document> document = repository.findById(id);
+        if (document.isPresent()) {
+            try {
+                return DocumentUtils.decompressImage(document.get().getFileData());
+            } catch (Exception e) {
+                throw new RuntimeException("Error decompressing document with id: " + id + ". " + e.getMessage());
+            }
+        } else {
+            throw new RuntimeException("Document not found with id: " + id);
+        }
+    }
+
+    // New method to get document by ID
     public DocumentDto getDocumentById(Integer id) {
         Optional<Document> document = repository.findById(id);
         if (document.isPresent()) {
+            return DocumentMapper.toDto(document.get());
+        } else {
+            throw new RuntimeException("Document not found with id: " + id);
+        }
+    }
+    
+    // New method to validate document by ID
+    public void validateDocumentById(Integer id) {
+        Optional<Document> document = repository.findById(id);
+        if (document.isPresent()) {
             Document doc = document.get();
-            DocumentDto dto = new DocumentDto();
-            dto.setId(doc.getId());
-            dto.setName(doc.getName());
-            dto.setContentType(doc.getContentType());
-            dto.setUploadDate(doc.getUploadDate());
-            dto.setValidationStatus(doc.getValidationStatus());
-            dto.setDocumentType(doc.getDocumentType());
-            dto.setRejectionReason(doc.getRejectionReason());
-            dto.setCreatedDate(doc.getCreatedDate());
-            dto.setLastModifiedDate(doc.getLastModifiedDate());
-            return dto;
+            doc.setValidationStatus(ValidationStatus.VALIDATED);
+            doc.setValidationDate(LocalDateTime.now());
+            repository.save(doc);
+        } else {
+            throw new RuntimeException("Document not found with id: " + id);
+        }
+    }
+    
+    // New method to reject document by ID
+    public void rejectDocumentById(Integer id, String rejectionReason) {
+        Optional<Document> document = repository.findById(id);
+        if (document.isPresent()) {
+            Document doc = document.get();
+            doc.setValidationStatus(ValidationStatus.REJECTED);
+            doc.setRejectionReason(rejectionReason);
+            doc.setValidationDate(LocalDateTime.now());
+            repository.save(doc);
         } else {
             throw new RuntimeException("Document not found with id: " + id);
         }
